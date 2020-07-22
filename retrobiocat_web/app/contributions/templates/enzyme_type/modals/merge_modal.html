@@ -1,0 +1,73 @@
+<div class="modal fade" id="merge_modal" tabindex="-1" role="dialog" aria-labelledby="merge_modalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="merge_modalLabel">Merge enzyme type</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <p>
+                    Warning - merging is quite drastic.  All references to this enzyme type in Reaction, Sequences
+                    and Activity data will be overwritten  with the the merged type, and this entry will be deleted.
+                </p>
+                <p><strong id="original_name_merge"></strong></p>
+                <label for="enzyme_type_select" class="control-label">Select an enzyme type to merge this entry
+                    into:</label>
+                <select id="enzyme_type_select" class="form-control custom-select w-75">
+                    {% for enz_type in enzyme_types %}
+                        <option value="{{ enz_type }}">{{ enz_type }}</option>
+                    {% endfor %}
+                </select>
+
+                <div class="my-5"></div>
+                <div class="my-5"></div>
+
+                <div id="merge_response"></div>
+
+                <div class="modal-footer">
+                    <p id="saving"></p>
+                    <button type="button" id='merge' class="btn btn-success" onclick="show_merge_confirm()">Merge (cannot be
+                        undone)
+                    </button>
+                    <button type="button" onclick="merge()" id='merge2' class="btn btn-danger" onclick="">Definitely
+                        merge?
+                    </button>
+                    <button type="button" onclick="close_alerts()" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function merge() {
+        $.post('/_merge_enzyme_type', {
+            merge_with: document.getElementById("enzyme_type_select").value,
+            to_merge: document.getElementById("original_name_merge").innerHTML,
+            }).done(function(data) {
+                response_msg(data.result.msg, data.result.status, data.result.issues, "merge_response")
+                if (data.result.status === 'success') {
+                    let url = '/edit_enzyme_types'
+                    location.assign(url);
+                }
+            })
+        }
+
+    function hide_merge_confirm() {
+        document.getElementById("merge2").style.display = "none"
+    }
+
+    function show_merge_confirm() {
+        document.getElementById("merge2").style.display = "block"
+    }
+
+    document.getElementById("enzyme_type_select").onchange = function() {
+        hide_merge_confirm()
+    }
+
+</script>

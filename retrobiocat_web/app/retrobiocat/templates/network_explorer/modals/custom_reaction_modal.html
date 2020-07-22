@@ -1,0 +1,109 @@
+<!-- Main modal -->
+<div class="modal fade" id="add_custom_reaction" tabindex="-1" role="dialog" aria-labelledby="add_custom_reactionLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="add_custom_reactionLabel">Add custom reaction</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-4" align="center">
+                            <label>Reaction name:</label>
+                            <input id="custom_reaction_name" type="text" class="siimple-input siimple-input--fluid" value="Custom reaction">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-4" align="center">
+                            <label >Substrate SMILES:</label>
+                            <input id="custom_substrate_smiles" type="text" class="">
+                        </div>
+
+                        <div class="col-sm-8">
+                            <button class="btn btn-outline-info" type="button" data-toggle="collapse" data-target="#collapseSubstrate" aria-expanded="false" aria-controls="collapseSubstrate">
+                                Draw Substrate
+                            </button>
+
+                            <div class="collapse" id="collapseSubstrate">
+                                <div id="jsme_container_substrate"></div>
+                                <button type="button" onclick="set_substrate()" data-toggle="collapse" data-target="#collapseSubstrate" class="btn btn-primary">Get SMILES</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-4" align="center">
+                            <label>Product SMILES </label>
+                            <input id="custom_product_smiles" type="text" class="">
+                        </div>
+
+                        <div class="col-sm-8">
+                            <button class="btn btn-outline-warning" type="button" data-toggle="collapse" data-target="#collapseProduct" aria-expanded="false" aria-controls="collapseProduct">
+                                Draw Product
+                            </button>
+
+                            <div class="collapse" id="collapseProduct">
+                                <div id="jsme_container_product"></div>
+                                <button type="button" onclick="set_product()" data-toggle="collapse" data-target="#collapseProduct" class="btn btn-primary">Get SMILES</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" id="custom_reaction_submit" data-dismiss="modal" class="btn btn-success">Add reaction</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function set_substrate() {
+        document.getElementById("custom_substrate_smiles").value = jsmeApplet_substrate.smiles();
+    }
+
+    function set_product() {
+        document.getElementById("custom_product_smiles").value = jsmeApplet_product.smiles();
+    }
+
+    function jsmeOnLoad() {
+            jsmeApplet_substrate = new JSApplet.JSME("jsme_container_substrate", "600px", "300px");
+            jsmeApplet_product = new JSApplet.JSME("jsme_container_product", "600px", "300px");
+        }
+
+
+    function add_custom_reaction(network_data) {
+        console.log('Add custom reaction')
+
+        $.post($SCRIPT_ROOT + '/_custom_reaction', {
+            substrate: "" + document.getElementById("custom_substrate_smiles").value,
+            product: "" + document.getElementById("custom_product_smiles").value,
+            name: "" + document.getElementById("custom_reaction_name").value,
+            task_id: window.task_id
+
+        }).done(function(response_data) {
+            let new_nodes = response_data.result.nodes
+            let new_edges = response_data.result.edges
+            addNodes(network_data, new_nodes, new_edges)
+        })
+    }
+
+    document.getElementById("custom_reaction_submit").onclick = function()
+    {
+        add_custom_reaction(data)
+        document.getElementById("modal-custom_reaction").style.display = "none";
+        document.getElementById("custom_substrate_smiles").value = ""
+        document.getElementById("custom_reaction_name").value = "Custom reaction"
+    }
+
+</script>

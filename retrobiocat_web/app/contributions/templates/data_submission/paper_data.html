@@ -1,0 +1,128 @@
+
+<div class="container-fluid">
+    <div class="row mt-5">
+        <div class="col"></div>
+        <div class="col">
+            <div class="form-group">
+                <label for='short_cit'>Short citation</label>
+                <input type="text" class="form-control" id="short_cit" value="{{paper['short_cit']}}">
+                <small class="form-text text-muted">Eg.  First author et al, Journal, Year</small>
+            </div>
+
+            <div class="form-group">
+                <label for='doi'>DOI</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="doi" value="{{paper['doi']}}">
+                    <a href="https://doi.org/{{paper['doi']}}" target="_blank"><button type="button" class="btn btn-outline-primary" id="doi_link">Link</button></a>
+                </div>
+                <small class="form-text text-muted">For example "10.1002/cctc.201601249"</small>
+            </div>
+
+            <div class="form-group">
+                <label for='date'>Date</label>
+                <input class="form-control" type="date" id="date" value="{{paper['date']}}">
+                <small class="form-text text-muted"></small>
+            </div>
+
+            <div class="form-group">
+                <label for='title'>Title</label>
+                <textarea class="form-control" id="title" rows="2">{{paper['title']}}</textarea>
+                <small class="form-text text-muted">Optional</small>
+            </div>
+
+            <div class="form-group">
+                <label for='authors'>Authors</label>
+                <textarea class="form-control" id="authors" rows="2">{{paper['authors']}}</textarea>
+                <small class="form-text text-muted">Optional - Enter as name_1, name_2, ect..</small>
+            </div>
+
+            <div class="form-group">
+                <label for='journal'>Journal</label>
+                <input type="text" class="form-control" id="journal" value="{{paper['journal']}}">
+                <small class="form-text text-muted">Optional</small>
+            </div>
+
+            <div class="custom-control custom-checkbox my-4">
+                <input class="custom-control-input" type="checkbox" id="assign_to_me" {{paper['self_assigned']}} {{paper['disable_for_other_user']}}>
+                <label class="custom-control-label" for="assign_to_me">Assign this paper to me</label>
+                <small class="form-text text-muted">Assign to yourself (checked), or leave open for somebody else (unchecked)</small>
+                <small class="form-text text-muted">Warning - you can not be the owner of a sequence if you are not assigned to any of its papers.  Sequences will be automatically unassigned if required.</small>
+            </div>
+
+            <div class="form-group">
+                <label for='tags'>Tags</label>
+                <input type="text" class="form-control" id="tags" value="{{paper["tags"]}}">
+                <small class="form-text text-muted">Tag1, Tag2 ect..</small>
+            </div>
+
+            <button type="button" onclick="save_paper()" class="btn btn-success" id="save_paper">Save</button>
+            <button type="button" onclick="query_pubmed()" class="btn btn-warning" id="get_pubmed">Query Pubmed</button>
+            <button type="button" onclick="query_crossref()" class="btn btn-info" id="get_crossref">Query Crossref</button>
+
+            <div id="save_response"></div>
+        </div>
+        <div class="col"></div>
+    </div>
+</div>
+
+<script>
+
+    function query_pubmed() {
+        $.post('/_query_pubmed', {
+            paper_id: "{{paper['id']}}"
+            }).done(function(data) {
+                response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+                if (data.result.status === 'success') {
+                    document.getElementById("short_cit").value = data.result.paper.short_cit
+                    document.getElementById("doi").value = data.result.paper.doi
+                    console.log(data.result.paper.date)
+                    document.getElementById("date").value = data.result.paper.date
+                    document.getElementById("title").value = data.result.paper.title
+                    document.getElementById("journal").value = data.result.paper.journal
+                    document.getElementById("authors").value = data.result.paper.authors
+                }
+            })
+        }
+
+    function query_crossref() {
+        $.post('/_query_crossref', {
+            paper_id: "{{paper['id']}}"
+            }).done(function(data) {
+                response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+                if (data.result.status === 'success') {
+                    document.getElementById("short_cit").value = data.result.paper.short_cit
+                    document.getElementById("doi").value = data.result.paper.doi
+                    console.log(data.result.paper.date)
+                    document.getElementById("date").value = data.result.paper.date
+                    document.getElementById("title").value = data.result.paper.title
+                    document.getElementById("journal").value = data.result.paper.journal
+                    document.getElementById("authors").value = data.result.paper.authors
+                }
+            })
+        }
+
+    function save_paper() {
+        $.post('/_save_paper', {
+            paper_id: "{{paper['id']}}",
+            short_cit: document.getElementById("short_cit").value,
+            doi: document.getElementById("doi").value,
+            date: document.getElementById("date").value,
+            title: document.getElementById("title").value,
+            journal: document.getElementById("journal").value,
+            authors: document.getElementById("authors").value,
+            tags: document.getElementById("tags").value,
+            self_assign: document.getElementById("assign_to_me").checked
+
+            }).done(function(data) {
+                response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+
+                if (data.result.status == 'success') {
+                    location.reload();
+                }
+            })
+        }
+
+</script>
+
+
+

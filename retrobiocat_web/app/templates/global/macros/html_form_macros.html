@@ -1,0 +1,31 @@
+{% macro select(name, id, options) %}
+    <div class="form-group">
+        <label for="{{ id }}" class="control-label">{{ name }}</label>
+        <select id="{{ id }}" type='select' class="form-control custom-select w-50">
+            {% for op in options %}
+                <option value="{{ op }}">{{ op }}</option>
+            {% endfor %}
+        </select>
+    </div>
+{% endmacro %}
+
+{% macro checkbox(name, id, checked='checked') %}
+    <div class="custom-control custom-checkbox">
+        <input class="custom-control-input" type="checkbox" id="{{ id }}" {{checked}}>
+        <label class="custom-control-label" for="{{ id }}">{{ name }}</label>
+    </div>
+{% endmacro %}
+
+{% macro number_inline(name, id, value_num) %}
+    <div class="form-inline">
+        <label for='{{ id }}' class="mx-2 my-1">{{ name }}</label>
+        <input type="number" id="{{ id }}" value="{{ value_num }}" class="form-control form-control-sm w-25 mx-2 my-1"/>
+    </div>
+{% endmacro %}
+
+{% macro text(name, id) %}
+    <div class="form-group">
+        <label for="{{ id }}" class="control-label">{{ name }}</label>
+        <input type="text" id="{{ id }}" value="" class="form-control"/>
+    </div>
+{% endmacro %}

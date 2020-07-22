@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% set active_page = "network_explorer" %}
+
+{% block content %}
+    {% from 'global/macros/form_macros.html' import number_field with context %}
+    {% from 'global/macros/form_macros.html' import target_smiles with context %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col"></div>
+            <div class="col">
+                <form id="main_form" method="POST" action="" novalidate>
+                    <div class="card card-form my-5" style="width: 32rem;">
+                        <div class="card-body" align="center">
+                            <h3 class="card-title">Network explorer</h3>
+                            <p> A short tutorial is available
+                                <a href="{{url_for('.static', filename='tutorial_pdfs/network_explorer_tutorial.pdf') }}" target="_blank"> here</a>
+                            </p>
+
+                                {{ form.hidden_tag() }}
+
+                                {{ target_smiles(form.target_smiles) }}
+                                {{ number_field(form.number_steps) }}
+                                {{ number_field(form.max_initial_nodes) }}
+
+                                <div class="form-group">
+                                    {{ form.submit(class="btn-lg btn-block btn-success") }}
+                                </div>
+
+                            <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#formOptions">
+                                Other options
+                            </button>
+
+                            <button type="button" class="btn btn-outline-warning" data-toggle="modal" data-target="#example_molecules">
+                                Example molecules
+                            </button>
+
+                            <div class="progress">
+                                <div class="progress-bar" id='progressbar'></div>
+                            </div>
+
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col"></div>
+        </div>
+    </div>
+
+
+    {% include 'network_explorer_form/modal_form_options.html' %}
+    {% include 'global/modals/modal_drawer.html' %}
+    {% include 'global/modals/modal_example_molecules.html' %}
+
+    <script>
+        function getStatus(taskID) {
+            $.get('network_explorer_status/' + taskID, {
+            }).done(function(response) {
+                const taskStatus = response.data.task_status;
+                const taskProgress = response.data.task_progress;
+                if (taskProgress === 'started') {
+                    document.getElementById("progressbar").style = "width: 50%"
+                    document.getElementById("progressbar").innerText = "Generating Network"
+                } else if (taskProgress === 'network_generated') {
+                    document.getElementById("progressbar").style = "width: 75%"
+                    document.getElementById("progressbar").innerText = "Scoring Network"
+                } else if (taskProgress === 'scores_calculated') {
+                    document.getElementById("progressbar").style = "width: 90%"
+                    document.getElementById("progressbar").innerText = "Visualising Network"
+                }
+                if (taskStatus === 'finished') {
+                    document.getElementById("progressbar").style = "width: 100%"
+                    document.getElementById("progressbar").innerText = "Done"
+                    let url = '/network_explorer/' + taskID + '/'
+                    location.assign(url);
+                    return false;
+                } else if (taskStatus === 'failed') {
+                    return false;
+                } else {
+                    setTimeout(function() {
+                        getStatus(response.data.task_id);
+                        }, 1000);
+                }
+            })
+        }
+
+        var task_id = '{{task_id}}'
+
+        if (task_id !== '') {
+            getStatus(task_id);
+            document.getElementById("progressbar").style = "width: 33%"
+            document.getElementById("progressbar").innerText = "Queuing"
+        }
+    </script>
+
+{% endblock %}

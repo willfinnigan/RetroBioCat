@@ -1,0 +1,81 @@
+{% macro number_field(field) %}
+    <div class="form-group">
+    {{ field.label(class="control-label") }}
+    {{ field(type='number', form="main_form", class="form-control w-25") }}
+    {% for error in field.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+    {% endfor %}
+    </div>
+{% endmacro %}
+
+{% macro number_inline(field) %}
+    <div class="form-inline">
+        {{ field.label(class="mx-2 my-1") }}
+        {{ field(type='number', form="main_form", class="form-control form-control-sm w-25 my-1") }}
+        {% for error in field.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </div>
+{% endmacro %}
+
+{% macro target_smiles(field) %}
+    <div class="form-group">
+        {{ field.label() }}
+        <div class="input-group">
+            {{ field(type="text", class="form-control", form="main_form", placeholder="eg CCCC=O")}}
+            <button class="btn btn-danger"
+            type="button"
+            data-toggle="modal" data-target="#drawer">
+            Draw
+        </button>
+        </div>
+        {% for error in field.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </div>
+{% endmacro %}
+
+
+{% macro checkbox(field) %}
+    <div class="custom-control custom-checkbox">
+        {{ field(type='checkbox', form="main_form", class="custom-control-input") }}
+        {{ field.label(class="custom-control-label") }}
+    </div>
+{% endmacro %}
+
+{% macro checkbox_checked(field) %}
+    <div class="custom-control custom-checkbox">
+        {{ field(type='checkbox', checked=True, form="main_form", class="custom-control-input") }}
+        {{ field.label(class="custom-control-label") }}
+    </div>
+{% endmacro %}
+
+{% macro select(field) %}
+    <div class="form-group">
+        {{ field.label() }}
+        {{ field(type='select', form="main_form", class="form-control custom-select w-50") }}
+    </div>
+{% endmacro %}
+
+{% macro sting_and_modal(field, placeholder_text, btn_colour, btn_text, btn_modal) %}
+    <div class="form-group">
+        {{ field.label() }}
+        <div class="input-group">
+            {{ field(type="text", form="main_form", class="form-control", placeholder=placeholder_text)}}
+            <button class="btn {{btn_colour}}"
+            type="button"
+            data-toggle="modal" data-target="#{{btn_modal}}">
+                {{ btn_text }}
+            </button>
+        </div>
+        {% for error in field.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </div>
+{% endmacro %}
+
+{% macro submit(field) %}
+<div class="form-group my-2">
+    {{ form.submit(class="btn-lg btn-block btn-success", form="main_form") }}
+</div>
+{% endmacro %}

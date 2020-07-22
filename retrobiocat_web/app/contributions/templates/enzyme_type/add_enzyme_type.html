@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% set active_page = "contributions_menu" %}
+
+{% macro text(field, text, placeholder_text, small_help) %}
+    <div class="form-group">
+        <label for="{{field.id}}">{{ text }}</label>
+        {{ field(form="main_form", class="form-control", placeholder=placeholder_text) }}
+        <small id="{{field.id}}_help" class="form-text text-muted">{{ small_help }}</small>
+        {% for error in field.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </div>
+{% endmacro %}
+
+{% block content %}
+
+    <div class="container">
+        <form id="main_form" method="POST">
+            <div class="row">
+                <div class="col-sm-7 mx-auto">
+                    <div class="card card-form my-5">
+                        <div class="card-body" align="center">
+                            <h3 class="card-title">Add a new enzyme type</h3>
+                            {{ form.hidden_tag() }}
+                            {{ text(form.enzyme_type, 'Enzyme type', 'Enter a type of enzyme', "") }}
+                            {{ text(form.description, 'Description', 'Optional - enter a description', "") }}
+                            {{ form.submit }}
+                            {% for message in get_flashed_messages() %}
+                                <div class="alert alert-success" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                            {% endfor %}
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}

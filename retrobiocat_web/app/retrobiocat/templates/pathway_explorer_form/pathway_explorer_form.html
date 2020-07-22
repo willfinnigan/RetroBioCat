@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% set active_page = "pathway_explorer" %}
+
+{% block content %}
+    {% from 'global/macros/form_macros.html' import number_field with context %}
+    {% from 'global/macros/form_macros.html' import target_smiles with context %}
+    {% from 'global/macros/form_macros.html' import number_inline with context %}
+
+    <div class="container">
+        <form id="main_form" method="POST" action="" novalidate>
+            <div class="row">
+                <div class="col-sm-7 mx-auto">
+                    <div class="card card-form my-5">
+                        <div class="card-body" align="center">
+                            <h3 class="card-title">Pathway explorer</h3>
+                            <p> A short tutorial is available
+                                <a href="{{url_for('.static', filename='tutorial_pdfs/pathway_explorer_tutorial.pdf') }}" target="_blank"> here</a>
+                            </p>
+
+                                    {{ form.hidden_tag() }}
+
+                                    {{ target_smiles(form.target_smiles) }}
+                                    {{ number_field(form.number_steps) }}
+                                    <div class="row my-2">
+                                        <div class="col-sm-2"></div>
+                                        <div class="col-sm-8">
+                                            {{ number_inline(form.weight_complexity) }}
+                                            {{ number_inline(form.weight_num_enzymes) }}
+                                            {{ number_inline(form.weight_starting) }}
+                                            {{ number_inline(form.weight_known_enzymes) }}
+                                            {{ number_inline(form.weight_diversity) }}
+                                        </div>
+                                        <div class="col-sm-2"></div>
+                                    </div>
+
+                                    <div class="row my-2"></div>
+
+                                    <div class="form-group">
+                                    {{ form.submit(class="btn-lg btn-block btn-success") }}
+                                    </div>
+
+                            <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#formOptions">
+                                Other options
+                            </button>
+
+                            <button type="button" class="btn btn-outline-warning" data-toggle="modal" data-target="#example_molecules">
+                                Example molecules
+                            </button>
+
+                            <div class="progress">
+                                <div class="progress-bar" id='progressbar'></div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {% include 'pathway_explorer_form/modal_form_options.html' %}
+    {% include 'global/modals/modal_drawer.html' %}
+    {% include 'global/modals/modal_example_molecules.html' %}
+
+    <script>
+        function getStatus(taskID) {
+            $.get('pathway_explorer_status/' + taskID, {
+            }).done(function(response) {
+                const taskStatus = response.data.task_status;
+                const taskProgress = response.data.task_progress;
+                if (taskProgress == 'started') {
+                    document.getElementById("progressbar").style = "width: 40%"
+                    document.getElementById("progressbar").innerText = "Generating Network"
+
+                } else if (taskProgress == 'network_generated') {
+                    document.getElementById("progressbar").style = "width: 60%"
+                    document.getElementById("progressbar").innerText = "Scoring Network"
+
+                } else if (taskProgress == 'network_scored') {
+                    document.getElementById("progressbar").style = "width: 80%"
+                    document.getElementById("progressbar").innerText = "Generating Pathways"
+
+                } else if (taskProgress == 'pathways_generated') {
+                    document.getElementById("progressbar").style = "width: 100%"
+                    document.getElementById("progressbar").innerText = "Done"
+
+                }
+
+                if (taskStatus === 'finished') {
+                    let url = '/pathway_explorer/' + taskID + '/'
+                    location.assign(url);
+                    return false;
+                } else if (taskStatus === 'failed') {
+                    return false;
+                } else {
+                    setTimeout(function() {
+                        getStatus(response.data.task_id);
+                        }, 2000);
+                }
+            })
+        }
+
+        var task_id = '{{task_id}}'
+        if (task_id != '') {
+            getStatus(task_id);
+            document.getElementById("progressbar").style = "width: 20%"
+            document.getElementById("progressbar").innerText = "Queuing"
+        }
+    </script>
+{% endblock %}

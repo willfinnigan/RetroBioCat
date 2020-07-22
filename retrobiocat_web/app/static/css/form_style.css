@@ -1,0 +1,55 @@
+body {
+  padding-top: 3.4rem;
+}
+
+#mynetwork {
+    width: 100%;
+    height:87vh;
+    background-color: white;
+    border: 1px solid lightgray;
+    position: relative;
+    float: left; }
+
+.form-group input {
+  border-radius: 2rem;
+}
+
+.progress {
+  margin: 2rem;
+}
+
+.input-group input {
+  border-radius: 2rem;
+}
+
+.form-inline input {
+  border-radius: 2rem;
+}
+
+.card-form {
+  border: 0;
+  border-radius: 1rem;
+  box-shadow: 0 0.5rem 1rem 0 rgba(0, 0, 0, 0.1);
+}
+
+.card-form .card-title {
+  margin-bottom: 2rem;
+  font-weight: 300;
+  font-size: 2rem;
+}
+
+.card-form .card-body {
+  padding: 2rem;
+}
+
+.options {
+  padding: 2rem;
+}
+
+
+
+
+
+
+
+

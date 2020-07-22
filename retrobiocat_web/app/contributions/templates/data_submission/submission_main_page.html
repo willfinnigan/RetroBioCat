@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% set active_page = "contributions_menu" %}
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-form my-5">
+                    <div class="card-body">
+                        <h3 class="card-title">{{paper['short_cit']}}</h3>
+                        <ul class="nav nav-tabs" id="tab_list" role="tablist">
+                          <li class="nav-item">
+                            <a class="nav-link active" id="check_and_save_tab" data-toggle="tab" href="#status" role="tab" aria-controls="status" aria-selected="true">Status</a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link" id="paper_tab" data-toggle="tab" href="#paper" role="tab" aria-controls="paper" aria-selected="false">Paper</a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link" id="sequences_tab" data-toggle="tab" href="#sequences" role="tab" aria-controls="sequences" aria-selected="false">Sequences</a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link" id="activity_tab" data-toggle="tab" href="#activity" role="tab" aria-controls="activity" aria-selected="false">Activity</a>
+                          </li>
+                        </ul>
+                        <div class="tab-content" id="myTabContent">
+                          <div class="tab-pane fade show active" id="status" role="tabpanel" aria-labelledby="status_tab">
+                              {% include '/data_submission/status_tab.html' %}
+                          </div>
+                          <div class="tab-pane fade" id="paper" role="tabpanel" aria-labelledby="paper_tab">
+                              {% include '/data_submission/paper_data.html' %}
+                          </div>
+                          <div class="tab-pane fade" id="sequences" role="tabpanel" aria-labelledby="sequences_tab">
+                              <div class="container-fluid">
+                                {% include '/tabulator_tables/sequences_table/sequences_table.html' %}
+                                <button id="add_enzyme_button" class="btn btn-success" data-toggle="modal" data-target="#add_new_enzyme_modal">Add Enzyme</button>
+                              </div>
+                          </div>
+                          <div class="tab-pane fade" id="activity" role="tabpanel" aria-labelledby="activity_tab">
+                              <div class="container-fluid">
+                                  {% include '/tabulator_tables/activity_table/activity_table.html' %}
+                              </div>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include '/data_submission/add_enzyme_modal.html' %}
+
+    <script src="{{url_for('.static', filename='js/response_alert.js')}}?v={{v}}" type="text/javascript"></script>
+
+
+{% endblock %}

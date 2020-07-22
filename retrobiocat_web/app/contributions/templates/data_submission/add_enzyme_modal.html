@@ -1,0 +1,105 @@
+<!-- Modal -->
+<div class="modal fade" id="add_new_enzyme_modal" tabindex="-1" role="dialog"
+     aria-labelledby="add_new_enzyme_modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="add_new_enzyme_modalLabel">Add enzyme</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+
+                <div class="row">
+                    <div class="card mx-5" style="width: 18rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">1. Select enzyme type</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">..of the enzyme you want to add</h6>
+                            <div class="form-group">
+                                <select id="new_enzyme_type" class="form-control custom-select w-75">
+                                    <option value=""></option>
+                                    {% for enz_type in enzyme_types %}
+                                        <option value="{{ enz_type }}">{{ enz_type }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mx-5" style="width: 18rem;">
+                        <div class="card-body">
+                            <h5 class="card-title">2. Either:</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">a) select an existing enzyme</h6>
+                            <div class="form-group">
+                                <select id="existing_enzyme" class="form-control custom-select w-75">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+                            <h6 class="card-subtitle mb-2 text-muted mt-5">b) create a new enzyme</h6>
+                            <div class="form-group">
+                                <label for='new_enzyme_name'>Name:</label>
+                                <input type="text" class="form-control" id="new_enzyme_name" placeholder="">
+                                <small class="form-text text-muted">Where possible, use an abbreviation of the organism name, followed by enzyme type. For example msCAR or AspRedAm</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+            <div id="add_enzyme_save_response"></div>
+
+            <div class="modal-footer">
+                <button type="button" onclick="clear_enzyme_type()" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" onclick="add_sequence()" class="btn btn-success" id="add_sequence">Add sequence
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function set_enzymes_select(arraySeq) {
+        var select = document.getElementById(select_id);
+        select.options.length = 1;
+        for (index in arraySeq) {
+            select.options[select.options.length] = new Option(arraySeq[index], index);
+        }
+    }
+
+    function get_names_of_type() {
+        $.post('/_sequences_of_type', {
+            enzyme_type: document.getElementById("new_enzyme_type").value,
+            }).done(function(data) {
+                set_select("existing_enzyme", data.result.sequences)
+            })
+        }
+
+    document.getElementById("new_enzyme_type").onchange = function() {
+        get_names_of_type()
+    }
+
+    function clear_enzyme_type() {
+        document.getElementById('new_enzyme_type').value=''
+    }
+
+    function add_sequence() {
+        $.post('/_add_new_enzymes', {
+            enzyme_type: document.getElementById("new_enzyme_type").value,
+            existing_name: document.getElementById("existing_enzyme").value,
+            new_name: document.getElementById("new_enzyme_name").value,
+            paper_id: "{{paper['id']}}"
+
+            }).done(function(data) {
+                response_msg(data.result.msg, data.result.status, data.result.issues, "add_enzyme_save_response")
+                if (data.result.status === 'success') {
+                    location.reload();
+                }
+
+            })
+        }
+
+
+</script>

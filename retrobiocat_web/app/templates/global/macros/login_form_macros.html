@@ -1,0 +1,35 @@
+{% macro text(field) %}
+    <div class="form-group">
+        {{ field.label() }}
+        <div class="input-group">
+            {{ field(type="text", class="form-control", form="main_form", **kwargs)|safe}}
+        </div>
+        {% for error in field.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </div>
+{% endmacro %}
+
+{% macro password(field) %}
+    <div class="form-group">
+        {{ field.label() }}
+        <div class="input-group">
+            {{ field(type="password", class="form-control", form="main_form", **kwargs)|safe}}
+        </div>
+        {% for error in field.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </div>
+{% endmacro %}
+
+{% macro email(field) %}
+    <div class="form-group">
+        {{ field.label() }}
+        <div class="input-group">
+            {{ field(type="email", class="form-control", form="main_form", **kwargs)|safe}}
+        </div>
+        {% for error in field.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </div>
+{% endmacro %}

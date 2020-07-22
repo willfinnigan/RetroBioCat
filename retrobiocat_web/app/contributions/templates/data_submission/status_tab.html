@@ -1,0 +1,65 @@
+
+
+<div class="container-fluid">
+    <div class="row mt-5">
+        <div class="col"></div>
+        <div class="col">
+
+            <h4><strong>Status: </strong><span id='status' style="color:{{status['status_colour']}}">{{status['status']}}</span></h4>
+
+            <div class="container">
+
+                <div class="pt-1">
+                    <h6>Paper metadata completion</h6>
+                    <div class="progress progress-bar_override">
+                        <div class="progress-bar bg-info" id="paper_progress" style="width: {{status['paper_progress']}}">{{status['paper_progress']}}</div>
+                    </div>
+                    <p class="small">{{status['paper_progress_text']}}</p>
+                </div>
+
+                <div class="pt-1">
+                    <h6>Sequence data completion</h6>
+                    <div class="progress  progress-bar_override">
+                        <div class="progress-bar bg-success" id="sequences_progress" style="width: {{status['sequences_progress']}};">{{status['sequences_progress']}}</div>
+                    </div>
+                    <p class="small">{{status['sequences_progress_text']}}</p>
+                </div>
+
+                <div class="pt-1">
+                    <h6>Activity data completion</h6>
+                    <div class="progress  progress-bar_override">
+                        <div class="progress-bar bg-danger" id="activity_progress" style="width: {{status['activity_progress']}};">{{status['activity_progress']}}</div>
+                    </div>
+                    <p class="small">{{status['activity_progress_text']}}</p>
+                </div>
+
+            </div>
+
+            <div class="custom-control custom-checkbox my-4">
+                <input class="custom-control-input" type="checkbox" id="reviewed" {{status['review_checked']}} {{status['review_disabled']}}>
+                <label class="custom-control-label" for="reviewed">Reviewed</label>
+                <small class="form-text text-muted">Checked when data has been reviewed by a 'super contributor' or 'enzyme champion'</small>
+            </div>
+
+        </div>
+        <div class="col"></div>
+    </div>
+</div>
+
+<script>
+    document.getElementById("reviewed").onchange = function(){
+        update_reviewed()
+    };
+
+    function update_reviewed() {
+        $.post('/_review_paper', {
+            paper_id: "{{paper['id']}}",
+            reviewed: document.getElementById("reviewed").checked,
+
+            }).done(function(data) {
+                location.reload();
+            })
+        }
+
+</script>
+

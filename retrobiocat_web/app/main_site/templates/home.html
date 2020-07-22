@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% set active_page = "home" %}
+
+{% block content %}
+    <style>
+        .footer {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      /* Set the fixed height of the footer here */
+      height: 30px;
+      background: #F37A1D;
+     border-top: 3px solid #F37A1D;
+    }
+
+    </style>
+
+    <div class="jumbotron">
+        <div class="container">
+            <h1 class="display-3">RetroBioCat</h1>
+            <p>A collection of tools for automated biocatalytic cascade design</p>
+            <p>Version:  v{{ rbc_version }}</p>
+            <p>Any feedback is very welcome.  Please email william.finnigan@manchester.ac.uk</p>
+            <p><a class="btn btn-primary btn-lg" href="{{ url_for('main_site.automated_cascade_design') }}" role="button">Learn more »</a></p>
+            <p><a href="{{url_for('main_site.cookie_policy')}}" target="_blank">Privacy and cookie policy</a></p>
+            <p><a href="{{url_for('main_site.terms')}}" target="_blank">Terms and conditions</a></p>
+        </div>
+    </div>
+
+
+{% endblock %}
+

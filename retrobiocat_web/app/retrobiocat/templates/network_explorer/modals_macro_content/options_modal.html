@@ -1,0 +1,74 @@
+<div class="container">
+
+    <div class="form-group">
+        <label >Substrate colours</label>
+        <select id="substrate_colour_select" class="form-control custom-select w-50">
+            <option value="Starting material">Starting material</option>
+            <option value="Relative complexity">Relative complexity</option>
+            <option value="Off">Off</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label >Reaction colours</label>
+        <select id="reaction_colour_select" class="form-control custom-select w-50">
+            <option value="Substrate specificity">Substrate specificity</option>
+            <option value="Complexity change">Complexity change</option>
+            <option value="Off">Off</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label >Edge colours</label>
+        <select id="edge_colour_select" class="form-control custom-select w-50">
+            <option value="Off">Off</option>
+            <option value="Complexity change">Complexity change</option>
+        </select>
+    </div>
+
+    <div class="custom-control custom-switch">
+        <input type="checkbox" id="physics_switch" class="custom-control-input" checked>
+        <label class='custom-control-label' for="physics_switch">Graph physics:</label>
+    </div>
+
+</div>
+
+<script>
+
+    document.getElementById("edge_colour_select").onchange = function() {
+        set_network_options(data)
+    }
+    document.getElementById("reaction_colour_select").onchange = function() {
+        set_network_options(data)
+    }
+    document.getElementById("substrate_colour_select").onchange = function() {
+        set_network_options(data)
+    }
+
+    function set_network_options(network_data) {
+        $.post('/_change_network_options',
+            {
+                substrate_colours: document.getElementById("substrate_colour_select").value,
+                reaction_colours: document.getElementById("reaction_colour_select").value,
+                edge_colours: document.getElementById("edge_colour_select").value,
+                task_id: window.task_id
+            }
+            ).done(function(response_data) {
+                let new_nodes = response_data.result.nodes
+                let new_edges = response_data.result.edges
+                addNodes(network_data, new_nodes, new_edges)
+            })
+        }
+
+    document.getElementById("physics_switch").onclick = function()
+        {
+            console.log('Physics changed')
+            var checkBox = document.getElementById("physics_switch");
+            if (checkBox.checked == true) {
+                network.setOptions({physics: {enabled:true}, "edges": {"smooth": {"forceDirection": "none"}}})
+            } else {
+                network.setOptions({physics: {enabled:false}, "edges": {"smooth": false}})
+            }
+    }
+
+</script>

@@ -1,0 +1,67 @@
+<h3 class="card-title">Create an entry for a new paper in the database</h3>
+
+{% macro text(field, text, placeholder_text, small_help) %}
+    <div class="form-group">
+        <label for="{{field.id}}">{{ text }}</label>
+        {{ field(form="form", class="form-control", placeholder=placeholder_text) }}
+        <small id="{{field.id}}_help" class="form-text text-muted">{{ small_help }}</small>
+        {% for error in field.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </div>
+{% endmacro %}
+
+{% macro select(field, text) %}
+    <div class="form-group">
+        <label for="{{field.id}}">{{ text }}</label>
+        {{ field(type='select', form="form", class="form-control custom-select w-50") }}
+        {% for error in field.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </div>
+{% endmacro %}
+
+{% macro checkbox(field, small_help) %}
+    <div class="custom-control custom-checkbox">
+        {{ field(type='checkbox', form="form", class="custom-control-input") }}
+        {{ field.label(class="custom-control-label") }}
+        <small id="{{field.id}}_help" class="form-text text-muted">{{ small_help }}</small>
+    </div>
+{% endmacro %}
+
+{% macro date(field, text, small_help) %}
+    <div class="form-group">
+        <label for="{{field.id}}">{{text}}</label>
+        {{ field(type='date', form="form", class="form-control") }}
+        <small id="{{field.id}}_help" class="form-text text-muted">{{ small_help }}</small>
+    </div>
+{% endmacro %}
+
+<form id="form" method="POST">
+    {{ form.hidden_tag() }}
+    {{ text(form.short_cit, 'Short citation', '', "Eg.  First author et al, Journal, Year") }}
+    {{ text(form.doi, 'DOI', '', "For example '10.1002/cctc.201601249'") }}
+    {{ text(form.title, 'Title', '', "") }}
+    {{ text(form.authors, 'Authors', '', "Enter as name_1, name_2, ect..") }}
+    {{ date(form.date, "Publication date", "") }}
+    {{ text(form.journal, 'Journal', '', "") }}
+
+    {% if can_self_assign == True %}
+        <div class="custom-control custom-checkbox">
+            {{ form.self_assign(type='checkbox', form="form", class="custom-control-input", checked=True) }}
+            {{ form.self_assign.label(class="custom-control-label") }}
+            <small id="self_assign_help" class="form-text text-muted">Assign to yourself (checked), or leave open for somebody else (unchecked)</small>
+        </div>
+    {% else %}
+        <div class="custom-control custom-checkbox">
+            {{ form.self_assign(type='checkbox', form="form", class="custom-control-input", disabled=True) }}
+            {{ form.self_assign.label(class="custom-control-label") }}
+            <small id="self_assign_help" class="form-text text-muted">Can not self assign - too many unfinished papers</small>
+        </div>
+    {% endif %}
+
+    {{ text(form.tags, 'Tags', '', "Tag1, Tag2 ect..  Ideal tags are enzyme types, for example CAR, TA") }}
+    <div class="form-group my-2">
+        {{ form.submit(class="btn btn-success", form="form") }}
+    </div>
+</form>

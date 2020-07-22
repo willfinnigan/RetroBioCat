@@ -1,0 +1,15 @@
+<li id='logged_in_menu' class="nav-item dropdown ml-auto">
+    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> {{ current_user.first_name }} </a>
+    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
+        <a class="dropdown-item" href="{{url_for('retrobiocat.my_network_saves')}}"> Saved networks </a>
+        {% if login_mode == True %}
+            <a class="dropdown-item" href="{{ url_for_security('change_password') }}"> Change password </a>
+        {% endif %}
+        <a class="dropdown-item" href="{{ url_for('main_site.user_profile') }}"> User profile </a>
+        <a class="dropdown-item" href="/logout"> Logout </a>
+        {% if current_user.has_role('admin') %}
+            <a class="dropdown-item" href="/admin" target="_blank">Admin</a>
+        {% endif %}
+    </div>
+</li>
+

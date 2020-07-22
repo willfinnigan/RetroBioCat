@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+{% set active_page = "reactions_menu" %}
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col"></div>
+            <div class="col">
+                <div class="card card-form my-5" style="width: 64rem;">
+                    <div class="card-body" align="center">
+                        <h3 class="card-title">Reactions</h3>
+
+                        <label class="siimple-label">RetroBioCat Reactions</label>
+                        <select id="reaction_select" class="siimple-select">
+                            <option value="Empty template">Empty template</option>
+                            {% for reaction in reactions %}
+                                <option value="{{reaction}}">{{reaction}}</option>
+                            {% endfor %}
+                        </select>
+
+                        <div align="center">
+                            <div class="siimple-field ">
+                                <textarea id="rule_yaml" name="rule_yaml" style="margin: 0px; width: 600px; height: 250px;">{{empty_template}}</textarea>
+                            </div>
+
+                            <div class="siimple-field ">
+                            <input id="test_yaml" class="siimple-btn siimple-btn--success siimple-btn--small" type="button" value="Load Changes">
+                            </div>
+
+                            <div>
+                            <label id='test_result' class="siimple-label siimple--color-primary"></label>
+                            </div>
+
+                            <div id="reaction_images">
+                            </div>
+                        </div>
+
+                        {% for message in get_flashed_messages() %}
+                            <div class="alert alert-success" role="alert">
+                                {{ message }}
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        {% endfor %}
+
+
+                        <div id='smile_entry_div' class="siimple-field">
+                            <label class="siimple-label">Test product SMILES: </label>
+                            <input id='product_smiles' type="text" class="siimple-input">
+                            <button class="siimple-btn siimple-btn--error siimple-btn--small"
+                                    type="button" id="modal-open-draw_product">
+                                Draw
+                            </button>
+                            <div class="siimple-field ">
+                                <label class="siimple-label" for="combine_enantiomers">Combine enantiomers</label>
+                                <input class="siimple-checkbox" id="combine_enantiomers" name="combine_enantiomers" type="checkbox" value="y">
+                            </div>
+                            <button class="siimple-btn siimple-btn--success siimple-btn--small" type="button" id="test_product">
+                                Test
+                            </button>
+                        </div>
+
+
+                        <div id="error_message" align="center"></div>
+                        <div id="network_div" align="center"></div>
+
+                        <div class="siimple-modal siimple-modal--medium" id="modal-draw_product" style="display:none;">
+                            <div class="siimple-modal-content">
+                                <div class="siimple-modal-header">
+                                    <div class="siimple-modal-header-title">Draw product</div>
+                                    <div class="siimple-modal-header-close" id="modal-close-draw_product"></div>
+                                </div>
+                                <div class="siimple-modal-body">
+                                    <div id="jsme_container_product"></div>
+                                    <button class="siimple-btn siimple-btn--success siimple-btn--fluid" type="button" id="get_smiles_product">
+                                        Get SMILES
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="siimple-content siimple-content--extra-small" align="center">
+                            <div class="siimple--py-3">
+                                <div class="siimple-h2 siimple--text-normal siimple--mb-1" align="center">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col"></div>
+        </div>
+    </div>
+
+    <script>
+
+        function get_rule_yaml() {
+            $.post($SCRIPT_ROOT + '/_get_rule_yaml', {
+                    selected_rule: document.getElementById("reaction_select").value,
+
+                    }).done(function(data) {
+                        document.getElementById("rule_yaml").value = data.result.reaction_yaml;
+                        document.getElementById("test_result").innerHTML = '';
+                        test_rule_yaml()
+                    })
+        }
+
+        function display_rxn_imgs(list_rxn_imgs) {
+
+            var rxn_img;
+            var imgDiv = document.getElementById("reaction_images");
+            imgDiv.innerHTML = ''
+
+            for (rxn_img of list_rxn_imgs) {
+                var newDiv = document.createElement("div");
+                newDiv.innerHTML = rxn_img
+                imgDiv.appendChild(newDiv);
+            }
+
+            show_smiles_entry()
+        }
+
+        function test_rule_yaml() {
+            $.post($SCRIPT_ROOT + '/_test_yaml', {
+                    yaml: document.getElementById("rule_yaml").value,
+
+
+                    }).done(function(data) {
+                        if (data.result.status == 'pass') {
+                            document.getElementById("test_result").className = "siimple-label siimple--color-success"
+                            list_imgs = data.result.list_imgs
+                            display_rxn_imgs(list_imgs)
+
+
+                        } else if (data.result.status == 'fail') {
+                            document.getElementById("test_result").className = "siimple-label siimple--color-warning"
+                        }
+                        document.getElementById("test_result").innerHTML = data.result.msg;
+                    })
+        }
+
+        document.getElementById("reaction_select").onchange = function()
+        {
+            hide_smiles_entry()
+            document.getElementById("reaction_images").innerHTML='';
+            document.getElementById("network_div").innerHTML = '';
+            get_rule_yaml()
+        }
+
+        document.getElementById("test_yaml").onclick = function()
+        {
+            test_rule_yaml()
+        }
+
+        function jsmeOnLoad() {
+            jsmeApplet_substrate = new JSApplet.JSME("jsme_container_substrate", "380px", "340px");
+            jsmeApplet_product = new JSApplet.JSME("jsme_container_product", "380px", "340px");
+            }
+
+        document.getElementById("modal-open-draw_product").addEventListener("click", function () {
+            document.getElementById("modal-draw_product").style.display = "";
+        });
+        document.getElementById("modal-close-draw_product").addEventListener("click", function () {
+            document.getElementById("modal-draw_product").style.display = "none";
+        });
+        document.getElementById("get_smiles_product").addEventListener("click", function () {
+            document.getElementById("modal-draw_product").style.display = "none";
+            document.getElementById("product_smiles").value = jsmeApplet_product.smiles()
+        });
+
+        function hide_smiles_entry() {
+            document.getElementById("smile_entry_div").style.display = "none";
+            var networkDiv = document.getElementById("network_div");
+            networkDiv.className = ""
+            networkDiv.innerHTML = ''
+            document.getElementById("product_smiles").value = ''
+        }
+
+        function show_smiles_entry() {
+            document.getElementById("smile_entry_div").style.display = "";
+            drawGraph()
+        }
+
+        hide_smiles_entry()
+
+
+    </script>
+
+
+    <script type="text/javascript">
+        // initialize global variables.
+        var edges;
+        var nodes;
+        var network;
+        var container;
+        var options, data;
+
+
+        function drawGraph(nodes, edges) {
+            var networkDiv = document.getElementById("network_div");
+            networkDiv.className = ""
+            networkDiv.innerHTML = ''
+            var container = document.createElement("div");
+
+            container.style.width = "800px";
+            container.style.height = "400px";
+            container.style.border = "1px solid lightgray";
+
+            networkDiv.appendChild(container);
+
+            // adding nodes and edges to the graph
+            data = {nodes: nodes, edges: edges};
+            var options = {};
+
+            network = new vis.Network(container, data, options);
+
+            return network;
+        }
+
+            document.getElementById("test_product").onclick = function()
+        {
+
+        }
+
+            function test_product_network() {
+            $.post($SCRIPT_ROOT + '/_test_product_against_rules', {
+                target_smiles: document.getElementById("product_smiles").value,
+                yaml: document.getElementById("rule_yaml").value,
+                combine_enantiomers: document.getElementById("combine_enantiomers").checked
+
+            }).done(function(data) {
+                if (data.result.status == 'success') {
+                    let new_nodes = data.result.nodes
+                    let new_edges = data.result.edges
+                    drawGraph(new_nodes, new_edges)
+                } else if (data.result.status == 'fail') {
+                    var networkDiv = document.getElementById("network_div");
+                    networkDiv.innerHTML = 'Failed to generate network'
+                    networkDiv.className = "siimple-label siimple--color-warning"
+                }
+            })
+        }
+
+        document.getElementById("test_product").onclick = function()
+        {
+            test_product_network()
+        }
+
+    </script>
+
+{% endblock %}

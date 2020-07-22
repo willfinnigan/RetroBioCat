@@ -1,0 +1,62 @@
+{% from 'global/macros/html_form_macros.html' import select with context %}
+{% from 'global/macros/html_form_macros.html' import checkbox with context %}
+
+<div class="container">
+
+    {{ checkbox('Graph physics', 'physics_switch') }}
+
+    {{ select('Substrate colours',
+              'substrate_colour_select',
+               ['Starting material', 'Relative complexity', 'Off']) }}
+
+    {{ select('Reaction colours',
+              'reaction_colour_select',
+               ['Substrate specificity', 'Complexity change', 'Off']) }}
+
+    {{ select('Edge colours',
+              'edge_colour_select',
+               ['Off', 'Complexity change']) }}
+
+</div>
+
+<script>
+    document.getElementById("substrate_colour_select").onchange = function() {
+        set_pathway_options(data)
+    }
+
+    document.getElementById("reaction_colour_select").onchange = function() {
+        set_pathway_options(data)
+    }
+
+    document.getElementById("edge_colour_select").onchange = function() {
+        set_pathway_options(data)
+    }
+
+    function set_pathway_options(data) {
+        $.post('/_change_pathway_options', {
+            substrate_colours: document.getElementById("substrate_colour_select").value,
+            reaction_colours: document.getElementById("reaction_colour_select").value,
+            pathway_num: window.pathway_num-1,
+            varient_num: window.pathway_varient-1,
+            task_id: window.task_id,
+            edge_colours: document.getElementById("edge_colour_select").value,
+
+        }).done(function(response_data) {
+            let new_nodes = response_data.result.nodes
+            let new_edges = response_data.result.edges
+            addNodes(data, new_nodes, new_edges)
+        })
+    }
+
+    document.getElementById("physics_switch").onclick = function()
+    {
+        console.log('Physics changed')
+        var checkBox = document.getElementById("physics_switch");
+        if (checkBox.checked == true) {
+            network.setOptions({physics: {enabled:true}, "edges": {"smooth": {"forceDirection": "none"}}})
+        } else {
+            network.setOptions({physics: {enabled:false}, "edges": {"smooth": false}})
+        }
+    }
+
+</script>

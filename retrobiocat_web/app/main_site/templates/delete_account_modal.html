@@ -1,0 +1,45 @@
+<!-- Main modal -->
+<div class="modal fade" id="delete_modal" tabindex="-1" role="dialog" aria-labelledby="delete_modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="delete_modalLabel">Add custom reaction</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div class="container" id="delete_container">
+                    <p> Are you sure you want to delete your account? <br> <br></p>
+                    <p> Please enter the word "DELETE" to proceed</p>
+                    <input id="delete_test" type="text" class="" value="">
+                    <button type="button" onclick="delete_account()" data-toggle="collapse" data-target="#collapseSubstrate" class="btn btn-danger">
+                        Delete
+                    </button>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function delete_account() {
+        console.log('Delete account')
+        if (document.getElementById("delete_test").value === 'DELETE') {
+
+            $.post(Flask.url_for("main_site.delete_account"), {
+                delete: "" + document.getElementById("delete_test").value
+            }).done(function(response_data) {
+                if (response_data.result === 'done' ) {
+                    location.assign(Flask.url_for("main_site.user_profile"));
+                }
+            })
+        }
+    }
+</script>

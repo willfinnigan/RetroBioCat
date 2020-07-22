@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% set active_page = "experimental_menu" %}
+
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col"></div>
+            <div class="col-8">
+                <div class="card card-form my-5">
+                    <div class="card-body">
+                        <h3 class="card-title text-center">Database completion</h3>
+                        <div class="row mt-5">
+                            <div class="col"></div>
+                            <div class="col-8">
+                                <div class="container">
+
+                                {% for enz_type in enzyme_types_dict %}
+                                    <div class="my-2">
+                                        <h6 class="mt-3">{{ enz_type }}</h6>
+                                        <div class="progress progress-bar_override">
+                                            <div class="progress-bar {{enzyme_types_dict[enz_type][2]}}" id="paper_progress"
+                                                 style="width: {{enzyme_types_dict[enz_type][0]}}">
+                                                {{enzyme_types_dict[enz_type][1]}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+
+                                </div>
+                            </div>
+                            <div class="col"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col"></div>
+        </div>
+    </div>
+
+{% endblock %}

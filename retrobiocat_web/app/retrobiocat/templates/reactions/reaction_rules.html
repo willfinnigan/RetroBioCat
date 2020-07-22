@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% set active_page = "more_info" %}
+
+{% block content %}
+<div class="container" align="center">
+    <h2 class="my-2" align="center">
+        Reaction rules
+    </h2>
+    <p align="center">
+        Reaction rules for the transformations currently implemented in Retrobiocat.
+    </p>
+
+    <div>
+        {% for type in rule_types %}
+            <h2>
+                {{type}}
+            </h2>
+
+            <div>
+            {% for rule in rule_types[type] %}
+                <h6>{{rule}}</h6>
+                <p>
+                    {% for enz in reaction_enzymes[rule] %}
+                        {{enz}} <br>
+                    {% endfor %}
+                </p>
+
+                {% for image in rule_images[rule] %}
+                    <div>
+                        {{image|safe}}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+            </div>
+
+        {% endfor %}
+    </div>
+
+</div>
+
+
+{% endblock %}

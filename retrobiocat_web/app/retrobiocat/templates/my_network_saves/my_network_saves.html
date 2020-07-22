@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% set active_page = "logged-in" %}
+
+{% block content %}
+
+    <div class="lock_scroll">
+        <div class="container max_height table_scroll">
+            <table class="table table-bordered table-sm table-hover">
+              <thead class="thead-light">
+                <tr>
+                    {% for heading in headings %}
+                        <th class="sticky_head" >{{heading}}</th>
+                    {% endfor %}
+                    <th class="sticky_head" >Delete</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {% for save in row_saves %}
+                    <tr id="{{save['UUID']}}">
+                        {% for key in headings %}
+                            <td>
+                                {% if key == 'Name' %}
+                                    <a href="{{save['Link']}}">{{save[key]}}</a>
+                                {% else %}
+                                    {{save[key]|safe}}
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                        <td>
+                            <button type="button" onclick="delete_save('{{save['UUID']}}')" class="btn btn-outline-danger btn-sm">Delete</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+
+              </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+
+        function delete_save(uuid) {
+            $.post(Flask.url_for("retrobiocat.delete_network_save"), {
+                    save_id: uuid,
+                }).done(function(response_data) {
+                    var element = document.getElementById(uuid);
+                    element.parentNode.removeChild(element);
+                });
+            }
+
+
+    </script>
+
+{% endblock %}
+
+

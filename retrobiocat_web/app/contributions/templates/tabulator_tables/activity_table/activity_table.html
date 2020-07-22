@@ -1,0 +1,148 @@
+<div id="table"></div>
+<div class="my-4"></div>
+
+<div id="activity_save_response"></div>
+<button class="btn btn-warning" id="add_row">Add row</button>
+<button class="btn btn-info" id="duplicate_rows">Duplicate rows</button>
+
+<button class="btn btn-success" onclick="save()" id="test_and_save">Save</button>
+<p id="please_wait" hidden>Saving, please wait..</p>
+
+<script>
+
+    var columns = [
+
+        {'title':"ID", 'field':"_id", visible:false, headerSort:false},
+
+        {formatter:"rowSelection", titleFormatter:"rowSelection", width:30, hozAlign:"center", headerSort:false, cellClick:function(e, cell){
+            cell.getRow().toggleSelect();
+        }},
+
+        {'title': "N", 'field':'n', formatter:'rownum', width:30, headerSort:false, align:"center"},
+
+
+        {'title': "Reaction", 'field': "reaction", 'width':200,
+            'editor': "autocomplete",
+            'headerSort': false,
+            'editorParams': {'values': {{reactions|safe}}, 'freetext': 'true', 'showListOnEmpty': true}},
+
+        {'title': "Enzyme name", 'field': "enzyme_name", 'width':120,
+            'editor': "autocomplete",
+            'headerSort': false,
+            'editorParams': {'values': {{enzyme_names|safe}}, 'showListOnEmpty': true}},
+
+        {'title': "Substrate 1 SMILES", 'field': "substrate_1_smiles", 'width':150, 'editor': "input", 'headerSort': false},
+
+        {'title': "Substrate 2 SMILES", 'field': "substrate_2_smiles", 'width':150, 'editor': "input", 'headerSort': false},
+
+        {'title': "Product 1 SMILES", 'field': "product_1_smiles", 'width':150, 'editor': "input", 'headerSort': false},
+
+        {'title': "Temp.", 'field': "temperature", 'width':75, 'editor': "input", 'headerSort': false},
+
+        {'title': "pH", 'field': "ph", 'width':50, 'editor': "number", 'headerSort': false, editorParams:{min:1, max:12}},
+
+        {'title': "Solvent", 'field': "solvent", 'width':75, 'editor': "input", 'headerSort': false},
+
+        {'title': "Other conditions", 'field': "other_conditions", 'width':150, 'editor': "textarea", 'headerSort': false},
+
+        {'title': "Notes", 'field': "notes", 'width':150, 'editor': "textarea", 'headerSort': false},
+
+        {'title': "Reaction vol.", 'field': "reaction_vol", 'width':75, 'editor': "input", 'headerSort': false},
+
+        {'title': "Formulation", 'field': "formulation", 'width':100, 'editor': "input", 'headerSort': false},
+
+        {'title': "Biocatalyst conc.", 'field': "biocat_conc", 'width':100, 'editor': "input", 'headerSort': false},
+
+        {'title': "Kcat (min-1)", 'field': "kcat", 'width':100, 'editor': "number", 'headerSort': false},
+
+        {'title': "Km (mM)", 'field': "km", 'width':100, 'editor': "number", 'headerSort': false},
+
+        {'title': "MW (Da)", 'field': "mw", 'width':100, 'editor': "number", 'headerSort': false, editorParams:{min:1000, max:500000}},
+
+        {'title': "Substrate 1 conc. (mM)", 'field': "substrate_1_conc", 'width':100, 'editor': "number", 'headerSort': false},
+
+        {'title': "Substrate 2 conc. (mM)", 'field': "substrate_2_conc", 'width':100, 'editor': "number", 'headerSort': false},
+
+        {'title': "Specific activity (U/mg)", 'field': "specific_activity", 'width':100, 'editor': "number", 'headerSort': false},
+
+        {'title': "Conversion (%)", 'field': "conversion", 'width':100, 'editor': "number", 'headerSort': false, editorParams:{min:0, max:100}},
+
+        {'title': "Conversion time (hrs)", 'field': "conversion_time", 'width':100, 'editor': "number", 'headerSort': false},
+
+        {'title': "Selectivity", 'field': "selectivity", 'width':100, 'editor': "input", 'headerSort': false},
+
+        {'title': "Categorical", 'field': "categorical", 'width':100,
+            'editor': "autocomplete",
+            'headerSort': false,
+            'editorParams': {'values': ['High', 'Medium', 'Low', 'None'], 'freetext': 'true', 'showListOnEmpty': true}},
+
+        {'title': "Binary", 'field': "binary", 'width':100,
+            'editor': "autocomplete",
+            'headerSort': false,
+            'editorParams': {'values': [1, 0], 'freetext': 'true', 'showListOnEmpty': true}},
+
+        {'title': "D", 'field':'d', formatter:"buttonCross", width:30, align:"center", headerSort:false,
+            cellClick:function(e, cell){cell.getRow().delete()}},
+
+    ]
+
+    var tabledata = {{activity_data|safe}};
+
+    var table = new Tabulator("#table", {
+        data:tabledata, //assign data to table
+        maxHeight:"60vh",
+        layout:"fitColumns",
+        addRowPos:"bottom",
+        columns:columns,
+    });
+
+
+    //Add row on "Add Row" button click
+    $("#add_row").click(function(){
+        table.addRow({});
+    });
+
+        //Add row on "Add Row" button click
+    $("#duplicate_rows").click(function(){
+        var selectedRows = table.getSelectedData()
+        selectedRows.forEach(function (item, index) {
+            var new_data = JSON.parse(JSON.stringify(item));
+            new_data._id = ''
+            console.log(new_data)
+            table.addRow(new_data);
+        })
+    });
+
+    function save() {
+        var data = table.getData()
+        document.getElementById("please_wait").hidden = false
+        $.post('/_save_activity_data', {
+            data: JSON.stringify(data),
+            paper_id: "{{paper['id']}}"
+
+            }).done(function(data) {
+                document.getElementById("please_wait").hidden = true
+                response_msg(data.result.msg, data.result.status, data.result.issues, "activity_save_response")
+                if (data.result.status === 'success') {
+                    location.reload();
+                }
+
+            })
+        }
+
+    $(document).ready(function() {
+        if (location.hash) {
+            $("a[href='" + location.hash + "']").tab("show");
+        }
+        $(document.body).on("click", "a[data-toggle='tab']", function(event) {
+            location.hash = this.getAttribute("href");
+        });
+    });
+
+    $(window).on("popstate", function() {
+        var anchor = location.hash || $("a[data-toggle='tab']").first().attr("href");
+        $("a[href='" + anchor + "']").tab("show");
+    });
+
+
+</script>

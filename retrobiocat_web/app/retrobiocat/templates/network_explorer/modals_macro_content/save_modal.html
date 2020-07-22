@@ -1,0 +1,74 @@
+{% from 'global/macros/html_form_macros.html' import checkbox with context %}
+
+<div class="container">
+
+    <div class="form-group">
+        <label for="Name" class="control-label">Name</label>
+        <input type="text" id="Name" value="{{ save_name }}" class="form-control"/>
+    </div>
+
+    <div class="form-group">
+        <label for="Description" class="control-label">Description</label>
+        <input type="text" id="Description" value="" class="form-control"/>
+    </div>
+
+    <div class="form-group">
+        <label for="unique_id" class="control-label">UUID</label>
+        <input type="text" id="unique_id" value="{{save_id}}" class="form-control" readonly/>
+    </div>
+
+    {{ checkbox('Public', 'Public') }}
+
+    <button type="button" id="save_network" class="btn btn-primary">Save</button>
+
+    <h5 class="text-center"> Save link: (copy link to share)</h5>
+    <div class="dropdown-divider"></div>
+    <div id="list_saves"></div>
+</div>
+
+
+<script>
+
+    function add_save_link(name, link, uuid) {
+        var a = document.createElement("a");
+
+        var linkText = document.createTextNode(name);
+        a.appendChild(linkText);
+        a.href = link;
+        a.className = "dropdown-item";
+        document.getElementById("list_saves").appendChild(a);
+    }
+
+    function load_save_links(save_links) {
+        document.getElementById("list_saves").innerHTML = "";
+        for (var i = 0; i < save_links.length; i++) {
+            var name = save_links[i][0] +
+                ' : ' + save_links[i][1]
+            var link = '/network_explorer/' + save_links[i][2] + '/'
+            add_save_link(name, link, save_links[i][2])
+        }
+    }
+
+    load_save_links({{save_links|safe}})
+
+    document.getElementById("save_network").onclick = function() {
+        save_network(data)
+    }
+
+    function save_network() {
+        $.post('/_save_network',
+            {
+                task_id: window.task_id,
+                unique_id: document.getElementById("unique_id").value,
+                name: document.getElementById("Name").value,
+                description: document.getElementById("Description").value,
+                public: document.getElementById("Public").value,
+            }
+            ).done(function(response_data) {
+                console.log('Network saved')
+                var save_links = response_data.result.save_links
+                load_save_links(save_links)
+            })
+        }
+
+</script>

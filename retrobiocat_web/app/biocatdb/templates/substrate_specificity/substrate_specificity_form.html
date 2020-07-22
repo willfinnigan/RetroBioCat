@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% set active_page = "biocatdb" %}
+
+{% from 'global/macros/form_macros.html' import sting_and_modal with context %}
+{% from 'global/macros/form_macros.html' import select with context %}
+{% from 'global/macros/form_macros.html' import number_inline with context %}
+{% from 'global/macros/form_macros.html' import checkbox with context %}
+{% from 'global/macros/form_macros.html' import submit with context %}
+
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-7 mx-auto">
+                <div class="card card-form my-5">
+                    <div class="card-body" align="center">
+                        <h3 class="card-title">Substrate specificity search</h3>
+
+                        <div class="progress">
+                            <div class="progress-bar" id='progressbar'></div>
+                        </div>
+
+                        <p>The best enzyme(s) for each product will be shown</p>
+                        <form method="POST" id="main_form" action="" novalidate>
+                            {{ form.hidden_tag() }}
+                            {{sting_and_modal(form.enzymes, 'eg CAR', 'btn-warning', 'Enzymes', 'enzyme_modal')}}
+                            {{sting_and_modal(form.reactions, 'eg Carboxylic acid reduction', 'btn-info', 'Reactions', 'reaction_modal')}}
+                            {{sting_and_modal(form.target_smiles, 'Optional (eg CCCC=O)', 'btn-danger', 'Draw', 'drawer')}}
+                            {{select(form.data_level)}}
+                            {{checkbox(form.auto_data)}}
+                            {{number_inline(form.num_choices)}}
+                            {{number_inline(form.max_hits)}}
+                            {{number_inline(form.similarity)}}
+                            {{submit(form.submit) }}
+                        </form>
+
+                        <p class="siimple-p">
+                            To contribute data to this database, please download
+                            <a href="{{url_for('.static', filename='Template_for_substrate_specificity_data_V2.xltx') }}"> this template, </a>
+                            complete and email to william.finnigan@manchester.ac.uk
+                        </p>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'substrate_specificity/specificity_form_modals.html' %}
+    {% include 'global/modals/modal_drawer.html' %}
+
+    <script>
+        function getStatus(taskID) {
+            $.get('substrate_specificity_form_status/' + taskID, {
+            }).done(function(response) {
+                const taskStatus = response.data.task_status;
+                const taskProgress = response.data.task_progress;
+                if (taskProgress === 'started') {
+                    document.getElementById("progressbar").style = "width: 50%"
+                    document.getElementById("progressbar").innerText = "Gathering data"
+                } else if (taskProgress === 'network_generated') {
+                    document.getElementById("progressbar").style = "width: 75%"
+                    document.getElementById("progressbar").innerText = "Gathering data"
+                } else if (taskProgress === 'scores_calculated') {
+                    document.getElementById("progressbar").style = "width: 90%"
+                    document.getElementById("progressbar").innerText = "Gathering data"
+                }
+                if (taskStatus === 'finished') {
+                    document.getElementById("progressbar").style = "width: 100%"
+                    document.getElementById("progressbar").innerText = "Done"
+                    let url = '/substrate_specificity/' + taskID + '/'
+                    location.assign(url);
+                    return false;
+                } else if (taskStatus === 'failed') {
+                    return false;
+                } else {
+                    setTimeout(function() {
+                        getStatus(response.data.task_id);
+                        }, 1000);
+                }
+            })
+        }
+
+        var task_id = '{{task_id}}'
+
+        if (task_id !== '') {
+            getStatus(task_id);
+            document.getElementById("progressbar").style = "width: 33%"
+            document.getElementById("progressbar").innerText = "Queuing"
+        }
+    </script>
+
+
+{% endblock %}

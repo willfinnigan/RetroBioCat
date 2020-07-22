@@ -1,0 +1,36 @@
+<!-- Modal -->
+<div class="modal fade" id="enzyme_modal" tabindex="-1" role="dialog" aria-labelledby="enzyme_modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="enzyme_modalLabel">Enzymes</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          {% for enzyme in enzymes %}
+              <button class="btn btn-warning btn-sm"
+                      type="button"
+                      id="{{enzyme}}"
+                      onClick="add_enzyme(this.id);">
+                  {{enzyme}}
+              </button>
+          {% endfor %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    function add_enzyme(enzyme) {
+        if (document.getElementById("rxn_enzyme_cofactor").value != "") {
+            document.getElementById("rxn_enzyme_cofactor").value += "\n"
+        }
+        document.getElementById("rxn_enzyme_cofactor").value += enzyme + ":\n  cofactors_minus: []\n  cofactors_plus: []\n"
+    }
+
+</script>

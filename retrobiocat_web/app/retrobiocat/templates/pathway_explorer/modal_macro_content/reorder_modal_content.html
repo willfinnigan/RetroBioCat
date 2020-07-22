@@ -1,0 +1,85 @@
+{% from 'global/macros/html_form_macros.html' import select with context %}
+{% from 'global/macros/html_form_macros.html' import checkbox with context %}
+{% from 'global/macros/html_form_macros.html' import number_inline with context %}
+
+<div class="container">
+    {{ number_inline("Weight number of enzyme steps", "weight_num_enzymes", weight_num_enzymes) }}
+    {{ number_inline("Weight complexity", "weight_complexity", weight_complexity) }}
+    {{ number_inline("Weight starting material", "weight_starting", weight_starting) }}
+    {{ number_inline("Weight known enzyme steps", "weight_known_enzymes", weight_known_enzymes) }}
+    {{ number_inline("Weight diversity", "weight_diversity", weight_diversity) }}
+    <button type="button" id="weights_go" class="btn btn-block btn-success my-2">Reorder Pathways</button>
+    <div class="progress">
+        <div class="progress-bar" id='progressbar'></div>
+    </div>
+</div>
+
+<script>
+    function reorder_pathways(data) {
+        window.pathway_num = 1
+        document.getElementById("pathway_number_select").value = 1
+        console.log('Reorder pathways')
+
+        $.post('/_reorder_pathways', {
+            graph_dict: window.graph_dict,
+            target_smiles: window.target_smiles,
+            network_options: window.network_options,
+            attr_dict: window.attr_dict,
+            all_pathway_data: JSON.stringify(window.pathways_data),
+            weight_complexity: document.getElementById("weight_complexity").value,
+            weight_num_enzymes: document.getElementById("weight_num_enzymes").value,
+            weight_starting: document.getElementById("weight_starting").value,
+            weight_known_enzymes: document.getElementById("weight_known_enzymes").value,
+            weight_diversity: document.getElementById("weight_diversity").value,
+            id: window.task_id
+
+        }).done(function(response) {
+            getStatus(response.data.task_id, data)
+            document.getElementById("weights_go").disabled = true;
+            document.getElementById("progressbar").style = "width: 25%"
+            document.getElementById("progressbar").innerText = "Que"
+        })
+    }
+
+    document.getElementById("weights_go").onclick = function()
+    {
+        reorder_pathways(data)
+    }
+
+    function set_button_to_available() {
+        document.getElementById("weights_go").disabled = false;
+        document.getElementById("progressbar").style = "width: 0%"
+        document.getElementById("progressbar").innerText = ""
+    }
+
+    function getStatus(taskID, data) {
+        $.get('/_reorder_pathways_status/' + taskID, {
+        }).done(function(response) {
+            const taskStatus = response.data.task_status;
+            const taskProgress = response.data.task_progress;
+            if (taskProgress == 'started') {
+                document.getElementById("progressbar").style = "width: 50%"
+                document.getElementById("progressbar").innerText = "Reordering"
+            } else if (taskProgress == 'complete') {
+                document.getElementById("progressbar").style = "width: 100%"
+            }
+            if (taskStatus === 'finished') {
+                window.pathway_num = 1
+                document.getElementById("pathway_number_select").value = window.pathway_num;
+                window.pathway_varient = 1
+                change_pathway(data)
+                set_button_to_available()
+                $('#reorder_macro').modal('hide');
+            } else if (taskStatus === 'failed') {
+                return false;
+            } else {
+                setTimeout(function() {
+                    getStatus(response.data.task_id, data);
+                    }, 2000);
+            }
+        })
+    }
+
+
+
+</script>

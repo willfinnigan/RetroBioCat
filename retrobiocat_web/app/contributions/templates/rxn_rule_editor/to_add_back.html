@@ -1,0 +1,85 @@
+
+                        <label class="siimple-label">RetroBioCat Reactions</label>
+                        <select id="reaction_select">
+                            <option value="Empty template">Empty template</option>
+                            {% for reaction in reactions %}
+                                <option value="{{reaction}}">{{reaction}}</option>
+                            {% endfor %}
+                        </select>
+
+                        <div>
+                            <div>
+                                <textarea id="rule_yaml" name="rule_yaml" style="margin: 0px; width: 500px; height: 250px;">{{empty_template}}</textarea>
+                            </div>
+
+                            <div>
+                            <input id="test_yaml" class="siimple-btn siimple-btn--success siimple-btn--small" type="button" value="Load Changes">
+                            </div>
+
+                            <div>
+                            <label id='test_result' class="siimple-label siimple--color-primary"></label>
+                            </div>
+
+                            <div id="reaction_images">
+                            </div>
+                        </div>
+
+                        {% for message in get_flashed_messages() %}
+                            <div class="alert alert-success" role="alert">
+                                {{ message }}
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        {% endfor %}
+
+
+
+
+
+
+
+
+
+
+                        <div id='smile_entry_div' class="siimple-field">
+                            <label class="siimple-label">Test product SMILES: </label>
+                            <input id='product_smiles' type="text" class="siimple-input">
+                            <button class="siimple-btn siimple-btn--error siimple-btn--small"
+                                    type="button" id="modal-open-draw_product">
+                                Draw
+                            </button>
+                            <div class="siimple-field ">
+                                <label class="siimple-label" for="combine_enantiomers">Combine enantiomers</label>
+                                <input class="siimple-checkbox" id="combine_enantiomers" name="combine_enantiomers" type="checkbox" value="y">
+                            </div>
+                            <button class="siimple-btn siimple-btn--success siimple-btn--small" type="button" id="test_product">
+                                Test
+                            </button>
+                        </div>
+
+
+                        <div id="error_message" align="center"></div>
+                        <div id="network_div" align="center"></div>
+
+                        <div class="siimple-modal siimple-modal--medium" id="modal-draw_product" style="display:none;">
+                            <div class="siimple-modal-content">
+                                <div class="siimple-modal-header">
+                                    <div class="siimple-modal-header-title">Draw product</div>
+                                    <div class="siimple-modal-header-close" id="modal-close-draw_product"></div>
+                                </div>
+                                <div class="siimple-modal-body">
+                                    <div id="jsme_container_product"></div>
+                                    <button class="siimple-btn siimple-btn--success siimple-btn--fluid" type="button" id="get_smiles_product">
+                                        Get SMILES
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="siimple-content siimple-content--extra-small" align="center">
+                            <div class="siimple--py-3">
+                                <div class="siimple-h2 siimple--text-normal siimple--mb-1" align="center">
+                                </div>
+                            </div>
+                        </div>

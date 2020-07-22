@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% set active_page = "logged-in" %}
+
+{% from "security/_macros.html" import render_field_with_errors, render_field, render_field_errors %}
+{% from 'global/macros/login_form_macros.html' import email with context %}
+{% from 'global/macros/login_form_macros.html' import password with context %}
+{% from 'global/macros/login_form_macros.html' import text with context %}
+{% from 'global/macros/form_macros.html' import checkbox with context %}
+
+
+{% block content %}
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-7 mx-auto">
+                    <div class="card card-form my-5">
+                        <div class="card-body" align="center">
+                            <h3 class="card-title">User information</h3>
+
+                            <form id="main_form" method="POST" action="" novalidate>
+                                {{ form.hidden_tag() }}
+                                <div class="row">
+                                    <div class="col">
+                                        {{ text(form.first_name) }}
+                                    </div>
+                                    <div class="col">
+                                        {{ text(form.last_name) }}
+                                    </div>
+                                </div>
+                                {{ text(form.affiliation) }}
+
+                                {{ checkbox(form.email_opt_in)}}
+
+                                <div class="form-group my-2">
+                                    {{form.submit(class="btn-lg btn-block btn-primary", form="main_form") }}
+                                </div>
+                            </form>
+
+                            <button type="button" data-toggle="modal" data-target="#delete_modal" class="btn btn-danger btn-sm">
+                                Delete my account
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </div>
+
+    {% include 'delete_account_modal.html' %}
+{% endblock %}

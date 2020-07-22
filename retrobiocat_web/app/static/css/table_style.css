@@ -1,0 +1,24 @@
+
+.sticky_head {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    z-index: 2;}
+
+.max_height {height:90vh;
+             max-width: 100%;
+             overflow: auto;}
+
+.short_max_height {height:75vh;
+                   max-width: 100%;
+                   overflow: auto;}
+
+.lock_scroll {
+    overflow-y: hidden; /* Hide vertical scrollbar */
+    overflow-x: hidden; /* Hide horizontal scrollbar */
+}
+
+.table_scroll {
+    overflow-y: scroll;
+    overflow-x: scroll;
+}

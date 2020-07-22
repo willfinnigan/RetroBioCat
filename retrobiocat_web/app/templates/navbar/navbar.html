@@ -1,0 +1,64 @@
+<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+    <a class="navbar-brand" href="{{ url_for('main_site.home') }}">
+        <img src="{{ url_for('static', filename='logos/logo_main.png') }}" width="30px" height="30px" alt=" "/>
+        RetroBioCat
+    </a>
+
+    <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#main_navbar"
+            aria-controls="main_navbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="navbar-collapse collapse" id="main_navbar" style="">
+        <ul class="navbar-nav mr-auto">
+            <li id='network_explorer' class="nav-item">
+                <a class="nav-link" href="{{ url_for('retrobiocat.network_explorer_form') }}">Network explorer</a>
+            </li>
+            <li id='pathway_explorer' class="nav-item">
+                <a class="nav-link" href="{{ url_for('retrobiocat.pathway_explorer_form') }}">Pathway explorer</a>
+            </li>
+
+            <li id='more_info' class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true"
+                   aria-expanded="false">More info</a>
+                <div class="dropdown-menu" aria-labelledby="dropdown01">
+                    <a class="dropdown-item" href="{{ url_for('retrobiocat.reaction_rules') }}">Reaction rules</a>
+                    <a class="dropdown-item" href="{{ url_for('main_site.automated_cascade_design') }}">Automated Cascade Design</a>
+                </div>
+            </li>
+
+            <li id='biocatdb' class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true"
+                   aria-expanded="false">BioCatDB</a>
+                <div class="dropdown-menu" aria-labelledby="dropdown01">
+                    <a class="dropdown-item" href="{{ url_for('biocatdb.substrate_specificity_form') }}">Substrate specificity</a>
+                </div>
+            </li>
+        </ul>
+
+        {% if current_user.has_role('experimental') %}
+            <ul class="navbar-nav">
+                {% include 'navbar/experimental.html' %}
+            </ul>
+        {% endif %}
+
+        {% if current_user.has_role('contributor') %}
+            <ul class="navbar-nav">
+                {% include 'navbar/contributor_menu.html' %}
+            </ul>
+        {% endif %}
+
+        <ul class="navbar-nav">
+            {% if current_user.is_anonymous %}
+                <li id='pathway_explorer' class="nav-item">
+                    <a class="nav-link" href="/login">Login</a>
+                </li>
+            {% else %}
+                {% include 'navbar/logged_in_menu.html' %}
+            {% endif %}
+        </ul>
+
+    </div>
+
+</nav>
+

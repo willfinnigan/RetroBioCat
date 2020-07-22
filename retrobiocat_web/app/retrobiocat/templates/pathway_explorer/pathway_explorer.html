@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% set active_page = "pathway_explorer" %}
+
+{% block content %}
+    {% include 'pathway_explorer/pathway_top_bar.html' %}
+
+    <div id="mynetwork"></div>
+
+    <script src="{{url_for('.static', filename='js/network.js')}}" type="text/javascript"></script>
+    <script src="{{url_for('.static', filename='js/node_info.js')}}" type="text/javascript"></script>
+
+    <script type="text/javascript">
+        window.pathway_num = 1;
+        window.max_varient = {{max_varient}}
+        window.pathway_varient = 1
+        window.task_id = "{{task_id}}"
+
+        var nodes = new vis.DataSet({{nodes|tojson}});
+        var edges = new vis.DataSet({{edges|tojson}});
+        var data =  {nodes: nodes, edges: edges}
+        var container = document.getElementById('mynetwork');
+        var network = new vis.Network(container, data, {{options|safe}});
+
+        network.on("selectNode", function(params) {
+            window.selected_node = params.nodes[0]
+            get_node_info();
+        })
+    </script>
+
+    <script src="{{url_for('.static', filename='js/pathway_explorer/browse_pathways.js')}}?v={{v}}" type="text/javascript"></script>
+
+    {% from 'global/macros/modal_macro.html' import modal with context %}
+    {{ modal('help_macro', 'Help', "pathway_explorer/modal_macro_content/help_modal_content.html") }}
+    {{ modal('node_info_macro', 'Nofe info', "node_info_templates/node_info_modal.html", size='') }}
+    {{ modal('options_macro', 'Options', "pathway_explorer/modal_macro_content/options_modal_content.html") }}
+    {{ modal('reorder_macro', 'Reorder pathways', "pathway_explorer/modal_macro_content/reorder_modal_content.html") }}
+
+{% endblock %}

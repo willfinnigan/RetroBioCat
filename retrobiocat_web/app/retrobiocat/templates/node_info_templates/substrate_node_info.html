@@ -1,0 +1,24 @@
+<div class="siimple-grid">
+    <div class="siimple-grid-row">
+        <div class="siimple-grid-col siimple-grid-col--3">
+            {{substrate_image|safe}}
+        </div>
+        <div class="siimple-grid-col siimple-grid-col--9">
+            <p class="siimple-p">
+                <strong>Name: </strong> {{name}}
+            </p>
+            <p class="siimple-p">
+                <strong>SMILES: </strong> {{smiles}}
+            </p>
+            <p class="siimple-p">
+                <strong>Pubchem: </strong>
+                <a href="https://pubchem.ncbi.nlm.nih.gov/compound/{{cid}}" target="_blank"> {{cid}} </a>
+            </p>
+
+            <p class="siimple-p">
+                <strong>XLogP: </strong> {{logp}}
+            </p>
+
+        </div>
+    </div>
+</div>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.css" type="text/css" />
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis-network.min.js"> </script>
+
+    <style type="text/css">
+        #mynetwork {
+            width: {{width}};
+            height: {{height}};
+            background-color: white;
+            border: 1px solid lightgray;
+            position: relative;
+            float: left;
+    </style>
+
+</head>
+<body>
+
+    <div id = "mynetwork"></div>
+
+    <script type="text/javascript">
+        var edges = new vis.DataSet({{edges|tojson}});
+        var nodes = new vis.DataSet({{nodes|tojson}});
+        var data = {nodes: nodes, edges: edges};
+        var options = {{options|safe}};
+        var container = document.getElementById('mynetwork');
+
+        var network = new vis.Network(container, data, options);
+    </script>
+
+</body>
+</html>

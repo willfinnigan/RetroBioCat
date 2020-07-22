@@ -1,0 +1,20 @@
+
+    <div class="btn-group" role="group">
+        <button type="button" data-toggle="modal" data-target="#help_macro" class="btn btn-primary btn-sm">Help</button>
+        <button type="button" data-toggle="modal" onclick="get_node_info()" data-target="#node_info_macro" class="btn btn-danger btn-sm">Node info</button>
+        <button type="button" data-toggle="modal" data-target="#options_macro" class="btn btn-info btn-sm">Options</button>
+        <button type="button" data-toggle="modal" data-target="#reaction_options_macro" class="btn btn-success btn-sm">Reaction settings</button>
+        <button type="button" data-toggle="modal" data-target="#add_custom_reaction" class="btn btn-warning btn-sm">Add custom reaction</button>
+        <button type="button" id="reset" class="btn btn-secondary btn-sm">Reset</button>
+        {% if current_user.is_authenticated %}
+            <button type="button" data-toggle="modal" data-target="#save_modal" class="btn btn-primary btn-sm">Save</button>
+        {% endif %}
+
+        <label class="">Enzyme:</label>
+        <select class="" id="enzyme_select"></select>
+
+        <label id='rr_que' class=""></label>
+        <label id='interaction' class=""></label>
+    </div>
+
+

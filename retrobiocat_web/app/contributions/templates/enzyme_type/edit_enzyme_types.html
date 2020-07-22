@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% set active_page = "contributions_menu" %}
+
+{% block content %}
+
+    <div class="lock_scroll">
+        <div class="container max_height table_scroll">
+            <table class="table table-bordered table-sm table-hover">
+              <thead class="thead-light">
+                <tr>
+                    {% for heading in headings %}
+                        <th class="sticky_head" >{{heading}}</th>
+                    {% endfor %}
+                    <th class="sticky_head" >Edit</th>
+                    <th class="sticky_head" >Merge</th>
+                    <th class="sticky_head" >Delete</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {% for row in rows %}
+                    <tr>
+                        {% for key in headings %}
+                            <td>{{row[key]}}</td>
+                        {% endfor %}
+                        <td><button type="button" onclick="load_edit_data('{{row['Name']}}')" class="btn btn-outline-info btn-sm" data-toggle="modal" data-target="#edit_modal">Edit</button></td>
+                        <td><button type="button" onclick="load_merge('{{row['Name']}}')" class="btn btn-outline-warning btn-sm" data-toggle="modal" data-target="#merge_modal">Merge</button></td>
+                        <td><button type="button" onclick="load_delete('{{row['Name']}}')" class="btn btn-outline-danger btn-sm" data-toggle="modal" data-target="#delete_modal">Delete</button></td>
+                    </tr>
+                {% endfor %}
+
+              </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% include 'enzyme_type/modals/edit_modal.html' %}
+    {% include 'enzyme_type/modals/merge_modal.html' %}
+    {% include 'enzyme_type/modals/delete_modal.html' %}
+
+    <script>
+        function load_edit_data(name) {
+            $.post('/_load_enzyme_type_data', {
+                enzyme_type: name,
+                }).done(function(data) {
+                    document.getElementById("original_name").innerHTML = data.result.name;
+                    document.getElementById("enzyme_type").value = data.result.name;
+                    document.getElementById("description").value = data.result.description;
+                })
+        }
+
+        function load_merge(name) {
+            document.getElementById("original_name_merge").innerHTML = name;
+            hide_merge_confirm()
+        }
+
+        function load_delete(name) {
+            document.getElementById("original_name_delete").innerHTML = name;
+            hide_delete_confirm()
+        }
+
+
+    </script>
+
+{% endblock %}

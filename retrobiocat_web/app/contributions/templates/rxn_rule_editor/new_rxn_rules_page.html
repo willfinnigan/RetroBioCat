@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+{% set active_page = "contributions_menu" %}
+
+{% macro radio(name, checked='') %}
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="radio_enzyme_type" id="{{name}}" value="{{name}}" {{checked}}>
+      <label class="form-check-label" for="{{name}}">{{name}}</label>
+    </div>
+{% endmacro %}
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col"></div>
+            <div class="col">
+                <div class="card card-form my-5" style="width: 64rem;">
+                    <div class="card-body" align="center">
+                        <h3 class="card-title">Reactions</h3>
+
+                        <label for="reaction_select" class="control-label">Select a reaction:</label>
+                        <select id="reaction_select" class="form-control custom-select w-75 my-5">
+                            <option value="Empty template">Empty template - Use for new reactions</option>
+                            {% for reaction in reactions %}
+                                <option value="{{reaction}}">{{reaction}}</option>
+                            {% endfor %}
+                        </select>
+
+                        <div class="form-group">
+                            <label for='rxn_name'>Reaction name</label>
+                            <input type="text" class="form-control w-75" id="rxn_name" placeholder="">
+                            <small class="form-text text-muted">The name of the reaction, eg 'Carboxylic acid reduction'</small>
+                        </div>
+
+                        {{radio('Misc biocatalysts', checked='checked')}}
+                        {{radio('Oxidation')}}
+                        {{radio('Reduction')}}
+                        {{radio('Hydrolysis')}}
+                        {{radio('Reverse hydrolysis')}}
+                        {{radio('C-X bond formation')}}
+                        {{radio('C-C bond formation')}}
+                        {{radio('Chemical')}}
+                        <small class="form-text text-muted">Select the type of reaction</small>
+
+                        <div class='my-5'></div>
+
+                        <div class="form-group">
+                            <label for="rxn_enzyme_cofactor">Enzymes and cofactor usage</label>
+                            <div class="input-group">
+                                <textarea class="form-control" id="rxn_enzyme_cofactor" placeholder="" rows="6"></textarea>
+                                <button type="button" class="btn btn-warning" id="test_enzymes_btn" data-toggle="modal" data-target="#enzyme_modal">Enzymes</button>
+                            </div>
+                            <small class="form-text text-muted">
+                                Enzyme types which perform this reaction, and their cofactor usage.  Only enzymes types already defined in the database may be used.
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="rxn_smarts">SMARTS</label>
+                            <div class="input-group">
+                                <textarea class="form-control" id="rxn_smarts" placeholder="" rows="6"></textarea>
+                            </div>
+                            <small class="form-text text-muted">
+                                Reaction SMARTS eg '[C:1]>>[C:1][O]'. Use
+                                <a href="https://marvinjs-demo.chemaxon.com/latest/" target="_blank">Marvin JS </a>
+                                to help construct these.
+                            </small>
+                        </div>
+
+                        <button type="button" class="btn btn-info" id="visualise_smarts">Visualise SMARTS</button>
+
+                        <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#test_modal">Test</button>
+
+                        <div class='my-5' id="reaction_images"></div>
+
+                        <div class="form-group">
+                            <label for="positive_tests">Positive tests</label>
+                            <div class="input-group w-75">
+                                <textarea class="form-control" id="positive_tests" placeholder="" rows="2"></textarea>
+                            </div>
+                            <small class="form-text text-muted">List of SMILES which work with this rule</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="negative_tests">Negative tests</label>
+                            <div class="input-group w-75">
+                                <textarea class="form-control" id="negative_tests" placeholder="" rows="2"></textarea>
+                            </div>
+                            <small class="form-text text-muted">List of SMILES which should not work with this rule</small>
+                        </div>
+
+                        <div class="custom-control custom-checkbox my-4">
+                            <input class="custom-control-input" type="checkbox" id="experimental" checked>
+                            <label class="custom-control-label" for="experimental">Experimental</label>
+                            <small class="form-text text-muted">Select experimental for new or in-testing rules</small>
+                        </div>
+
+                        <div class="custom-control custom-checkbox my-4">
+                            <input class="custom-control-input" type="checkbox" id="two_step">
+                            <label class="custom-control-label" for="two_step">Two-step reaction</label>
+                            <small class="form-text text-muted">
+                                Select for reactions which incorporate two steps which are themselves separate reaction rules
+                            </small>
+                        </div>
+
+                        <button type="button" class="btn btn-primary" id="run_tests">Run tests</button>
+                        <button type="button" class="btn btn-success" id="save" disabled>Save</button>
+                        <small class="form-text text-muted">Do NOT overwrite an existing reaction with a new one</small>
+                        <small class="form-text text-muted">Select the empty template for new reactions</small>
+
+                        <div class='my-2' id="save_response"></div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col"></div>
+        </div>
+    </div>
+
+    {% include 'rxn_rule_editor/modals/enzyme_modal.html' %}
+    {% include 'rxn_rule_editor/modals/test_modal.html' %}
+
+    <script>
+        function load_rule() {
+            document.getElementById("reaction_images").innerHTML="";
+
+            $.post('/_load_rule', {
+                    selected_rule: document.getElementById("reaction_select").value,
+
+                    }).done(function(data) {
+                        document.getElementById("rxn_name").value = data.result.rxn_name;
+                        document.getElementById("rxn_smarts").value = data.result.rxn_smarts;
+                        document.getElementById("rxn_enzyme_cofactor").value = data.result.rxn_enzyme_cofactor;
+                        document.getElementById("positive_tests").value = data.result.positive_tests;
+                        document.getElementById("negative_tests").value = data.result.negative_tests;
+                        document.getElementById(data.result.reaction_type).checked = true;
+                        document.getElementById("experimental").checked = data.result.experimental;
+                        document.getElementById("two_step").checked = data.result.two_step;
+
+                    })
+            }
+
+        function display_rxn_imgs(list_rxn_imgs) {
+            var rxn_img;
+            var imgDiv = document.getElementById("reaction_images");
+            imgDiv.innerHTML = ''
+
+            for (rxn_img of list_rxn_imgs) {
+                var newDiv = document.createElement("div");
+                newDiv.innerHTML = rxn_img
+                imgDiv.appendChild(newDiv);
+            }
+        }
+
+        function visualise_smarts() {
+            $.post('/_visualise_smarts', {
+                smarts_yaml: document.getElementById("rxn_smarts").value
+
+                }).done(function(data) {
+                    if (data.result.status === 'success') {
+                        display_rxn_imgs(data.result.list_imgs)
+                    }
+                })
+            }
+
+        function run_tests() {
+            $.post('/_test_reaction', {
+                rxn_selection: document.getElementById("reaction_select").value,
+                rxn_name: document.getElementById("rxn_name").value,
+                smarts_yaml: document.getElementById("rxn_smarts").value,
+                cofactors: document.getElementById("rxn_enzyme_cofactor").value,
+                positive_tests: document.getElementById("positive_tests").value,
+                negative_tests: document.getElementById("negative_tests").value,
+                rxn_type: document.querySelector('input[name="radio_enzyme_type"]:checked').value,
+                experimental: document.getElementById("experimental").checked,
+                two_step: document.getElementById("two_step").checked
+                }).done(function(data) {
+                    save_or_test_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+                    if (data.result.status === 'success') {
+                        document.getElementById("save").disabled = false;
+                    }
+                })
+            }
+
+        function save() {
+            $.post('/_save_reaction', {
+                rxn_selection: document.getElementById("reaction_select").value,
+                rxn_name: document.getElementById("rxn_name").value,
+                smarts_yaml: document.getElementById("rxn_smarts").value,
+                cofactors: document.getElementById("rxn_enzyme_cofactor").value,
+                positive_tests: document.getElementById("positive_tests").value,
+                negative_tests: document.getElementById("negative_tests").value,
+                rxn_type: document.querySelector('input[name="radio_enzyme_type"]:checked').value,
+                experimental: document.getElementById("experimental").checked,
+                two_step: document.getElementById("two_step").checked
+                }).done(function(data) {
+                    save_or_test_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+                })
+            }
+
+        function save_or_test_msg(msg, type, issues, parent_div) {
+            var newDiv = document.createElement('div');
+            newDiv.className = "alert alert-" + type;
+            newDiv.setAttribute("role", "alert");
+            newDiv.setAttribute("id", "msg_alert");
+            newDiv.innerHTML = msg
+
+            var close_button = document.createElement('button');
+            close_button.className = "close"
+            close_button.setAttribute("type", "button");
+            close_button.setAttribute("data-dismiss", "alert");
+            close_button.innerHTML = "<span aria-hidden=\"true\">&times;</span>"
+            newDiv.appendChild(close_button)
+
+            document.getElementById(parent_div).appendChild(newDiv)
+
+            if (issues.length !== 0) {
+                newList = document.createElement('ul');
+                issues.forEach(function (item, index) {
+                    var newListItem = document.createElement('li');
+                    newListItem.innerHTML = item
+                    newList.appendChild(newListItem)
+                });
+                newDiv.appendChild(newList)
+            }
+
+            var timeout_time = 2000 + (issues.length*4000)
+
+            setTimeout(function() {
+                $("#msg_alert").alert('close');
+            }, timeout_time);
+        }
+
+        function disable_save_button() {
+            document.getElementById("save").disabled = true;
+        }
+
+        document.getElementById("reaction_select").onchange = function() {
+            load_rule()
+            disable_save_button()
+        }
+
+        document.getElementById("visualise_smarts").onclick = function() {
+            visualise_smarts()
+        }
+
+        document.getElementById("save").onclick = function() {
+            save()
+        }
+
+        document.getElementById("run_tests").onclick = function() {
+            run_tests()
+        }
+
+        document.getElementById("rxn_name").onchange = function() {
+            disable_save_button()
+        }
+
+        document.getElementById("rxn_enzyme_cofactor").onchange = function() {
+            disable_save_button()
+        }
+
+        document.getElementById("rxn_smarts").onchange = function() {
+            disable_save_button()
+        }
+
+        document.getElementById("positive_tests").onchange = function() {
+            disable_save_button()
+        }
+
+        document.getElementById("negative_tests").onchange = function() {
+            disable_save_button()
+        }
+
+        document.getElementById("experimental").onchange = function() {
+            disable_save_button()
+        }
+
+        document.getElementById("two_step").onchange = function() {
+            disable_save_button()
+        }
+
+    </script>
+
+
+
+
+
+
+{% endblock %}

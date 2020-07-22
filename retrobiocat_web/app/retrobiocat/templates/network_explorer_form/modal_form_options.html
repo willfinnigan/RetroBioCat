@@ -1,0 +1,44 @@
+{% from 'global/macros/form_macros.html' import number_field with context %}
+{% from 'global/macros/form_macros.html' import target_smiles with context %}
+{% from 'global/macros/form_macros.html' import checkbox with context %}
+{% from 'global/macros/form_macros.html' import select with context %}
+{% from 'global/macros/form_macros.html' import number_inline with context %}
+
+<!-- Modal -->
+<div class="modal fade" id="formOptions" tabindex="-1" role="dialog" aria-labelledby="formOptionsLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="formOptionsLabel">Other options</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div id='options' class="container">
+                    {{ checkbox(form.allow_backwards) }}
+                    {{ checkbox(form.remove_small) }}
+                    {{ checkbox(form.combine_enantiomers) }}
+                    {{ checkbox(form.include_experimental) }}
+                    {{ checkbox(form.include_two_step) }}
+                    {{ checkbox(form.show_neg_enz) }}
+                    {{ checkbox(form.calc_complexity) }}
+                    {{ checkbox(form.sub_sim) }}
+                    {{ select(form.specificity_scoring_mode) }}
+                    {{ select(form.colour_substrates) }}
+                    {{ select(form.colour_reactions) }}
+                    {{ select(form.colour_edges) }}
+                    {{ number_inline(form.sub_thres) }}
+                    {{ number_inline(form.max_reactions) }}
+                </div>
+            </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+
+    </div>
+  </div>
+</div>
+

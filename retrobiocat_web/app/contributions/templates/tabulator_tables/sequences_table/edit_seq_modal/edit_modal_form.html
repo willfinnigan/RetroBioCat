@@ -1,0 +1,63 @@
+<div class="form-group">
+    <label for="enzyme_type" class="control-label">Select enzyme type</label>
+    <select id="enzyme_type" class="form-control custom-select w-75">
+        {% for enz_type in enzyme_types %}
+            <option value="{{enz_type}}">{{enz_type}}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<div class="form-group">
+    <label for='enzyme_name'>Enzyme name</label>
+    <input type="text" class="form-control" id="enzyme_name" placeholder="">
+    <small class="form-text text-muted">Where possible, use an abbreviation of the organism name, followed by enzyme type. For example msCAR or AspRedAm</small>
+</div>
+
+<div class="form-group">
+    <label for='sequence'>Protein sequence</label>
+    <textarea class="form-control" id="sequence" placeholder="" rows="4"></textarea>
+    <small class="form-text text-muted">Required if available - Enter amino acid sequence</small>
+</div>
+
+<div class="custom-control custom-checkbox">
+    <input class="custom-control-input" type="checkbox" id="sequence_unavailable">
+    <label class="custom-control-label" for="sequence_unavailable">Sequence unavailable</label>
+    <small class="form-text text-muted">If the protein sequence is definitely not available (for example proprietary)</small>
+</div>
+
+
+
+<div class="form-group mt-3">
+    <label for='accession'>Accession number</label>
+    <input type="text" class="form-control" id="accession" placeholder="">
+</div>
+
+<div class="custom-control custom-checkbox">
+    <input class="custom-control-input" type="checkbox" id="structure">
+    <label class="custom-control-label" for="structure">Structure is available</label>
+    <small class="form-text text-muted">If checked, accession number must be PDB code</small>
+</div>
+
+<div class="form-group mt-3">
+    <label for="mutant_of" class="control-label">Mutant of..</label>
+    <select id="mutant_of" class="form-control custom-select w-75">
+    <option value=""></option>
+    </select>
+    <small class="form-text text-muted">If the sequence is a mutant, select parent</small>
+</div>
+
+<div class="form-group">
+    <label for='notes'>Notes</label>
+    <textarea class="form-control" id="notes" placeholder="" rows="2"></textarea>
+    <small class="form-text text-muted">Any notes on this entry</small>
+</div>
+
+<div class="custom-control custom-checkbox">
+    <input class="custom-control-input" type="checkbox" id="self_assigned">
+    <label class="custom-control-label" for="self_assigned">Assign this sequence to me</label>
+    <small class="form-text text-muted">Assign to yourself (checked), or leave open for somebody else (unchecked)</small>
+</div>
+
+
+
+

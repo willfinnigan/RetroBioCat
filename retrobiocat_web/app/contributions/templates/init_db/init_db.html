@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% set active_page = "contributions_menu" %}
+
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col"></div>
+            <div class="col">
+                <div class="card card-form my-5" style="width: 50rem;">
+                    <div class="card-body" align="center">
+                        <h3 class="card-title">Init DB</h3>
+                        <form id="main_form" enctype="multipart/form-data" action="" method="POST" novalidate >
+                            {{ form.hidden_tag() }}
+                            <div class="form-group">
+                                <label for="rxns">Reactions yaml</label>
+                                {{ form.rxns(type="file", form="main_form")}}
+                                {% for error in form.rxns.errors %}
+                                    <span style="color: red;">[{{ error }}]</span>
+                                {% endfor %}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="biocatdb">BiocatDB excel</label>
+                                {{ form.biocatdb(type="file", form="main_form")}}
+                                {% for error in form.biocatdb.errors %}
+                                    <span style="color: red;">[{{ error }}]</span>
+                                {% endfor %}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="sequences">Sequences</label>
+                                {{ form.sequences(type="file", form="main_form")}}
+                                {% for error in form.sequences.errors %}
+                                    <span style="color: red;">[{{ error }}]</span>
+                                {% endfor %}
+                            </div>
+
+                            <div class="form-group">
+                                <label for="building_blocks">Building Blocks (.csv or .db)</label>
+                                {{ form.building_blocks(type="file", form="main_form")}}
+                                {% for error in form.building_blocks.errors %}
+                                    <span style="color: red;">[{{ error }}]</span>
+                                {% endfor %}
+                            </div>
+
+                            <div class="form-group my-2">
+                                {{ form.submit(class="btn btn-success", form="main_form") }}
+                            </div>
+                        </form>
+
+                        <button class="btn btn-info" onclick="assign_papers()" id="assign_papers">Assign papers</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col"></div>
+        </div>
+    </div>
+
+    <script src="{{url_for('.static', filename='js/response_alert.js')}}?v={{v}}" type="text/javascript"></script>
+
+    <script>
+        function assign_papers() {
+        $.post('/_assign_papers', {
+            }).done(function(data) {
+                response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+            })
+        }
+
+
+    </script>
+
+{% endblock %}

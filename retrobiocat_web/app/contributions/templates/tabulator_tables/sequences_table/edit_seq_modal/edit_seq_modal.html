@@ -1,0 +1,125 @@
+<!-- Modal -->
+<div class="modal fade" id="edit_seq_modal" tabindex="-1" role="dialog" aria-labelledby="edit_seq_modalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="edit_seq_modalLabel">Edit sequence</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <p><strong id="original_name"></strong></p>
+          {% include '/tabulator_tables/sequences_table/edit_seq_modal/edit_modal_form.html' %}
+      </div>
+
+      <div id="seq_edit_save_response"></div>
+
+      <div class="modal-footer">
+          <p id="saving"></p>
+          <button type="button" onclick="close_alerts()" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" onclick="save_seq_edit()" class="btn btn-success" id="save">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+    function set_select(select_id, arraySeq) {
+        var select = document.getElementById(select_id);
+        select.options.length = 1;
+        for (index in arraySeq) {
+            select.options[select.options.length] = new Option(arraySeq[index], index);
+        }
+    }
+
+    function load_edit_seq_data(name) {
+        $.post('/_load_sequence_data', {
+            name: name,
+            }).done(function(data) {
+                set_select('mutant_of', data.result.sequences)
+                document.getElementById("original_name").innerHTML = data.result.enzyme_name;
+                document.getElementById("enzyme_type").value = data.result.enzyme_type;
+                document.getElementById("enzyme_name").value = data.result.enzyme_name;
+                document.getElementById("sequence").value = data.result.sequence;
+                document.getElementById("sequence_unavailable").checked = data.result.sequence_unavailable;
+                document.getElementById("accession").value = data.result.accession;
+                document.getElementById("structure").checked = data.result.structure;
+                document.getElementById("mutant_of").value = data.result.mutant_of;
+                document.getElementById("notes").value = data.result.notes;
+                document.getElementById("self_assigned").checked = data.result.self_assigned;
+
+                if (data.result.can_edit == false) {
+                    disable_seq_edit_fields()
+                } else {
+                    enable_seq_edit_fields()
+                }
+
+                if (data.result.owner_is_another_user == true) {
+                    document.getElementById("self_assigned").disabled = true
+                } else {
+                    document.getElementById("self_assigned").disabled = false
+                }
+            })
+        }
+
+    function disable_seq_edit_fields() {
+        document.getElementById("enzyme_type").disabled = true
+        document.getElementById("enzyme_name").disabled = true
+        document.getElementById("sequence").disabled = true
+        document.getElementById("sequence_unavailable").disabled = true
+        document.getElementById("accession").disabled = true
+        document.getElementById("structure").disabled = true
+        document.getElementById("mutant_of").disabled = true
+        document.getElementById("notes").disabled = true
+        document.getElementById("self_assigned").disabled = true
+    }
+
+    function enable_seq_edit_fields() {
+        document.getElementById("enzyme_type").disabled = false
+        document.getElementById("enzyme_name").disabled = false
+        document.getElementById("sequence").disabled = false
+        document.getElementById("sequence_unavailable").disabled = false
+        document.getElementById("accession").disabled = false
+        document.getElementById("structure").disabled = false
+        document.getElementById("mutant_of").disabled = false
+        document.getElementById("notes").disabled = false
+        document.getElementById("self_assigned").disabled = false
+    }
+
+    function save_seq_edit() {
+        $.post('/_save_edited_sequence', {
+            original_name: document.getElementById("original_name").innerHTML,
+            enzyme_name: document.getElementById("enzyme_name").value,
+            enzyme_type: document.getElementById("enzyme_type").value,
+            sequence: document.getElementById("sequence").value,
+            sequence_unavailable: document.getElementById("sequence_unavailable").checked,
+            accession: document.getElementById("accession").value,
+            structure: document.getElementById("structure").checked,
+            mutant_of: document.getElementById("mutant_of").value,
+            notes: document.getElementById("notes").value,
+            self_assigned: document.getElementById("self_assigned").checked
+
+            }).done(function(data) {
+                response_msg(data.result.msg, data.result.status, data.result.issues, "seq_edit_save_response")
+                if (data.result.status === 'success') {
+                    document.location.reload()
+                }
+
+            })
+        }
+
+    function get_mutants_of_type() {
+        $.post('/_sequences_of_same_type', {
+            enzyme_type: document.getElementById("enzyme_type").value,
+            }).done(function(data) {
+                set_select("mutant_of", data.result.sequences)
+            })
+        }
+
+    document.getElementById("enzyme_type").onchange = function() {
+        get_mutants_of_type()
+    }
+
+</script>

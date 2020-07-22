@@ -1,0 +1,65 @@
+<div class="container">
+    <div class="row">
+
+        <button class="btn btn-outline-warning" data-dismiss="modal" onclick="set_target_smiles('O=C(N[C@@H]1CCN(C)[C@@H](C2=NC(C=CC=C3)=C3N2)C1)CC4=CC=C(C#N)C=C4')">
+            <img src="{{url_for('.static', filename='example_molecules/smo.png')}}" alt="O=C(N[C@@H]1CCN(C)[C@@H](C2=NC(C=CC=C3)=C3N2)C1)CC4=CC=C(C#N)C=C4" height="100" width="100" />
+        </button>
+
+
+        <button class="btn btn-outline-warning" data-dismiss="modal" onclick="set_target_smiles('O=C(OC(C)(C)C)C(C=C1)=CC=C1CN(CC2)CCC2CN[C@H]3[C@@H](C3)C4=CC=CC=C4')">
+            <img src="{{url_for('.static', filename='example_molecules/gsk.png')}}" alt="O=C(OC(C)(C)C)C(C=C1)=CC=C1CN(CC2)CCC2CN[C@H]3[C@@H](C3)C4=CC=CC=C4" height="100" width="100" />
+        </button>
+
+        <button class="btn btn-outline-warning" data-dismiss="modal" onclick="set_target_smiles('N[C@@H](CC(N1CCN2C(C1)=NN=C2C(F)(F)F)=O)CC3=C(F)C=C(F)C(F)=C3')">
+            <img src="{{url_for('.static', filename='example_molecules/sitagliptin.png')}}" alt="N[C@@H](CC(N1CCN2C(C1)=NN=C2C(F)(F)F)=O)CC3=C(F)C=C(F)C(F)=C3" height="100" width="100" />
+        </button>
+
+        <button class="btn btn-outline-warning" data-dismiss="modal" onclick="set_target_smiles('O=C1NCCC2=C1C=CC=C2')">
+            <img src="{{url_for('.static', filename='example_molecules/q2.png')}}" alt="O=C1NCCC2=C1C=CC=C2" height="100" width="100" />
+        </button>
+
+        <button class="btn btn-outline-warning" data-dismiss="modal" onclick="set_target_smiles('CC1CCCC(C2=CC=CC=C2)N1')">
+            <img src="{{url_for('.static', filename='example_molecules/q3.png')}}" alt="CC1CCCC(C2=CC=CC=C2)N1" height="100" width="100" />
+        </button>
+
+        <button class="btn btn-outline-warning" data-dismiss="modal" onclick="set_target_smiles('[C@H]1(C2=CC=CC=C2)NCCCC1')">
+            <img src="{{url_for('.static', filename='example_molecules/q4.png')}}" alt="[C@H]1(C2=CC=CC=C2)NCCCC1" height="100" width="100" />
+        </button>
+
+        <button class="btn btn-outline-warning"  data-dismiss="modal" onclick="set_target_smiles('C[C@H]1CCC[C@@H](CC(CCC=C)=O)N1')">
+            <img src="{{url_for('.static', filename='example_molecules/q6.png')}}" alt="C[C@H]1CCC[C@@H](CC(CCC=C)=O)N1" height="100" width="100" />
+        </button>
+
+        <button class="btn btn-outline-warning"  data-dismiss="modal" onclick="set_target_smiles('O=C1CCCC(C)O1')">
+            <img src="{{url_for('.static', filename='example_molecules/q7b.png')}}" alt="O=C1CCCC(C)O1" height="100" width="100" />
+        </button>
+
+        <button class="btn btn-outline-warning"  data-dismiss="modal" onclick="set_target_smiles('C[C@H](C[C@H](C)O1)C1=O')">
+            <img src="{{url_for('.static', filename='example_molecules/q8.png')}}" alt="C[C@H](C[C@H](C)O1)C1=O" height="100" width="100" />
+        </button>
+
+        <button class="btn btn-outline-warning"  data-dismiss="modal" onclick="set_target_smiles('O[C@@H]([C@@H](C(CO)=O)O)CNC(OCC1=CC=CC=C1)=O')">
+            <img src="{{url_for('.static', filename='example_molecules/q11.png')}}" alt="O[C@@H]([C@@H](C(CO)=O)O)CNC(OCC1=CC=CC=C1)=O" height="100" width="100" />
+        </button>
+
+        <button class="btn btn-outline-warning"  data-dismiss="modal" onclick="set_target_smiles('O=C(NC1)CC[C@H]1C2=CC=C(Br)C=C2')">
+            <img src="{{url_for('.static', filename='example_molecules/q14.png')}}" alt="O=C(NC1)CC[C@H]1C2=CC=C(Br)C=C2" height="100" width="100" />
+        </button>
+
+        <button class="btn btn-outline-warning"  data-dismiss="modal" onclick="set_target_smiles('C[C@@H](N)[C@H](O)C1=CC=CC=C1')">
+            <img src="{{url_for('.static', filename='example_molecules/q18.png')}}" alt="C[C@@H](N)[C@H](O)C1=CC=CC=C1" height="100" width="100" />
+        </button>
+
+        <button class="btn btn-outline-warning"  data-dismiss="modal" onclick="set_target_smiles('NC[C@H](O)C1=CC=CC=C1')">
+            <img src="{{url_for('.static', filename='example_molecules/q19.png')}}" alt="NC[C@H](O)C1=CC=CC=C1" height="100" width="100" />
+        </button>
+
+        <button class="btn btn-outline-warning"  data-dismiss="modal" onclick="set_target_smiles('FC1=CC=CC=C1[C@H]2CCCN2')">
+            <img src="{{url_for('.static', filename='example_molecules/q20.png')}}" alt="FC1=CC=CC=C1[C@H]2CCCN2" height="100" width="100" />
+        </button>
+
+        <button class="btn btn-outline-warning"  data-dismiss="modal" onclick="set_target_smiles('OC1=CC=C(C=C)C=C1')">
+            <img src="{{url_for('.static', filename='example_molecules/q23.png')}}" alt="OC1=CC=C(C=C)C=C1" height="100" width="100" />
+        </button>
+    </div>
+</div>
