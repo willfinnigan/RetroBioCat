@@ -12,7 +12,7 @@ setup(
   url = '',
   download_url = '',
   keywords = ['enzyme'],
-  install_requires=['crossrefapi', 'pubchempy', 'networkx', 'matplotlib', 'pyyaml'],
+  install_requires=[],  # please install requirements.txt
   classifiers=[
     'Development Status :: 3 - Alpha',
     'License :: OSI Approved :: MIT License',
