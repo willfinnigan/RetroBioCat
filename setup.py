@@ -1,5 +1,9 @@
 from setuptools import setup, find_packages
 
+with open('requirements.txt') as f:
+  requirements = f.read().splitlines()
+
+
 setup(
   name = 'retrobiocat_web',
   packages = find_packages(),
@@ -12,7 +16,7 @@ setup(
   url = '',
   download_url = '',
   keywords = ['enzyme'],
-  install_requires=[],  # please install requirements.txt
+  install_requires=requirements,
   classifiers=[
     'Development Status :: 3 - Alpha',
     'License :: OSI Approved :: MIT License',
