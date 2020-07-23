@@ -26,6 +26,9 @@ docker-compose build --no-cache
 docker-compose up
 ```
 
+RetroBioCat should now be available locally at http://127.0.0.1:5000  
+Databases must now be initalised (see below)
+
 ## Option 2 - Manual Installation
 RetroBioCat requires anaconda or miniconda with python 3.7 or later
 
