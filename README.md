@@ -87,7 +87,7 @@ RetroBioCat should now be available locally at http://127.0.0.1:5000
 Before your local version of RetroBioCat can be used, the databases it relies on must be set up.  
 
 To do this, first login using the default admin account:  
-- username: admin  
+- email: admin@email.com  
 - password: password  
 
 Navigate to the Initialise Database page in the admin menu.
