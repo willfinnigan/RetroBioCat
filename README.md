@@ -101,7 +101,7 @@ Once the databases are initialised RetroBioCat is ready to use.
 Our publication on RetroBioCat features an evaluation on a test-set of 52 pathways.  
 We automated this evaluation using a script available in the /scripts/pathway_testing/ folder.  
 
-To run the pathway_eval.py script, first ensure that your mongodb instance is running and that the databases have been initialised as described above.  
+To run the pathway_eval.py script, install retrobiocat via option 2 (above) and ensure that your mongodb instance is running and that the databases have been initialised as described above.  
 
 Move directories to /scripts/pathway_testing/ , and run python pathway_eval.py  
 
