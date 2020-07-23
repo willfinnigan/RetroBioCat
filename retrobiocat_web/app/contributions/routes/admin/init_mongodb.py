@@ -24,7 +24,6 @@ class InitDB(FlaskForm):
     rxns = FileField("Reactions")
     biocatdb = FileField("biocatdb")
     sequences = FileField("sequences")
-    building_blocks = FileField("building_blocks")
     submit = SubmitField('Submit')
 
 class Assign(FlaskForm):
@@ -88,38 +87,7 @@ def init_db():
 
             os.remove(filename)
 
-        if form.building_blocks.data != None:
-            filename = secure_filename(form.building_blocks.data.filename)
-            form.building_blocks.data.save(filename)
-
-            try:
-                if '.csv' in filename:
-                    df = pd.read_csv(filename)
-
-                elif '.db' in filename:
-                    if test_db(filename):
-                        db_path = str(Path(__file__).parents[4]) + '/retro/data/buyability/building_blocks.db'
-                        os.replace(filename, db_path)
-                    else:
-                        Exception('.db file did not pass test')
-                else:
-                    df = None
-                    Exception('File must be .csv or .db')
-
-                current_app.db_queue.enqueue(task_init_building_block_db, df)
-                flash("Building block csv loaded ok, added to queue", "success")
-            except Exception as e:
-                flash(f"Problem loading building block csv - {e}", "fail")
-
-            try:
-                os.remove(filename)
-            except:
-                pass
-
-        return render_template('init_db/init_db.html', form=form)
-
-    else:
-        return render_template('init_db/init_db.html', form=form)
+    return render_template('init_db/init_db.html', form=form)
 
 @bp.route('/other_admin_functions', methods=['GET', 'POST'])
 @roles_required('admin')

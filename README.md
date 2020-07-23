@@ -15,7 +15,6 @@ For more information, please see our preprint:
 ## Option 1 - Quick start using docker
 Warning - currently this method does not function correctly on Windows due to an issue with specifying a volume for use with the mongo container.  
 
-
 Option 1 requires that you have docker, docker-compose and git installed on your computer.  
 
  - Clone this repository and move directory to /retrobiocat/docker/
@@ -28,6 +27,9 @@ cd retrobiocat/docker/
 ```
 docker-compose build --no-cache
 ```
+
+- Copy the building_blocks.db file from https://figshare.com/articles/software/RetroBioCat_database_files/12696482
+ into the `/docker/data/buyability` folder
 
 - Run.  Mongodb may require admin rights to function correctly.
 ```
@@ -45,11 +47,13 @@ RetroBioCat requires anaconda or miniconda with python 3.7 or later
 conda install -c rdkit rdkit -y
 ```
 
-* Next, clone this repository and change your working directory to that of the repository  
+* Next, clone this repository, either with the git command below or through the link on github  
 ```
 git clone https://github.com/willfinnigan/retrobiocat.git 
-cd retrobiocat
 ```
+
+* Copy the building_blocks.db file from https://figshare.com/articles/software/RetroBioCat_database_files/12696482
+ into `/retrobiocat/retrobiocat_web/retro/data/buyability/`
 
 * Install retrobiocat_web along with requirements
 ```
