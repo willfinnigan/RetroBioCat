@@ -23,7 +23,7 @@ git clone https://github.com/willfinnigan/retrobiocat.git
 cd retrobiocat
 ```
 
-* Install the retrobiocat_web and requirements
+* Install retrobiocat_web along with requirements
 ```
 pip install -e .
 ```
