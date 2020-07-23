@@ -1,0 +1,53 @@
+version: "3"
+
+services:
+  redis:
+    image: redis:alpine
+
+  mongo:
+    image: mongo
+    volumes:
+      - ./mongo/mongo-volume:/data/db
+
+  rbc_app:
+    build:
+        dockerfile: dockerfile_retrobiocat
+        context: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data/:/retrobiocat_web/retrobiocat_web/data/
+    environment:
+      - PRODUCTION=False
+      - SECRET_KEY=put-production-secret-key-here
+      - SECURITY_PASSWORD_SALT=32739287409
+      - REDIS_URL=redis://redis:6379/0
+      - MONGO_HOST=mongodb://mongo
+    links:
+      - redis
+      - mongo
+    depends_on:
+      - redis
+      - mongo
+    command: gunicorn -b :5000 --timeout 400 --workers 2 --access-logfile - --error-logfile - retrobiocat_web.main:main_app
+
+  worker_1:
+    build:
+        dockerfile: dockerfile_retrobiocat
+        context: .
+    volumes:
+      - ./data/:/retrobiocat_web/retrobiocat_web/data/
+    depends_on:
+      - redis
+      - mongo
+    links:
+      - redis
+      - mongo
+    environment:
+      - PRODUCTION=False
+      - SECRET_KEY=put-production-secret-key-here
+      - SECURITY_PASSWORD_SALT=32739287409
+      - REDIS_URL=redis://redis:6379/0
+      - MONGO_HOST=mongodb://mongo
+    command: python3 ./retrobiocat_web/worker.py tasks network pathway
+

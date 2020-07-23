@@ -1,0 +1,4 @@
+FROM willfinnigan/retrobiocat_base:latest
+
+RUN git clone https://github.com/willfinnigan/retrobiocat.git
+RUN pip install -e ./retrobiocat/
