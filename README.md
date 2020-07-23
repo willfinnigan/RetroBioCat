@@ -64,8 +64,32 @@ Navigate to the Initialise Database page in the admin menu.
 
 Initialise the database by uploading the required files.  This can be done one at a time (recommended) or all together.
 
-Files are available at:  
+Files are available at:   
+https://figshare.com/articles/software/RetroBioCat_database_files/12696482  
+
+Reaction rules: trial_rule_set.yaml  
+Activity: trial_biocatdb_will_and_lorna.xlsx  
+Building blocks: building_blocks.db
+
 Currently only example sets of reaction rules and substrate specificity information are provided, pending future publications.
+
+Once the databases are initialised RetroBioCat is ready to use.
+
+## Automated testing of pathway test-set  
+Our publication on RetroBioCat features an evaluation on a test-set of 52 pathways.  
+We automated this evaluation using a script available in the /scripts/pathway_testing/ folder.  
+
+To run the pathway_eval.py script, first ensure that your mongodb instance is running and that the databases have been initialised as described above.  
+
+Move directories to /scripts/pathway_testing/ , and run python pathway_eval.py  
+
+Note this script takes a long time to run.  Results are saved by default to test_pathways.xlsx
+
+(Note, replication of the results in the paper requires the complete set of reaction rules and database file, which are not yet publicly available)  
+
+
+
+
 
 
 
