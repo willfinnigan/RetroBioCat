@@ -10,6 +10,8 @@ For more information, please see our preprint:
 [Finnigan, William; Hepworth, Lorna J.; Turner, Nicholas J.; Flitsch, Sabine (2020): RetroBioCat: Computer-Aided Synthesis Planning for Biocatalytic Reactions and Cascades. ChemRxiv. Preprint. https://doi.org/10.26434/chemrxiv.12571235.v1](https://chemrxiv.org/articles/preprint/RetroBioCat_Computer-Aided_Synthesis_Planning_for_Biocatalytic_Reactions_and_Cascades/12571235?fbclid=IwAR3PBVXF-MGavQ2ejq3gdVQhdRxUYxNLPvI-EozTnqfm1Ut9R2eDJOD6i4I)  
 
 ## Option 1 - Quick start using docker
+Option 1 requires that you have docker, docker-compose and git installed on your computer.  
+
  - Clone this repository and move directory to /retrobiocat/docker/
 ```
 git clone https://github.com/willfinnigan/retrobiocat.git 
