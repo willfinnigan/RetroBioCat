@@ -49,8 +49,6 @@
                                 {{ form.submit(class="btn btn-success", form="main_form") }}
                             </div>
                         </form>
-
-                        <button class="btn btn-info" onclick="assign_papers()" id="assign_papers">Assign papers</button>
                     </div>
                 </div>
             </div>
@@ -58,17 +56,6 @@
         </div>
     </div>
 
-    <script src="{{url_for('.static', filename='js/response_alert.js')}}?v={{v}}" type="text/javascript"></script>
 
-    <script>
-        function assign_papers() {
-        $.post('/_assign_papers', {
-            }).done(function(data) {
-                response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
-            })
-        }
-
-
-    </script>
 
 {% endblock %}

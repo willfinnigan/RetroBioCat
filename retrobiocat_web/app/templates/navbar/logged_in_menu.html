@@ -9,6 +9,7 @@
         <a class="dropdown-item" href="/logout"> Logout </a>
         {% if current_user.has_role('admin') %}
             <a class="dropdown-item" href="/admin" target="_blank">Admin</a>
+            <a class="dropdown-item" href="{{url_for('contributions.init_db') }}">Initialise Database</a>
         {% endif %}
     </div>
 </li>

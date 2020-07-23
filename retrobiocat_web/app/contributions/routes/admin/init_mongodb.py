@@ -20,7 +20,6 @@ import datetime
 from pathlib import Path
 from retrobiocat_web.retro.evaluation.starting_material import StartingMaterialEvaluator
 
-
 class InitDB(FlaskForm):
     rxns = FileField("Reactions")
     biocatdb = FileField("biocatdb")
@@ -32,9 +31,9 @@ class Assign(FlaskForm):
     submit = SubmitField('Submit')
 
 
-@bp.route('/secret_monogo_init_page', methods=['GET', 'POST'])
+@bp.route('/init_db', methods=['GET', 'POST'])
 @roles_required('admin')
-def secret_monogo_init_page():
+def init_db():
     form = InitDB()
 
     if form.validate_on_submit() == True:
@@ -121,6 +120,11 @@ def secret_monogo_init_page():
 
     else:
         return render_template('init_db/init_db.html', form=form)
+
+@bp.route('/other_admin_functions', methods=['GET', 'POST'])
+@roles_required('admin')
+def other_admin_functions():
+    return render_template('init_db/other_admin_functions.html')
 
 @bp.route('/_assign_papers', methods=['GET', 'POST'])
 @roles_required('admin')

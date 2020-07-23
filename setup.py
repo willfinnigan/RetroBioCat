@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+from retrobiocat_web import __version__
 
 with open('requirements.txt') as f:
   requirements = f.read().splitlines()
@@ -8,7 +9,7 @@ setup(
   name = 'retrobiocat_web',
   packages = find_packages(),
   include_package_data=True,
-  version = '0.1',
+  version = __version__,
   license='',
   description = 'Retrosynthesis',
   author = 'William Finnigan',

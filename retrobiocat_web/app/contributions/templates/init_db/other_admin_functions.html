@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% set active_page = "contributions_menu" %}
+
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col"></div>
+            <div class="col">
+                <div class="card card-form my-5" style="width: 50rem;">
+                    <div class="card-body" align="center">
+                        <h3 class="card-title">Admin functions</h3>
+                        <div id="'save_response"></div>
+
+                        <button class="btn btn-info" onclick="assign_papers()" id="assign_papers">Assign papers</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col"></div>
+        </div>
+    </div>
+
+
+    <script>
+        function assign_papers() {
+        $.post('/_assign_papers', {
+            }).done(function(data) {
+                response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+            })
+        }
+
+
+    </script>
+
+{% endblock %}
