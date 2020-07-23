@@ -16,7 +16,7 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - ./data/:/retrobiocat_web/retrobiocat_web/data/
+      - ./data/:/retrobiocat/retrobiocat_web/retro/data/
     environment:
       - PRODUCTION=False
       - SECRET_KEY=put-production-secret-key-here
@@ -36,7 +36,7 @@ services:
         dockerfile: dockerfile_retrobiocat
         context: .
     volumes:
-      - ./data/:/retrobiocat_web/retrobiocat_web/data/
+      - ./data/:/retrobiocat/retrobiocat_web/retro/data/
     depends_on:
       - redis
       - mongo
@@ -49,5 +49,5 @@ services:
       - SECURITY_PASSWORD_SALT=32739287409
       - REDIS_URL=redis://redis:6379/0
       - MONGO_HOST=mongodb://mongo
-    command: python3 ./retrobiocat_web/worker.py tasks network pathway
+    command: python3 ./retrobiocat/retrobiocat_web/worker.py tasks network pathway
 
