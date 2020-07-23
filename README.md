@@ -17,7 +17,7 @@ Warning - currently this method does not function correctly on Windows due to an
 
 Option 1 requires that you have docker, docker-compose and git installed on your computer.  
 
- - Clone this repository and move directory to /retrobiocat/docker/
+ - Clone this repository and move working directory to /retrobiocat/docker/
 ```
 git clone https://github.com/willfinnigan/retrobiocat.git 
 cd retrobiocat/docker/
