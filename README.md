@@ -16,7 +16,8 @@ For more information, please see our preprint:
 python >= 3.7  
 rdkit >= 2020  
 Python packages listed in requirements.txt.  The lastest version of each package is recommended other than where specified.
- 
+
+Retrobiocat also requires a running mongodb and redis instance, for which we recommended using docker.
 
 ## Option 1 - Use docker-compose
 Warning - currently this method does not function correctly on Windows due to an issue with specifying a volume for use with the mongo container.  
