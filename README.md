@@ -12,12 +12,14 @@ Currently only an example data-set is provided for the substrate specificity dat
 For more information, please see our preprint:  
 [Finnigan, William; Hepworth, Lorna J.; Turner, Nicholas J.; Flitsch, Sabine (2020): RetroBioCat: Computer-Aided Synthesis Planning for Biocatalytic Reactions and Cascades. ChemRxiv. Preprint. https://doi.org/10.26434/chemrxiv.12571235.v1](https://chemrxiv.org/articles/preprint/RetroBioCat_Computer-Aided_Synthesis_Planning_for_Biocatalytic_Reactions_and_Cascades/12571235?fbclid=IwAR3PBVXF-MGavQ2ejq3gdVQhdRxUYxNLPvI-EozTnqfm1Ut9R2eDJOD6i4I)  
 
-## Requirements
+## Requirements and testing
 python >= 3.7  
 rdkit >= 2020  
 Python packages listed in requirements.txt.  The lastest version of each package is recommended other than where specified.
 
 Retrobiocat also requires a running mongodb and redis instance, for which we recommended using docker.
+
+Retrobiocat has been tested on macOS v10.14.6 and Ubuntu 
 
 ## Option 1 - Use docker-compose
 Warning - currently this method does not function correctly on Windows due to an issue with specifying a volume for use with the mongo container.  
