@@ -19,7 +19,7 @@ Python packages listed in requirements.txt.  The lastest version of each package
 
 Retrobiocat also requires a running mongodb and redis instance, for which we recommended using docker.
 
-Retrobiocat has been tested on macOS v10.14.6 and Ubuntu 18.0.4.3 (LTS).
+Retrobiocat has been tested on macOS v10.14.6 and Ubuntu 18.04.3 (LTS).
 
 Installation should take no longer than 10-30 minutes on a modern computer.
 
