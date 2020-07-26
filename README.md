@@ -7,10 +7,16 @@ RetroBioCat is a web-based tool for designing biocatalytic cascades and reaction
 We recommend using retrobiocat through the online version hosted at https://retrobiocat.com  
 
 However, you may run your own instance of RetroBioCat by following the installation instructions below.
-Currently only exemplar data-sets for the reaction rules and for the substrate specificity database are provided.
+Currently only an example data-set is provided for the substrate specificity database.
 
 For more information, please see our preprint:  
 [Finnigan, William; Hepworth, Lorna J.; Turner, Nicholas J.; Flitsch, Sabine (2020): RetroBioCat: Computer-Aided Synthesis Planning for Biocatalytic Reactions and Cascades. ChemRxiv. Preprint. https://doi.org/10.26434/chemrxiv.12571235.v1](https://chemrxiv.org/articles/preprint/RetroBioCat_Computer-Aided_Synthesis_Planning_for_Biocatalytic_Reactions_and_Cascades/12571235?fbclid=IwAR3PBVXF-MGavQ2ejq3gdVQhdRxUYxNLPvI-EozTnqfm1Ut9R2eDJOD6i4I)  
+
+## Requirements
+python >= 3.7  
+rdkit >= 2020  
+Python packages listed in requirements.txt.  The lastest version of each package is recommended other than where specified.
+ 
 
 ## Option 1 - Use docker-compose
 Warning - currently this method does not function correctly on Windows due to an issue with specifying a volume for use with the mongo container.  
@@ -38,7 +44,8 @@ RetroBioCat should now be available locally at http://127.0.0.1:5000
 Databases must now be initalised (see below)
 
 ## Option 2 - Manual Installation
-RetroBioCat requires anaconda or miniconda with python 3.7 or later
+RetroBioCat requires anaconda or miniconda with python 3.7 or later  
+You may wish to install retrobiocat in a virtual environment to prevent conflicting dependencies.
 
 * First install the following conda packages
 ```
@@ -53,7 +60,7 @@ git clone https://github.com/willfinnigan/retrobiocat.git
 * Copy the building_blocks.db file from https://figshare.com/articles/software/RetroBioCat_database_files/12696482
  into `/retrobiocat/retrobiocat_web/retro/data/buyability/`
 
-* Install retrobiocat_web along with requirements
+* Install retrobiocat_web along with requirements.
 ```
 pip install -e .
 ```
@@ -99,11 +106,11 @@ Initialise the database by uploading the required files.  This can be done one a
 Files are available at:   
 https://figshare.com/articles/software/RetroBioCat_database_files/12696482  
 
-Reaction rules: trial_rule_set.yaml  
+Reaction rules: rxns_yaml.yaml  
 Activity: trial_biocatdb_will_and_lorna.xlsx  
 Building blocks: building_blocks.db
 
-Currently only example sets of reaction rules and substrate specificity information are provided, pending future publications.
+Currently only an example set substrate specificity information is provided, pending future publications.
 
 Once the databases are initialised RetroBioCat is ready to use.
 
