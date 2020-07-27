@@ -10,6 +10,8 @@
 
 <script src="{{url_for('static', filename='jsme/jsme.nocache.js')}}"></script>
 
+<script src="{{url_for('static', filename='js/custom_tabulator.js')}}?v={{v}}" type="text/javascript"></script>
+
 <script type="text/javascript">
     var csrf_token = "{{ csrf_token() }}";
 

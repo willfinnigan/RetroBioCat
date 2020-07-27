@@ -7,4 +7,4 @@ bp = Blueprint('biocatdb',
                static_url_path='/biocatdb/static'
                )
 
-from retrobiocat_web.app.biocatdb.routes import specificity
+from retrobiocat_web.app.biocatdb.routes import spec_2

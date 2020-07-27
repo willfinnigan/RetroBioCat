@@ -11,6 +11,8 @@ $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
 
 <script src="{{url_for('static', filename='js/response_alert.js')}}?v={{v}}" type="text/javascript"></script>
 
+
+
 <script>
     $(document).ready(function () {
         $("#{{active_page}}").addClass("active"); })

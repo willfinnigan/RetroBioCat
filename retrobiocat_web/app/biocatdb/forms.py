@@ -43,7 +43,7 @@ class SubstrateForm(FlaskForm):
     enzymes = StringField('Enzymes', validators=[DataRequired(), is_enzyme])
     reactions = StringField('Reactions', validators=[is_reaction])
     data_level = SelectField('Data level', choices=specificity_data_choices)
-    num_choices = IntegerField('Max enzymes per substrate', default=1, validators=[NumberRange(min=1, max=100)])
+    num_choices = IntegerField('Max enzymes per substrate', default=4, validators=[NumberRange(min=1, max=100)])
     max_hits = IntegerField('Max similar substrates', default=10, validators=[NumberRange(min=1, max=100)])
     target_smiles = StringField('Product SMILES', validators=[is_accepted_by_rdkit])
     similarity = DecimalField('Similarity cutoff', default=0.6, validators=[NumberRange(min=0.1, max=1)])

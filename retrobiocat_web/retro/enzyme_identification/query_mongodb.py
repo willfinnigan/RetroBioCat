@@ -1,7 +1,39 @@
 from retrobiocat_web.mongo.models.biocatdb_models import Sequence, EnzymeType, Activity
-from retrobiocat_web.retro.enzyme_identification.load.load_spec_df_excel import COLUMNS
 from mongoengine.queryset.visitor import Q
 import pandas as pd
+
+COLUMNS = ['Reaction',
+           'Enzyme type',
+           'Enzyme name',
+           'Data source',
+           'Data source doi',
+           'Cascade num',
+           'Substrate 1 SMILES',
+           'Substrate 2 SMILES',
+           'Product 1 SMILES',
+           'Temperature',
+           'pH',
+           'Solvent',
+           'Other conditions',
+           'Notes',
+           'Reaction volume (ml)',
+           'Biocatalyst Formulation',
+           'Biocatalyst Concentration (mg/ml)',
+           'kcat (min-1)',
+           'KM (mM)',
+           'Enz MW (Da)',
+           'Substrate 1 conc (mM)',
+           'Substrate 2 conc (mM)',
+           'Specific activity (U/mg)',
+           'Conversion (%)',
+           'Conversion time (hrs)',
+           'Categorical',
+           'Binary',
+           'Added by',
+           'Selectivity',
+           'Auto Generated',
+           'paper',
+           '_id']
 
 def rename_mongo_columns(df):
     col_rename = {'reaction': 'Reaction',

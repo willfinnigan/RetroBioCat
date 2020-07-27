@@ -35,7 +35,7 @@ def moltosvg(mol,molSize=(300,300)):
 def smile_to_svg_url(smiles, size=(300,300)):
     mol = AllChem.MolFromSmiles(smiles)
     svg = moltosvg(mol, molSize=size)
-    url = "data:image/svg+xml;charset=utf-8," + quote(svg)
+    c
     return url
 
 def morgan_fingerprint_vis(product_smiles, sim_smiles):

@@ -43,7 +43,6 @@ def moltosvg(mol,molSize=(150,150),kekulize=True):
     svg = drawer.GetDrawingText()
     return svg
 
-
 def rxntosvg(list_rxns, rxnSize=(900,300)):
     list_svgs = []
     for i, rxn in enumerate(list_rxns):

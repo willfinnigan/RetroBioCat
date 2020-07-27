@@ -10,6 +10,7 @@ from retrobiocat_web.app.biocatdb import bp
 from rq import get_current_job
 
 
+
 def filter_df_by_data_level(df, data_level):
     if data_level != 'All':
         if data_level == 'Categorical':
