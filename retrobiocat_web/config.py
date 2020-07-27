@@ -6,7 +6,7 @@ class Config(object):
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'testing_key'
     SECURITY_PASSWORD_SALT = os.environ.get("SECURITY_PASSWORD_SALT", '8439842')
 
-    PRODUCTION = os.environ.get('PRODUCTION') or True
+    PRODUCTION = os.environ.get('PRODUCTION') or False
 
     REDIS_URL = os.environ.get('REDIS_URL') or 'redis://'
     MONGODB_HOST = os.environ.get('MONGO_HOST') or 'localhost'
@@ -16,7 +16,7 @@ class Config(object):
     ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL') or 'admin@email.com'
     ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD') or 'password'
 
-    USE_EMAIL_CONFIRMATION = os.environ.get('USE_EMAIL_CONFIRMATION') or True
+    USE_EMAIL_CONFIRMATION = os.environ.get('USE_EMAIL_CONFIRMATION') or False
     SECURITY_REGISTERABLE = True
     SECURITY_SEND_REGISTER_EMAIL = USE_EMAIL_CONFIRMATION
     SECURITY_CONFIRMABLE = USE_EMAIL_CONFIRMATION
