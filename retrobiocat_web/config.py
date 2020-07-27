@@ -32,11 +32,11 @@ class Config(object):
         SECURITY_POST_CHANGE_VIEW = '/'
 
 
-    MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'smtp.gmail.com'
-    MAIL_PORT = os.environ.get('MAIL_PORT') or 465
+    MAIL_SERVER = os.environ.get('MAIL_SERVER')
+    MAIL_PORT = os.environ.get('MAIL_PORT')
     MAIL_USE_SSL = True
-    MAIL_USERNAME = os.environ.get('EMAIL_ADDRESS') or 'email_address_here'
-    MAIL_PASSWORD = os.environ.get('EMAIL_PASSWORD') or 'password_here'
+    MAIL_USERNAME = os.environ.get('EMAIL_ADDRESS')
+    MAIL_PASSWORD = os.environ.get('EMAIL_PASSWORD')
 
     CACHE_TYPE = "redis"
     CACHE_DEFAULT_TIMEOUT = 300
