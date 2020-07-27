@@ -16,7 +16,21 @@
 
         {'title': "Enzyme name", 'field': "Enzyme name", 'width':120, headerFilter:"select", headerFilterParams:{values:true}},
 
-        {'title': "Data source", 'field': "Data source", 'width':120, headerFilter:"select", headerFilterParams:{values:true}},
+        {'title': "Data source", 'field': "Data source", 'width':120,
+        formatter:function(cell, formatterParams){
+            var cell_value = cell.getValue();
+            var row_data = cell.getData()
+            var doi = row_data['Data source doi']
+            var url = "<a href='" + doi + "' target='_blank'>" + cell_value + "</a>";
+
+            cell.getElement().style.display = 'inline-flex'
+            cell.getElement().style.height  = '158px'
+            cell.getElement().style["white-space"]  = 'pre-wrap'
+            return url
+            }
+        },
+
+        {'title': "Data source doi", 'field': "Data source doi", visible:false},
 
         {'title': "paper", 'field': "paper", visible:false},
 
@@ -107,9 +121,9 @@
 
         {'title': "Solvent", 'field': "Solvent", 'width':75},
 
-        {'title': "Other conditions", 'field': "Other conditions", 'width':150},
+        {'title': "Other conditions", 'field': "Other conditions", 'width':200, formatter:"textarea"},
 
-        {'title': "Notes", 'field': "Notes", 'width':150},
+        {'title': "Notes", 'field': "Notes", 'width':200, formatter:"textarea"},
 
         {'title': "Reaction volume (ml)", 'field': "Reaction volume (ml)", 'width':75},
 
@@ -140,6 +154,8 @@
         layout:"fitColumns",
         addRowPos:"bottom",
         columns:columns,
+        cellHozAlign:"center",
+        cellVertAlign:"middle"
     });
 
 </script>

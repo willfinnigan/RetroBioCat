@@ -54,6 +54,7 @@ COLUMNS = ["Reaction",
            "Categorical",
            "Binary",
            'Data source',
+           'Data source doi',
            'paper']
 
 
