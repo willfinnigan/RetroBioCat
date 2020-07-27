@@ -23,7 +23,7 @@ services:
       - SECURITY_PASSWORD_SALT=32739287409
       - REDIS_URL=redis://redis:6379/0
       - MONGO_HOST=mongodb://mongo
-      - USE_EMAIL_CONFIRMATION = False
+      - USE_EMAIL_CONFIRMATION=False
     links:
       - redis
       - mongo
@@ -50,6 +50,6 @@ services:
       - SECURITY_PASSWORD_SALT=32739287409
       - REDIS_URL=redis://redis:6379/0
       - MONGO_HOST=mongodb://mongo
-      - USE_EMAIL_CONFIRMATION = False
+      - USE_EMAIL_CONFIRMATION=False
     command: python3 ./retrobiocat/retrobiocat_web/worker.py tasks network pathway db
 
