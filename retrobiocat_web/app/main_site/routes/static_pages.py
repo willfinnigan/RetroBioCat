@@ -1,11 +1,14 @@
 from retrobiocat_web.app.main_site import bp
 from flask import render_template
 from retrobiocat_web import __version__ as website_version
+import datetime
+__version__ = datetime.date.today().strftime("%d%m%y")
 
 @bp.route('/', methods=['GET'])
 def home():
+    version = f"{website_version} - {datetime.date.today().strftime('%d%m%y')}"
     return render_template('home.html',
-                           rbc_version=website_version)
+                           rbc_version=version)
 
 @bp.route('/automated_cascade_design', methods=['GET'])
 def automated_cascade_design():
