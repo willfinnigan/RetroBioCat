@@ -38,7 +38,10 @@ def task_make_network(form_data):
     job.meta['progress'] = 'started'
     job.save_meta()
 
-    network = Network(include_experimental=bool(form_data['include_experimental']), include_two_step=bool(form_data['include_two_step']), print_log=not current_app.config['PRODUCTION'])
+    network = Network(include_experimental=bool(form_data['include_experimental']),
+                      include_two_step=bool(form_data['include_two_step']),
+                      print_log=not current_app.config['PRODUCTION'])
+
     network.update_settings({"allow_backwards_steps": bool(form_data['allow_backwards']),
                              "remove_simple": bool(form_data['remove_small']),
                              "similarity_score_threshold": float(form_data['sub_thres']),

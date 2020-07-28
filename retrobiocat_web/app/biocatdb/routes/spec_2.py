@@ -55,7 +55,8 @@ COLUMNS = ["Reaction",
            "Binary",
            'Data source',
            'Data source doi',
-           'paper']
+           'paper',
+           'activity_id']
 
 
 @bp.route('/substrate_specificity_form',  methods=['GET', 'POST'])
@@ -163,6 +164,7 @@ def get_spec_data(form_data):
 def process_activity_data(activity_data):
     for i, record in enumerate(activity_data):
         activity_data[i]['paper'] = str(activity_data[i]['paper'])
+        activity_data[i]['activity_id'] = str(activity_data[i]['activity_id'])
 
     return activity_data
 
@@ -208,7 +210,7 @@ if __name__ == '__main__':
 
     scorer = molecular_similarity.SubstrateSpecificityScorer(print_log=False)
 
-    test_product = 'CCCC=O'
+    test_product = ''
     reactions = []
     enzymes = ['CAR']
 

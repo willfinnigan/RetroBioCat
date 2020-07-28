@@ -1,5 +1,7 @@
 <div id="table"></div>
 
+{% include '/activity_modal/activity_modal.html' %}
+
 <script>
 
     var high_colour = "#b8ffbf"
@@ -8,6 +10,8 @@
     var none_colour = "#ffb8b8"
 
     var columns = [
+
+        {'title': "activity_id", 'field': "activity_id", visible:false},
 
         {'title': "Reaction", 'field': "Reaction", 'width':100, formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
 
@@ -154,7 +158,10 @@
         addRowPos:"bottom",
         columns:columns,
         cellHozAlign:"center",
-        cellVertAlign:"middle"
+        cellVertAlign:"middle",
+        rowClick:function(e, row){
+            $('#activity_modal').modal('show');
+            },
     });
 
 </script>

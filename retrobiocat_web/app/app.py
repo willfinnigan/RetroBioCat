@@ -103,7 +103,6 @@ def create_app(config_class=Config, use_talisman=True):
     @app.context_processor
     def inject_login_mode():
         login_mode = app.config['USE_EMAIL_CONFIRMATION']
-        print(login_mode)
         return dict(login_mode=login_mode)
 
     print("Register blueprints...")

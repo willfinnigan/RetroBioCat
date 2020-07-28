@@ -33,7 +33,7 @@ COLUMNS = ['Reaction',
            'Selectivity',
            'Auto Generated',
            'paper',
-           '_id']
+           'activity_id']
 
 def rename_mongo_columns(df):
     col_rename = {'reaction': 'Reaction',
@@ -65,7 +65,8 @@ def rename_mongo_columns(df):
                   'binary': 'Binary',
                   'added_by': 'Added by',
                   'selectivity': 'Selectivity',
-                  'auto_generated': 'Auto Generated'}
+                  'auto_generated': 'Auto Generated',
+                  '_id': 'activity_id'}
     df.rename(columns=col_rename, inplace=True)
     df = df.reindex(columns=COLUMNS)
     return df
@@ -104,3 +105,4 @@ if __name__ == '__main__':
     df = query_specificity_data([], ['CAR'])
     t1 = time.time()
     print(f"Code took {round(t1-t0,3)} seconds to run")
+    print(df)
