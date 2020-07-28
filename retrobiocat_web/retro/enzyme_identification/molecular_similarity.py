@@ -80,6 +80,9 @@ class SubstrateSpecificityScorer():
 
         spec_df = self.filter_df_by_data_level(spec_df, dataLevel)
 
+        if len(spec_df.index) != 0:
+            return None
+
         if include_auto_generated == False:
             self._log('Filtering out auto generated data..')
             spec_df = spec_df[spec_df[self.cols.auto_generated] != 1]

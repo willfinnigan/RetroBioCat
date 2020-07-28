@@ -148,6 +148,12 @@ def get_spec_data(form_data):
                                    numHits=max_hits,
                                    include_auto_generated=include_auto_data)
 
+    if activity_df is None:
+        return []
+
+    if len(activity_df.index) != 0:
+        return []
+
     activity_df = activity_df[COLUMNS]
     activity_df = activity_df.round(2)
     activity_df.replace(np.nan, '', inplace=True)
@@ -155,7 +161,6 @@ def get_spec_data(form_data):
     activity_df.replace(False, 'False', inplace=True)
 
     activity_data = activity_df.to_dict(orient='records')
-
     activity_data = process_activity_data(activity_data)
     activity_data = smiles_to_svg(activity_data)
 
@@ -215,13 +220,17 @@ if __name__ == '__main__':
     enzymes = ['CAR']
 
     activity_df = scorer.querySpecificityDf(test_product, reactions, enzymes)
-    #activity_df = activity_df[COLUMNS]
-    activity_df = activity_df.round(2)
-    activity_df.replace(np.nan, '', inplace=True)
-    activity_df.replace(True, 'True', inplace=True)
-    activity_df.replace(False, 'False', inplace=True)
 
-    activity_data = activity_df.to_dict(orient='records')
+    if len(activity_df.index) != 0:
+        activity_data = []
+    else:
+        #activity_df = activity_df[COLUMNS]
+        activity_df = activity_df.round(2)
+        activity_df.replace(np.nan, '', inplace=True)
+        activity_df.replace(True, 'True', inplace=True)
+        activity_df.replace(False, 'False', inplace=True)
+
+        activity_data = activity_df.to_dict(orient='records')
 
     print(activity_data)
 
