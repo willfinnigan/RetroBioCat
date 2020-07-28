@@ -9,7 +9,7 @@ import mongoengine as db
 
 
 def get_enzyme_data(query):
-    seq_fields = ['id', 'enzyme_type', 'enzyme_name', 'sequence', 'sequence_unavailable', 'accession', 'structure', 'mutant_of', 'notes', 'papers', 'owner']
+    seq_fields = ['id', 'enzyme_type', 'enzyme_name', 'sequence', 'sequence_unavailable', 'accession', 'structure', 'mutant_of', 'notes', 'papers', 'owner', 'other_names']
     enzyme_data = list(Sequence.objects(query).only(*seq_fields).order_by('enzyme_type').as_pymongo())
     owners_dict = {}
     for i, data in enumerate(enzyme_data):
