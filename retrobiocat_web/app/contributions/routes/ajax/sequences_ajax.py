@@ -44,6 +44,7 @@ def save_edited_sequence():
     structure = bool(strtobool(request.form['structure']))
     mutant_of = request.form['mutant_of']
     notes = request.form['notes']
+    other_names = request.form['other_names']
 
     status = 'success'
     msg = 'Sequence edited'
@@ -58,6 +59,7 @@ def save_edited_sequence():
     seq.structure = structure
     seq.notes = notes
     seq.mutant_of = mutant_of
+    seq.other_names = other_names.split(', ')
 
     if seq.added_by is None:
         seq.added_by = user
@@ -136,6 +138,13 @@ def load_sequence_data():
             if not user.has_role('super_contributor'):
                 can_edit = False
 
+    other_names = ''
+    for i, name in enumerate(seq.other_names):
+        other_names += name
+        if (len(seq.other_names) > 1) and (i < len(seq.other_names)-1):
+            other_names += ', '
+
+
     result = {'enzyme_type': seq.enzyme_type,
               'enzyme_name': seq.enzyme_name,
               'sequence': seq.sequence,
@@ -147,9 +156,8 @@ def load_sequence_data():
               'notes': seq.notes,
               'can_edit': can_edit,
               'self_assigned': self_assigned,
-              'owner_is_another_user': other_user}
-
-    print(result)
+              'owner_is_another_user': other_user,
+              'other_names': other_names}
 
     return jsonify(result=result)
 
@@ -212,6 +220,7 @@ def merge_sequences():
                 act.enzyme_name = seq_merge.enzyme_name
                 act.save()
             seq.delete()
+            seq_merge.other_names.append(to_merge)
             seq_merge.save()
         else:
             status = 'danger'

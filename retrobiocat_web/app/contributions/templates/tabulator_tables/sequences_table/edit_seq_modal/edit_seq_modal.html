@@ -49,6 +49,7 @@
                 document.getElementById("mutant_of").value = data.result.mutant_of;
                 document.getElementById("notes").value = data.result.notes;
                 document.getElementById("self_assigned").checked = data.result.self_assigned;
+                document.getElementById("other_names").value = data.result.other_names;
 
                 if (data.result.can_edit == false) {
                     disable_seq_edit_fields()
@@ -74,6 +75,7 @@
         document.getElementById("mutant_of").disabled = true
         document.getElementById("notes").disabled = true
         document.getElementById("self_assigned").disabled = true
+        document.getElementById("other_names").disabled = true
     }
 
     function enable_seq_edit_fields() {
@@ -86,6 +88,7 @@
         document.getElementById("mutant_of").disabled = false
         document.getElementById("notes").disabled = false
         document.getElementById("self_assigned").disabled = false
+        document.getElementById("other_names").disabled = false
     }
 
     function save_seq_edit() {
@@ -99,7 +102,8 @@
             structure: document.getElementById("structure").checked,
             mutant_of: document.getElementById("mutant_of").value,
             notes: document.getElementById("notes").value,
-            self_assigned: document.getElementById("self_assigned").checked
+            self_assigned: document.getElementById("self_assigned").checked,
+            other_names: document.getElementById("other_names").value
 
             }).done(function(data) {
                 response_msg(data.result.msg, data.result.status, data.result.issues, "seq_edit_save_response")

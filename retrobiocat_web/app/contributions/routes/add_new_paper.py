@@ -44,17 +44,19 @@ def create_paper():
         user = User.objects(id=current_user.id)[0]
         papers = Paper.objects(doi=doi)
         if len(papers) != 0:
+
             paper = papers[0]
-            if paper.owner == None:
-                    flash('Paper already in database, self-assign the paper to add data', 'warning')
-                    return redirect(url_for("contributions.papers_that_need_data"))
+            if paper.owner == user or user.has_role('super_contributor'):
+                flash("Paper already in the database", 'success')
+                return redirect(url_for("contributions.submission_main_page", paper_id=paper.id))
+
+            elif paper.owner == None:
+                flash('Paper already in database, self-assign the paper to add data', 'warning')
+                return redirect(url_for("contributions.papers_that_need_data"))
 
             elif paper.owner != user and not user.has_role('super_contributor'):
                 flash("Paper already in the database and is assigned to another user", 'danger')
 
-            elif paper.owner == user or user.has_role('super_contributor'):
-                flash("Paper already in the database", 'success')
-                return redirect(url_for("contributions.submission_main_page", paper_id=paper.id))
             else:
                 flash("error", 'danger')
                 return redirect(url_for("contributions.launch_add_paper"))
