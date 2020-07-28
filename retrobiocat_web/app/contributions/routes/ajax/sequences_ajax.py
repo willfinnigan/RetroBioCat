@@ -4,6 +4,7 @@ from flask_security import roles_required, current_user
 from retrobiocat_web.mongo.models.biocatdb_models import Sequence, Activity
 from retrobiocat_web.app.app import user_datastore
 from distutils.util import strtobool
+from retrobiocat_web.app.contributions.functions import paper_status
 
 def seqs_of_type(enzyme_type):
     sequences = Sequence.objects(enzyme_type=enzyme_type).distinct('enzyme_name')
@@ -106,6 +107,7 @@ def save_edited_sequence():
 
     if status == 'success':
         seq.save()
+        update_seq_papers_status(seq.enzyme_name)
 
     result = {'status': status,
               'msg': msg,
@@ -222,6 +224,7 @@ def merge_sequences():
             seq.delete()
             seq_merge.other_names.append(to_merge)
             seq_merge.save()
+            update_seq_papers_status(merge_with)
         else:
             status = 'danger'
             msg = 'Could not merge sequences'
@@ -263,4 +266,13 @@ def load_sequence_papers():
 
     return jsonify(result=result)
 
+def update_seq_papers_status(enzyme_name):
+    seq = Sequence.objects(enzyme_name=enzyme_name).select_related()[0]
+    for paper in seq.papers:
+        paper_progress_text, paper_progress = paper_status.paper_metadata_status(paper)
+        sequence_progress_text, sequence_progress = paper_status.sequences_status(paper)
+        activity_progress_text, activity_progress = paper_status.activity_status(paper)
+        status, status_colour = paper_status.get_status(paper_progress, sequence_progress, activity_progress)
 
+        paper.status = status
+        paper.save()
