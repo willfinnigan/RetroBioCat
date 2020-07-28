@@ -3,7 +3,7 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="seq_papers_modalLabel">Papers featuring sequence</h5>
+                <h5 class="modal-title" id="seq_papers_modal_title">Papers featuring sequence</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -42,7 +42,7 @@
             formatter:function(cell, formatterParams){
                 var cell_value = cell.getValue();
                 var row_data = cell.getData()
-                var doi = row_data['Data source doi']
+                var doi = row_data['doi']
                 var url = "<a href='https://doi.org/" + doi + "' target='_blank'>" + cell_value + "</a>";
 
                 cell.getElement().style.display = 'inline-flex'

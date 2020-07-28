@@ -133,6 +133,8 @@
             name: name,
             }).done(function(data) {
                 short_papers_table.replaceData(data.result.papers)
+                document.getElementById("seq_papers_modal_title").innerHTML = "Papers featuring sequence: " + name;
+
             })
     }
 
