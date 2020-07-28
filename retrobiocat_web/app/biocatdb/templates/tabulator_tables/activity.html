@@ -1,5 +1,4 @@
 <div id="table"></div>
-<div class="my-4"></div>
 
 <script>
 
@@ -10,13 +9,13 @@
 
     var columns = [
 
-        {'title': "Reaction", 'field': "Reaction", 'width':200, headerFilter:"select", headerFilterParams:{values:true}},
+        {'title': "Reaction", 'field': "Reaction", 'width':100, formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
 
-        {'title': "Enzyme type", 'field': "Enzyme type", 'width':120, headerFilter:"select", headerFilterParams:{values:true}},
+        {'title': "Enzyme type", 'field': "Enzyme type", 'width':75, formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
 
-        {'title': "Enzyme name", 'field': "Enzyme name", 'width':120, headerFilter:"select", headerFilterParams:{values:true}},
+        {'title': "Enzyme name", 'field': "Enzyme name", 'width':75, formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
 
-        {'title': "Data source", 'field': "Data source", 'width':120,
+        {'title': "Data source", 'field': "Data source", 'width':100,
         formatter:function(cell, formatterParams){
             var cell_value = cell.getValue();
             var row_data = cell.getData()
@@ -40,7 +39,7 @@
 
         {'title': "Product 1 SMILES", 'field': "Product 1 SMILES", 'width':150, formatter:"image"},
 
-        {'title': "Binary", 'field': "Binary", 'width':150, headerFilter:"select", headerFilterParams:{values:true}, formatter:"tickCross",
+        {'title': "Binary", 'field': "Binary", 'width':75, headerFilter:"select", headerFilterParams:{values:true}, formatter:"tickCross",
             formatter:function(cell, formatterParams){
                 var row_data = cell.getData()
                 var cell_value = cell.getValue();
@@ -62,7 +61,7 @@
         },
 
 
-        {'title': "Categorical", 'field': "Categorical", 'width':150, headerFilter:"select", headerFilterParams:{values:true},
+        {'title': "Categorical", 'field': "Categorical", 'width':75, headerFilter:"select", headerFilterParams:{values:true},
         formatter:function(cell, formatterParams){
             var value = cell.getValue();
             if(value === "High"){
@@ -77,7 +76,7 @@
             return value}
         },
 
-        {'title': "Conversion (%)", 'field': "Conversion (%)", 'width':150, sorter:"number", headerFilter:minMaxFilterEditor, headerFilterFunc:minMaxFilterFunction, headerFilterLiveFilter:false,
+        {'title': "Conversion (%)", 'field': "Conversion (%)", 'width':100, sorter:"number", headerFilter:minMaxFilterEditor, headerFilterFunc:minMaxFilterFunction, headerFilterLiveFilter:false,
             formatter:function(cell, formatterParams){
                 var row_data = cell.getData()
                 var cell_value = cell.getValue()
@@ -96,7 +95,7 @@
                 return cell_value}
         },
 
-        {'title': "Specific activity (U/mg)", 'field': "Specific activity (U/mg)", 'width':150, sorter:"number", headerFilter:minMaxFilterEditor, headerFilterFunc:minMaxFilterFunction, headerFilterLiveFilter:false,
+        {'title': "Specific activity (U/mg)", 'field': "Specific activity (U/mg)", 'width':100, sorter:"number", headerFilter:minMaxFilterEditor, headerFilterFunc:minMaxFilterFunction, headerFilterLiveFilter:false,
             formatter:function(cell, formatterParams){
                 var row_data = cell.getData()
                 var cell_value = cell.getValue()
@@ -115,35 +114,35 @@
                 return cell_value}
             },
 
-        {'title': "Temperature", 'field': "Temperature", 'width':75},
+        {'title': "Temperature", 'field': "Temperature", 'width':75, formatter:"textarea"},
 
-        {'title': "pH", 'field': "pH", 'width':50},
+        {'title': "pH", 'field': "pH", 'width':50, formatter:"textarea"},
 
-        {'title': "Solvent", 'field': "Solvent", 'width':75},
+        {'title': "Solvent", 'field': "Solvent", 'width':75, formatter:"textarea"},
 
         {'title': "Other conditions", 'field': "Other conditions", 'width':200, formatter:"textarea"},
 
         {'title': "Notes", 'field': "Notes", 'width':200, formatter:"textarea"},
 
-        {'title': "Reaction volume (ml)", 'field': "Reaction volume (ml)", 'width':75},
+        {'title': "Reaction volume (ml)", 'field': "Reaction volume (ml)", 'width':75, formatter:"textarea"},
 
-        {'title': "Biocatalyst Formulation", 'field': "Biocatalyst Formulation", 'width':100},
+        {'title': "Biocatalyst Formulation", 'field': "Biocatalyst Formulation", 'width':100, formatter:"textarea"},
 
-        {'title': "Biocatalyst Concentration (mg/ml)", 'field': "Biocatalyst Concentration (mg/ml)", 'width':100},
+        {'title': "Biocatalyst Concentration (mg/ml)", 'field': "Biocatalyst Concentration (mg/ml)", 'width':100, formatter:"textarea"},
 
-        {'title': "kcat (min-1)", 'field': "kcat (min-1)", 'width':100},
+        {'title': "kcat (min-1)", 'field': "kcat (min-1)", 'width':100, formatter:"textarea"},
 
-        {'title': "KM (mM)", 'field': "KM (mM)", 'width':100},
+        {'title': "KM (mM)", 'field': "KM (mM)", 'width':100, formatter:"textarea"},
 
-        {'title': "Enz MW (Da)", 'field': "Enz MW (Da)", 'width':100},
+        {'title': "Enz MW (Da)", 'field': "Enz MW (Da)", 'width':100, formatter:"textarea"},
 
-        {'title': "Substrate 1 conc (mM)", 'field': "Substrate 1 conc (mM)", 'width':100},
+        {'title': "Substrate 1 conc (mM)", 'field': "Substrate 1 conc (mM)", 'width':100, formatter:"textarea"},
 
-        {'title': "Substrate 2 conc (mM)", 'field': "Substrate 2 conc (mM)", 'width':100},
+        {'title': "Substrate 2 conc (mM)", 'field': "Substrate 2 conc (mM)", 'width':100, formatter:"textarea"},
 
-        {'title': "Conversion time (hrs)", 'field': "Conversion time (hrs)", 'width':100},
+        {'title': "Conversion time (hrs)", 'field': "Conversion time (hrs)", 'width':100, formatter:"textarea"},
 
-        {'title': "Selectivity", 'field': "Selectivity", 'width':100},
+        {'title': "Selectivity", 'field': "Selectivity", 'width':100, formatter:"textarea"},
     ]
 
     var tabledata = {{activity_data|safe}}
