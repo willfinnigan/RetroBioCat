@@ -5,6 +5,7 @@
 <div id="seq_table"></div>
 <div id="seq_response"></div>
 {% include '/tabulator_tables/sequences_table/other_modals/merge_modal.html' %}
+{% include '/tabulator_tables/sequences_table/other_modals/seq_papers_modal.html' %}
 {% include '/tabulator_tables/sequences_table/other_modals/delete_modal.html' %}
 {% include '/tabulator_tables/sequences_table/edit_seq_modal/edit_seq_modal.html' %}
 
@@ -26,6 +27,10 @@
         return "<button class='btn btn-sm btn-outline-warning' data-toggle='modal' data-target='#merge_modal'>Merge</button>";
     };
 
+    var seePapersButton = function(cell, formatterParams, onRendered){ //plain text value
+        return "<button class='btn btn-sm btn-outline-primary' data-toggle='modal' data-target='#seq_papers_modal'>Papers</button>";
+    };
+
     var seq_columns = [
 
         {'title':"ID", align:"center", 'field':"_id", visible:false, headerSort:false},
@@ -45,10 +50,14 @@
         {'title': "Mutant of", align:"center", 'field': "mutant_of", headerFilter:"input"},
 
         {'title': "Notes", align:"center", 'field': "notes", 'width':150, headerFilter:"input"},
-    
+
         {'title': "Other names", align:"center", 'field': "other_names", 'width':150, headerFilter:"input"},
 
         {'title': "Num. papers", align:"center", 'field': "papers"},
+
+        {% if 'papers' in seq_button_columns %}
+            {'title': 'See papers', 'width':80, formatter:seePapersButton, align:"center", cellClick:function(e, cell){load_seq_papers(cell.getRow().getData().enzyme_name)}},
+        {% endif %}
 
         {% if include_owner == True %}
             {'title': "Owner", align:"center", 'field': "owner", headerFilter:"select", headerFilterParams:{values:true}},
@@ -117,6 +126,14 @@
     function load_seq_delete(name) {
         document.getElementById("original_name_delete").innerHTML = name;
         hide_delete_confirm()
+    }
+
+    function load_seq_papers(name) {
+        $.post('/_load_sequence_papers', {
+            name: name,
+            }).done(function(data) {
+                short_papers_table.replaceData(data.result.papers)
+            })
     }
 
 

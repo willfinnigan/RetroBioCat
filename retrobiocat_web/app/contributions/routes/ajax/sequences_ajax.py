@@ -236,3 +236,31 @@ def merge_sequences():
               'issues': issues}
 
     return jsonify(result=result)
+
+@bp.route('/_load_sequence_papers', methods=['GET', 'POST'])
+@roles_required('contributor')
+def load_sequence_papers():
+    user = user_datastore.get_user(current_user.id)
+    enzyme_name = request.form['name']
+    seq = Sequence.objects(enzyme_name=enzyme_name).select_related()[0]
+
+    papers_list = []
+    for paper in seq.papers:
+        paper_dict = {}
+        paper_dict['_id'] = str(paper.id)
+        paper_dict['short_citation'] = paper.short_citation
+        paper_dict['doi'] = paper.doi
+        paper_dict['title'] = paper.title
+
+        if user.has_role('super_contributor') or paper.owner == user:
+            paper_dict['can_edit'] = "True"
+        else:
+            paper_dict['can_edit'] = "False"
+
+        papers_list.append(paper_dict)
+
+    result = {'papers': papers_list}
+
+    return jsonify(result=result)
+
+

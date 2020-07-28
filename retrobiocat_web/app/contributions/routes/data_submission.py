@@ -130,7 +130,7 @@ def submission_main_page(paper_id):
     return render_template('data_submission/submission_main_page.html',
                            paper=paper_data,
                            activity_data=activity_data,
-                           seq_data=enzyme_data, seq_button_columns=['edit', 'remove'],
+                           seq_data=enzyme_data, seq_button_columns=['edit', 'remove', 'papers'],
                            status=status_dict,
                            seq_table_height='60vh', enzyme_types=enzyme_types, show_header_filters=False, include_owner=True,
                            reactions=reactions, enzyme_names=enzyme_names+['Chemical'],
