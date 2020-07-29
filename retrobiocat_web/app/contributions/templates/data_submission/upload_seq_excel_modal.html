@@ -1,0 +1,73 @@
+<div class="modal fade" id="upload_seq_excel_modal" tabindex="-1" role="dialog" aria-labelledby="upload_seq_excel_modalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload Excel</h5>
+            </div>
+
+
+            <div class="modal-body">
+                <p class="text-danger">This feature is still a bit experimental..  hopefully it works ok</p>
+                <form id="upload-file-seq" method="post" enctype="multipart/form-data">
+                    <div id="upload_seq_response_seq"></div>
+                    <p>(only .xlsx files are accepted)</p>
+                    <fieldset>
+                        <label for="file_seq">Select excel file</label>
+                        <input name="file_seq" type="file">
+                    </fieldset>
+
+                    <fieldset>
+                        <input id="paper_id_field" name="paper_id_field" type="hidden" value="{{paper['id']}}">
+                    </fieldset>
+
+                    <fieldset>
+                        <button id="upload-file-btn-seq" type="button">Upload</button>
+                    </fieldset>
+                </form>
+
+                <p class="mt-4">If you wish to enter data via excel, please use
+                    <a href="{{url_for('.static', filename='sequence_template.xltx') }}"> this template.</a>
+                </p>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $(function() {
+        $('#upload-file-btn-seq').click(function() {
+            var form_data = new FormData($('#upload-file-seq')[0]);
+            $.ajax({
+                type: 'POST',
+                url: '/_upload_sequence_excel',
+                data: form_data,
+                contentType: false,
+                cache: false,
+                processData: false,
+            }).always(function(data) {
+                    response_msg(data.result.msg, data.result.status, data.result.issues, "upload_seq_response_seq")
+                    if (data.result.status === 'success') {
+                        $('#upload_seq_excel_modal').modal('hide')
+                        location.reload();
+                    } else if (data.result.status === 'warning') {
+                        setTimeout(function(){
+                            $('#upload_seq_excel_modal').modal('hide')
+                            location.reload();
+                        }, 2000);
+
+
+                    }
+                });
+        });
+    });
+
+</script>

@@ -34,6 +34,7 @@
                               <div class="container-fluid">
                                 {% include '/tabulator_tables/sequences_table/sequences_table.html' %}
                                 <button id="add_enzyme_button" class="btn btn-success" data-toggle="modal" data-target="#add_new_enzyme_modal">Add Enzyme</button>
+                                <button class="btn btn-outline-primary" id="upload_seq_excel" data-toggle='modal' data-target='#upload_seq_excel_modal'>Upload Excel</button>
                               </div>
                           </div>
                           <div class="tab-pane fade" id="activity" role="tabpanel" aria-labelledby="activity_tab">
@@ -49,6 +50,7 @@
     </div>
 
     {% include '/data_submission/add_enzyme_modal.html' %}
+    {% include '/data_submission/upload_seq_excel_modal.html' %}
 
     <script src="{{url_for('.static', filename='js/response_alert.js')}}?v={{v}}" type="text/javascript"></script>
 
