@@ -10,6 +10,10 @@ import numpy as np
 from retrobiocat_web.retro.enzyme_identification import query_mongodb
 from retrobiocat_web.retro.enzyme_identification.load import make_fingerprints
 from retrobiocat_web.mongo.init_db.make_molecule_db import fp_molecules_to_db
+import tempfile
+from werkzeug.utils import secure_filename
+import os
+import pandas as pd
 
 def check_is_float(to_test):
     if type(to_test) != float:
@@ -61,12 +65,15 @@ def do_save(data, user, paper):
     processed_data = []
 
     issues = []
+    paper_seqs = list(Sequence.objects(papers=paper).distinct('enzyme_name'))
     for data_dict in data:
         issues += check_activity_data.initial_check_data(data_dict)
 
         if len(issues) == 0:
             data_dict = cascade_activity_data.set_activities(data_dict)
             issues += check_activity_data.check_all_have_binary(data_dict)
+            issues += check_activity_data.check_seqs_are_defined(data_dict, paper_seqs)
+
             if len(issues) == 0:
                 processed_data.append(data_dict)
 
@@ -192,3 +199,70 @@ def add_row_numbers(data):
     for i, data_dict in enumerate(data):
         data[i]['n'] = i+1
     return data
+
+@bp.route('/_upload_activity_excel',methods=['GET', 'POST'])
+@roles_required('contributor')
+def upload_activity_excel():
+    issues = []
+    if request.method != 'POST':
+        issues.append('Method is not POST')
+    else:
+        excel_file = request.files['file']
+        filename = secure_filename(excel_file.filename)
+        if filename[-5:] == '.xlsx':
+            excel_file.save(filename)
+            df = pd.read_excel(filename)
+            data_list = process_uploaded_excel(df)
+            os.remove(filename)
+
+            result = {'status': 'success',
+                      'msg': 'Data loaded from excel - not yet saved..',
+                      'issues': [],
+                      'data_list': list(data_list)}
+            print('Excel upload success')
+            return jsonify(result=result)
+        else:
+            issues.append('File does not end in .xlsx')
+
+    result = {'status': 'danger',
+              'msg': 'Error processing file',
+              'issues': issues}
+    return jsonify(result=result)
+
+
+def process_uploaded_excel(df):
+    col_rename = {"Reaction": "reaction",
+                  "Enzyme type": "enzyme_type",
+                  "Enzyme name": "enzyme_name",
+                  "Substrate 1 SMILES": "substrate_1_smiles",
+                  "Substrate 2 SMILES": "substrate_2_smiles",
+                  "Product 1 SMILES": "product_1_smiles",
+                  "Temperature": "temperature",
+                  "pH": "ph",
+                  "Solvent": "solvent",
+                  "Other conditions": "other_conditions",
+                  "Notes": "notes",
+                  "Reaction volume (ml)": "reaction_vol",
+                  "Biocatalyst Formulation": "formulation",
+                  "Biocatalyst Concentration (mg/ml)": "biocat_conc",
+                  "kcat (min-1)": "kcat",
+                  "KM (mM)": "km",
+                  "Enz MW (Da)": "mw",
+                  "Substrate 1 conc (mM)": "substrate_1_conc",
+                  "Substrate 2 conc (mM)": "substrate_2_conc",
+                  "Specific activity (U/mg)": "specific_activity",
+                  "Conversion (%)": "conversion",
+                  "Conversion time (hrs)": "conversion_time",
+                  "Selectivity": "selectivity",
+                  "Categorical": "categotical",
+                  "Binary": "binary"
+                }
+
+    df.rename(columns=col_rename, inplace=True)
+    cols = [col for col in list(col_rename.values()) if col in list(df.columns)]
+    df = df[cols]
+    df.replace(np.nan,'', inplace=True)
+
+    data_list = df.to_dict(orient='records')
+
+    return data_list

@@ -6,13 +6,56 @@
                 <h5 class="modal-title">Upload Excel</h5>
             </div>
 
+
             <div class="modal-body">
+                <form id="upload-file" method="post" enctype="multipart/form-data">
+                    <div id="upload_response"></div>
+                    <p>(only .xlsx files are accepted)</p>
+                    <fieldset>
+                        <label for="file">Select excel file</label>
+                        <input name="file" type="file">
+                    </fieldset>
+                    <fieldset>
+                        <button id="upload-file-btn" type="button">Upload</button>
+                    </fieldset>
+                </form>
+
+                <p class="mt-4">If you wish to enter data via excel, please use
+                    <a href="{{url_for('.static', filename='Template_for_substrate_specificity_data_V2.xltx') }}"> this template.</a>
+                </p>
+
             </div>
 
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
 
+
         </div>
     </div>
 </div>
+
+
+<script>
+    $(function() {
+        $('#upload-file-btn').click(function() {
+            var form_data = new FormData($('#upload-file')[0]);
+            $.ajax({
+                type: 'POST',
+                url: '/_upload_activity_excel',
+                data: form_data,
+                contentType: false,
+                cache: false,
+                processData: false,
+            }).always(function(data) {
+                    response_msg(data.result.msg, data.result.status, data.result.issues, "upload_response")
+                    if (data.result.status === 'success') {
+                        table.addData(data.result.data_list, false);
+                        $('#upload_excel_modal').modal('hide')
+                        response_msg(data.result.msg, data.result.status, data.result.issues, "activity_save_response")
+                    }
+                });
+        });
+    });
+
+</script>

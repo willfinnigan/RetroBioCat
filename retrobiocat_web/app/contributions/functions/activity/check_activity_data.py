@@ -54,7 +54,13 @@ def check_all_have_binary(data_dict):
         return [f"Row {data_dict['n']}: No activity data has been entered - no binary"]
     return []
 
+def check_seqs_are_defined(data_dict, paper_seqs):
+    issues = []
 
+    if data_dict['enzyme_name'] not in paper_seqs:
+        issues.append(f"Enzymes must be defined in sequence tab first - {data_dict['enzyme_name']}")
+
+    return issues
 
 
 

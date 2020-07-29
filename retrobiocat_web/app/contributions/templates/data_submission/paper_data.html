@@ -3,6 +3,8 @@
     <div class="row mt-5">
         <div class="col"></div>
         <div class="col">
+            <p>Paper is currently assigned to: <small>{{paper['paper_owner_name']}}</small></p>
+
             <div class="form-group">
                 <label for='short_cit'>Short citation</label>
                 <input type="text" class="form-control" id="short_cit" value="{{paper['short_cit']}}">
@@ -48,8 +50,6 @@
                 <small class="form-text text-muted">Assign to yourself (checked), or leave open for somebody else (unchecked)</small>
                 <small class="form-text text-muted">Warning - you can not be the owner of a sequence if you are not assigned to any of its papers.  Sequences will be automatically unassigned if required.</small>
             </div>
-
-            <p>Paper is currently assigned to: <small>{{paper['paper_owner_name']}}</small></p>
 
             <div class="form-group">
                 <label for='tags'>Tags</label>
