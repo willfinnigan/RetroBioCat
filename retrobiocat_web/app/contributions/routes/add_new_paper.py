@@ -19,7 +19,7 @@ def launch_add_paper():
     form = AddPaper()
 
     if form.validate_on_submit() == True:
-        doi = form.doi.data
+        doi = form.doi.data.replace(' ','')
         list_html_to_remove = ['https://doi.org/', 'http://doi.org/', 'http://dx.doi.org/']
         for to_remove in list_html_to_remove:
             if to_remove in doi:
@@ -70,7 +70,7 @@ def create_paper():
             form.journal.data = journal
             form.date.data = date
             form.short_cit.data = cite_mini
-            form.doi.data = doi
+            form.doi.data = doi.replace(' ','')
 
             can_self_assign = papers_functions.can_self_assign(user)
 
@@ -91,7 +91,7 @@ def create_paper():
         else:
             owner = None
 
-        new_paper = Paper(doi=form.doi.data,
+        new_paper = Paper(doi=form.doi.data.replace(' ',''),
                           short_citation=form.short_cit.data,
                           title=form.title.data,
                           html='https://doi.org/'+form.doi.data,

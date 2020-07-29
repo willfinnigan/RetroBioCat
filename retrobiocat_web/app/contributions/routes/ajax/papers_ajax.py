@@ -36,7 +36,7 @@ def save_paper():
         return jsonify(result=result)
 
     paper.short_citation = request.form['short_cit']
-    paper.doi = request.form['doi']
+    paper.doi = request.form['doi'].replace(' ','')
     paper.html = 'https://doi.org/' + request.form['doi']
     if request.form['date'] != "":
         paper.date = request.form['date']
@@ -106,7 +106,7 @@ def delete_paper():
 @roles_required('contributor')
 def query_pubmed():
     paper = Paper.objects(id=request.form['paper_id'])[0]
-    doi = str(paper.doi)
+    doi = str(paper.doi).replace(' ','')
 
     title, authors_list, journal, date, cite_mini = papers_functions.query_pubmed(doi)
     print(f"{title}, {authors_list}, {journal}, {type(date)}, {date}, {cite_mini}")
@@ -135,7 +135,7 @@ def query_pubmed():
 @roles_required('contributor')
 def query_crossref():
     paper = Paper.objects(id=request.form['paper_id'])[0]
-    doi = str(paper.doi)
+    doi = str(paper.doi).replace(' ','')
 
     title, authors_list, journal, date, cite_mini = papers_crossref.get_metadata_from_crossref(doi)
 
