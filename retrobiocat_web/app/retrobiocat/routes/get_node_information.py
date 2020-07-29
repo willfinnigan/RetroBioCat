@@ -113,33 +113,41 @@ def node_info_reaction():
                   'html': ''}
         return jsonify(result=result)
 
-    task_id = request.form['task_id']
-    data = json.loads(current_app.redis.get(task_id))
-    graph_dict = json.loads(data['graph_dict'])
-    attr_dict = json.loads(data['attr_dict'])
-    target_smiles = data['target_smiles']
-    network_options = json.loads(data['network_options'])
+    try:
+        task_id = request.form['task_id']
+        data = json.loads(current_app.redis.get(task_id))
+        graph_dict = json.loads(data['graph_dict'])
+        attr_dict = json.loads(data['attr_dict'])
+        target_smiles = data['target_smiles']
+        network_options = json.loads(data['network_options'])
 
-    graph = nx.from_dict_of_lists(graph_dict, create_using=nx.DiGraph)
+        graph = nx.from_dict_of_lists(graph_dict, create_using=nx.DiGraph)
 
-    network = Network(graph=graph, target_smiles=target_smiles)
-    network.settings = network_options
-    network.add_attributes(attr_dict)
-    network.get_node_types()
+        network = Network(graph=graph, target_smiles=target_smiles)
+        network.settings = network_options
+        network.add_attributes(attr_dict)
+        network.get_node_types()
 
-    if node in network.reaction_nodes:
-        if 'retrorule' not in network.graph.nodes[node]['attributes']:
-            result = get_reaction_info(node, network)
+        if node in network.reaction_nodes:
+            if 'retrorule' not in network.graph.nodes[node]['attributes']:
+                result = get_reaction_info(node, network)
+            else:
+                result = get_retrorule_info(node, network)
+
         else:
-            result = get_retrorule_info(node, network)
-
-    else:
-        print('Error node not in reactions')
+            print('Error node not in reactions')
+            result = {'name': 'error',
+                      'type': 'error',
+                      'data': {},
+                      'html': ''}
+        return jsonify(result=result)
+    except:
         result = {'name': 'error',
                   'type': 'error',
                   'data': {},
                   'html': ''}
-    return jsonify(result=result)
+        return jsonify(result=result)
+
 
 @bp.route('/_node_info', methods=['GET', 'POST'])
 def node_info():
@@ -152,36 +160,44 @@ def node_info():
                   'html': ''}
         return jsonify(result=result)
 
-    task_id = request.form['task_id']
-    data = json.loads(current_app.redis.get(task_id))
-    graph_dict = json.loads(data['graph_dict'])
-    attr_dict = json.loads(data['attr_dict'])
-    target_smiles = data['target_smiles']
-    network_options = json.loads(data['network_options'])
+    try:
+        task_id = request.form['task_id']
+        data = json.loads(current_app.redis.get(task_id))
+        graph_dict = json.loads(data['graph_dict'])
+        attr_dict = json.loads(data['attr_dict'])
+        target_smiles = data['target_smiles']
+        network_options = json.loads(data['network_options'])
 
-    graph = nx.from_dict_of_lists(graph_dict, create_using=nx.DiGraph)
+        graph = nx.from_dict_of_lists(graph_dict, create_using=nx.DiGraph)
 
-    network = Network(graph=graph, target_smiles=target_smiles)
-    network.settings = network_options
-    network.add_attributes(attr_dict)
-    network.get_node_types()
+        network = Network(graph=graph, target_smiles=target_smiles)
+        network.settings = network_options
+        network.add_attributes(attr_dict)
+        network.get_node_types()
 
-    if node in network.substrate_nodes:
-        result = get_substrate_info(node)
+        if node in network.substrate_nodes:
+            result = get_substrate_info(node)
 
-    elif node in network.reaction_nodes:
-        if 'retrorule' not in network.graph.nodes[node]['attributes']:
-            result = get_reaction_info(node, network)
+        elif node in network.reaction_nodes:
+            if 'retrorule' not in network.graph.nodes[node]['attributes']:
+                result = get_reaction_info(node, network)
+            else:
+                result = get_retrorule_info(node, network)
+
         else:
-            result = get_retrorule_info(node, network)
+            print('Error node not in substrates or reactions')
+            result = {'name': 'error',
+                      'type': 'error',
+                      'data' : {},
+                      'html' : ''}
+        return jsonify(result=result)
 
-    else:
-        print('Error node not in substrates or reactions')
+    except:
         result = {'name': 'error',
                   'type': 'error',
-                  'data' : {},
-                  'html' : ''}
-    return jsonify(result=result)
+                  'data': {},
+                  'html': ''}
+        return jsonify(result=result)
 
 @bp.route('/_change_enzyme', methods=['GET', 'POST'])
 def change_enzyme():

@@ -40,6 +40,10 @@ def get_paper_data(paper, user):
     elif paper.owner is not None and paper.owner != '':
         other_user = 'disabled'
 
+    paper_owner_name = 'None'
+    if paper.owner is not None:
+        paper_owner_name = f"{paper.owner.first_name} {paper.owner.last_name}, {paper.owner.affiliation}"
+
     paper_dict = {'short_cit': paper.short_citation,
                   'doi': paper.doi,
                   'date': paper.date,
@@ -49,7 +53,8 @@ def get_paper_data(paper, user):
                   'tags': papers_functions.list_to_string(paper.tags),
                   'self_assigned': self_assigned,
                   'disable_for_other_user': other_user,
-                  'id': paper.id}
+                  'id': paper.id,
+                  'paper_owner_name': paper_owner_name}
 
     return paper_dict
 
@@ -108,7 +113,7 @@ def get_status(paper):
 @roles_required('contributor')
 def submission_main_page(paper_id):
     user = user_datastore.get_user(current_user.id)
-    paper_query = Paper.objects(id=paper_id)
+    paper_query = Paper.objects(id=paper_id).select_related()
     if len(paper_query) == 0:
         flash('Paper has not been added yet, please add to the database first', 'fail')
         return redirect(url_for("contributions.launch_add_paper"))

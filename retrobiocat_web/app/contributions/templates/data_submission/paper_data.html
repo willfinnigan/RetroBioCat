@@ -49,6 +49,8 @@
                 <small class="form-text text-muted">Warning - you can not be the owner of a sequence if you are not assigned to any of its papers.  Sequences will be automatically unassigned if required.</small>
             </div>
 
+            <p>Paper is currently assigned to: <small>{{paper['paper_owner_name']}}</small></p>
+
             <div class="form-group">
                 <label for='tags'>Tags</label>
                 <input type="text" class="form-control" id="tags" value="{{paper["tags"]}}">
