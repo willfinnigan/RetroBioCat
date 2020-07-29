@@ -149,9 +149,11 @@ def get_spec_data(form_data):
                                    include_auto_generated=include_auto_data)
 
     if activity_df is None:
+        print('Activity df is none')
         return []
 
-    if len(activity_df.index) != 0:
+    if len(activity_df.index) == 0:
+        print('Len ctivity df index is 0')
         return []
 
     activity_df = activity_df[COLUMNS]

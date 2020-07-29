@@ -80,7 +80,7 @@ class SubstrateSpecificityScorer():
 
         spec_df = self.filter_df_by_data_level(spec_df, dataLevel)
 
-        if len(spec_df.index) != 0:
+        if len(spec_df.index) == 0:
             return None
 
         if include_auto_generated == False:
