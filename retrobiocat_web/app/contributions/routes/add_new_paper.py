@@ -93,6 +93,7 @@ def create_paper():
 
         new_paper = Paper(doi=form.doi.data,
                           short_citation=form.short_cit.data,
+                          title=form.title.data,
                           html='https://doi.org/'+form.doi.data,
                           journal=form.journal.data,
                           date=form.date.data,
