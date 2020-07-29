@@ -42,7 +42,7 @@ def create_paper():
 
     if form.validate_on_submit() == False:
         user = User.objects(id=current_user.id)[0]
-        papers = Paper.objects(doi=doi)
+        papers = Paper.objects(doi__iexact=doi)
         if len(papers) != 0:
 
             paper = papers[0]
@@ -70,7 +70,7 @@ def create_paper():
             form.journal.data = journal
             form.date.data = date
             form.short_cit.data = cite_mini
-            form.doi.data = doi.replace(' ','')
+            form.doi.data = doi.replace(' ','').lower()
 
             can_self_assign = papers_functions.can_self_assign(user)
 
@@ -91,7 +91,7 @@ def create_paper():
         else:
             owner = None
 
-        new_paper = Paper(doi=form.doi.data.replace(' ',''),
+        new_paper = Paper(doi=form.doi.data.replace(' ','').lower(),
                           short_citation=form.short_cit.data,
                           title=form.title.data,
                           html='https://doi.org/'+form.doi.data,
