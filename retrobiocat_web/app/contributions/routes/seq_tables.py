@@ -16,7 +16,11 @@ def get_enzyme_data(query):
         enzyme_data[i]['_id'] = str(enzyme_data[i]['_id'])
         enzyme_data[i]['sequence_unavailable'] = str(enzyme_data[i]['sequence_unavailable']).replace('False', '')
         enzyme_data[i]['structure'] = str(enzyme_data[i]['structure']).replace('False', '')
-        enzyme_data[i]['papers'] = len(enzyme_data[i]['papers'])
+
+        if 'papers' not in enzyme_data[i]:
+            enzyme_data[i]['papers'] = 0
+        else:
+            enzyme_data[i]['papers'] = len(enzyme_data[i]['papers'])
 
         if 'owner' in enzyme_data[i]:
             owner_id = str(enzyme_data[i]['owner'])
