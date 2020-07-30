@@ -104,6 +104,11 @@ def create_paper():
                           status='Data required')
         new_paper.save()
         flash("Paper saved", 'success')
-        return redirect(url_for("contributions.launch_add_paper", paper_id=new_paper.id))
+
+        if owner == user:
+            return redirect(url_for("contributions.submission_main_page", paper_id=new_paper.id))
+
+        else:
+            return redirect(url_for("contributions.launch_add_paper"))
 
 
