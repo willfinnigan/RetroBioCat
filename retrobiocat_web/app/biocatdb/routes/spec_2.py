@@ -1,32 +1,15 @@
 from flask import render_template, jsonify, session
 from retrobiocat_web.app.biocatdb.forms import SubstrateForm
-from retrobiocat_web.app.biocatdb.routes.specificity_query_task import task_run_query
 from flask import current_app
 from rq.job import Job
 from retrobiocat_web.retro.enzyme_identification import query_mongodb
-from retrobiocat_web.app.biocatdb import bp
 from retrobiocat_web.retro.generation.node_analysis import rdkit_smile
 from retrobiocat_web.retro.enzyme_identification import molecular_similarity
-import pandas as pd
-from rdkit.Chem import PandasTools
-import os
-from rdkit import RDConfig
-from rdkit import Chem
-from requests.utils import quote
-
 from retrobiocat_web.app.biocatdb import bp
 from rq import get_current_job
-
-from rdkit.Chem import rdDepictor
-import os
-from rdkit import Chem
-from rdkit.Chem import Draw, AllChem
-from rdkit.Chem.Draw import rdMolDraw2D
-
-import mongoengine as db
 from retrobiocat_web.mongo.models.biocatdb_models import Activity
-
 import numpy as np
+from retrobiocat_web.app.biocatdb.functions import process_activity_data
 
 COLUMNS = ["Reaction",
            "Enzyme type",
@@ -163,53 +146,12 @@ def get_spec_data(form_data):
     activity_df.replace(False, 'False', inplace=True)
 
     activity_data = activity_df.to_dict(orient='records')
-    activity_data = process_activity_data(activity_data)
-    activity_data = smiles_to_svg(activity_data)
+    activity_data = process_activity_data.process_activity_data(activity_data)
+    activity_data = process_activity_data.smiles_to_svg(activity_data)
 
     return activity_data
 
-def process_activity_data(activity_data):
-    for i, record in enumerate(activity_data):
-        activity_data[i]['paper'] = str(activity_data[i]['paper'])
-        activity_data[i]['activity_id'] = str(activity_data[i]['activity_id'])
 
-    return activity_data
-
-def moltosvg_url(mol,molSize=(150,150),kekulize=True):
-    mc = Chem.Mol(mol.ToBinary())
-    if kekulize:
-        try:
-            Chem.Kekulize(mc)
-        except:
-            mc = Chem.Mol(mol.ToBinary())
-    if not mc.GetNumConformers():
-        rdDepictor.Compute2DCoords(mc)
-    drawer = rdMolDraw2D.MolDraw2DSVG(molSize[0],molSize[1])
-    drawer.DrawMolecule(mc)
-    drawer.FinishDrawing()
-    svg = drawer.GetDrawingText()
-
-    url = "data:image/svg+xml;charset=utf-8," + quote(svg)
-
-    return url
-
-def smiles_to_svg(activity_data):
-    for i, record in enumerate(activity_data):
-        if activity_data[i]["Substrate 1 SMILES"] != '':
-            mol = Chem.MolFromSmiles(activity_data[i]["Substrate 1 SMILES"])
-            url = moltosvg_url(mol)
-            activity_data[i]["Substrate 1 SMILES"] = url
-
-        if activity_data[i]["Substrate 2 SMILES"] != '':
-            mol = Chem.MolFromSmiles(activity_data[i]["Substrate 2 SMILES"])
-            url = moltosvg_url(mol)
-            activity_data[i]["Substrate 2 SMILES"] = url
-
-        if activity_data[i]["Product 1 SMILES"] != '':
-            mol = Chem.MolFromSmiles(activity_data[i]["Product 1 SMILES"])
-            url = moltosvg_url(mol)
-            activity_data[i]["Product 1 SMILES"] = url
-    return activity_data
 
 if __name__ == '__main__':
     from retrobiocat_web.mongo.default_connection import make_default_connection

@@ -16,3 +16,49 @@
         </div>
     </div>
 </div>
+
+
+
+
+
+<script>
+    function set_reaction_img(sub1, sub2, prod, reaction_name, enzyme) {
+        var reaction = document.getElementById("substrates_in_reaction")
+        reaction.innerHTML = ''
+
+        if (sub1 !== ''){
+            reaction.innerHTML += "<div class='col my-auto'><img src='" + sub1 +"'></div>"
+        }
+
+        if (sub2 !== ''){
+            reaction.innerHTML += "<div class='col my-auto'><p class='no_margin'><strong> + </strong></p></div>"
+            reaction.innerHTML += "<div class='col my-auto'><img src='" + sub2 +"'></div>"
+
+        }
+
+        var newDiv4 = document.createElement("div");
+        newDiv4.className = 'col my-auto text-center'
+        newDiv4.innerHTML = "<p class='no_margin'><small>"+ reaction_name +"</small></p>"
+        newDiv4.innerHTML += "<p class='no_margin'><strong>----></strong></p>"
+        newDiv4.innerHTML += "<p class='no_margin'><small>"+ enzyme +"</small></p>"
+        reaction.appendChild(newDiv4)
+
+        if (prod !== '') {
+            reaction.innerHTML += "<div class='col my-auto'><img src='" + prod +"'></div>"
+        }
+
+    }
+
+
+    function load_single_activity_data(activity_id) {
+        $.post('/_load_single_activity_data', {
+            activity_id: activity_id,
+        }).done(function (data) {
+            set_reaction_img(data.result.sub1_img, data.result.sub2_img, data.result.prod_img,
+                             data.result.reaction, data.result.enzyme_name)
+            document.getElementById("activity_added_by").innerHTML = data.result.added_by
+
+
+        })
+    }
+</script>

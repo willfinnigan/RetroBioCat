@@ -160,6 +160,9 @@
         cellHozAlign:"center",
         cellVertAlign:"middle",
         rowClick:function(e, row){
+            var rowData = row.getData();
+            var activity_id = rowData['activity_id']
+            load_single_activity_data(activity_id)
             $('#activity_modal').modal('show');
             },
     });
