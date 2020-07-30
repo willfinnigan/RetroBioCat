@@ -18,35 +18,40 @@
 </div>
 
 
-
-
-
 <script>
-    function set_reaction_img(sub1, sub2, prod, reaction_name, enzyme) {
-        var reaction = document.getElementById("substrates_in_reaction")
-        reaction.innerHTML = ''
+    function set_reaction_img(sub1, sub2, prod, reaction_name, enzyme, enzyme_type, biocat_conc, formulation, selectivity) {
 
-        if (sub1 !== ''){
-            reaction.innerHTML += "<div class='col my-auto'><img src='" + sub1 +"'></div>"
+        var substrate_images = document.getElementById("substrate_images")
+        substrate_images.innerHTML = ''
+        substrate_images.innerHTML += "<img class='no_margin' src='" + sub1 +"' alt=''>"
+        if (sub2 != '') {
+            substrate_images.innerHTML += "<p class='no_margin'><strong> + </strong></p>"
+            substrate_images.innerHTML += "<img class='no_margin' src='" + sub2 +"' alt=''>"
         }
 
-        if (sub2 !== ''){
-            reaction.innerHTML += "<div class='col my-auto'><p class='no_margin'><strong> + </strong></p></div>"
-            reaction.innerHTML += "<div class='col my-auto'><img src='" + sub2 +"'></div>"
+        var reaction_images = document.getElementById("reaction_images")
+        reaction_images.innerHTML = ''
+        reaction_images.innerHTML = "<p class='no_margin'>"+ reaction_name +"</p>"
+        reaction_images.innerHTML += "<p class='no_margin'><strong>--------></strong></p>"
+        reaction_images.innerHTML += "<p class='no_margin'>"+ enzyme + " <small class='text-secondary'>(" + enzyme_type + ")</small></p>"
+        reaction_images.innerHTML += "<p class='no_margin text-info'><small>"+ biocat_conc +" " + formulation + "</small></p>"
 
+        var product_images = document.getElementById("product_images")
+        product_images.innerHTML = ''
+        product_images.innerHTML += "<img src='" + prod +"' alt=''>"
+        product_images.innerHTML = "<p class='no_margin'>"+ selectivity +"</p>"
+
+    }
+
+    function add_reaction_conditions(sub1_conc, sub2_conc, other_conditions) {
+        var substrate_conditions = document.getElementById("substrate_conditions")
+        substrate_conditions.innerHTML = ''
+        if (sub1_conc != '') {
+            substrate_conditions.innerHTML += "<p class='no_margin'><strong>Substrate 1: </strong>" + sub1_conc + "</p>"
         }
-
-        var newDiv4 = document.createElement("div");
-        newDiv4.className = 'col my-auto text-center'
-        newDiv4.innerHTML = "<p class='no_margin'><small>"+ reaction_name +"</small></p>"
-        newDiv4.innerHTML += "<p class='no_margin'><strong>----></strong></p>"
-        newDiv4.innerHTML += "<p class='no_margin'><small>"+ enzyme +"</small></p>"
-        reaction.appendChild(newDiv4)
-
-        if (prod !== '') {
-            reaction.innerHTML += "<div class='col my-auto'><img src='" + prod +"'></div>"
+        if (sub2_conc != '') {
+            substrate_conditions.innerHTML += "<p class='no_margin'><strong>Substrate 2: </strong>" + sub2_conc + "</p>"
         }
-
     }
 
 
@@ -55,7 +60,9 @@
             activity_id: activity_id,
         }).done(function (data) {
             set_reaction_img(data.result.sub1_img, data.result.sub2_img, data.result.prod_img,
-                             data.result.reaction, data.result.enzyme_name)
+                             data.result.reaction, data.result.enzyme_name, data.result.enzyme_type,
+                             data.result.biocat_conc, data.result.formulation, data.result.selectivity)
+            add_reaction_conditions(data.result.sub1_conc, data.result.sub2_conc, 'other_conditions')
             document.getElementById("activity_added_by").innerHTML = data.result.added_by
 
 
