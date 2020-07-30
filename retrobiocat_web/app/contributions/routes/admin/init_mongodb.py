@@ -94,6 +94,25 @@ def init_db():
 def other_admin_functions():
     return render_template('init_db/other_admin_functions.html')
 
+@bp.route('/_delete_sequences_no_paper', methods=['GET', 'POST'])
+@roles_required('admin')
+def delete_sequences_no_paper():
+    current_app.db_queue.enqueue(task_delete_sequences_no_paper)
+    return jsonify(result={'status': 'success',
+                           'msg': f'Job added to queue to delete sequences',
+                           'issues': []})
+
+def task_delete_sequences_no_paper():
+    print('Deleting sequences with no papers')
+    count = 0
+    seqs = Sequence.objects()
+    for seq in seqs:
+        if len(seq.papers) == 0:
+            seq.delete()
+            count += 1
+
+    print(f"Deleted {count} sequences")
+
 @bp.route('/_assign_papers', methods=['GET', 'POST'])
 @roles_required('admin')
 def secret_assign_papers():

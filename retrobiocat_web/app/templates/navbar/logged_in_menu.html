@@ -10,6 +10,7 @@
         {% if current_user.has_role('admin') %}
             <a class="dropdown-item" href="/admin" target="_blank">Admin</a>
             <a class="dropdown-item" href="{{url_for('contributions.init_db') }}">Initialise Database</a>
+            <a class="dropdown-item" href="{{url_for('contributions.other_admin_functions') }}">Admin DB functions</a>
         {% endif %}
     </div>
 </li>
