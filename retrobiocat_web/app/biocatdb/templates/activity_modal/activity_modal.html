@@ -19,7 +19,7 @@
 
 
 <script>
-    function set_reaction_img(sub1, sub2, prod, reaction_name, enzyme, enzyme_type, biocat_conc, formulation, selectivity) {
+    function set_reaction_img(sub1, sub2, prod, reaction_name, enzyme, enzyme_type, biocat_conc, formulation, selectivity,temperature, ph, solvent, volume) {
 
         var substrate_images = document.getElementById("substrate_images")
         substrate_images.innerHTML = ''
@@ -35,6 +35,9 @@
         reaction_images.innerHTML += "<p class='no_margin'><strong>--------></strong></p>"
         reaction_images.innerHTML += "<p class='no_margin'>"+ enzyme + " <small class='text-secondary'>(" + enzyme_type + ")</small></p>"
         reaction_images.innerHTML += "<p class='no_margin text-info'><small>"+ biocat_conc +" " + formulation + "</small></p>"
+        reaction_images.innerHTML += "<p class='no_margin text-danger'><small>"+ ph +", " + temperature + "</small></p>"
+        reaction_images.innerHTML += "<p class='no_margin text-danger'><small>"+ solvent + "</small></p>"
+        reaction_images.innerHTML += "<p class='no_margin text-danger'><small>"+ volume + "</small></p>"
 
         var product_images = document.getElementById("product_images")
         product_images.innerHTML = ''
@@ -43,17 +46,22 @@
 
     }
 
-    function add_reaction_conditions(sub1_conc, sub2_conc, other_conditions) {
+    function add_reaction_conditions(sub1_conc, sub2_conc, other_conditions, notes) {
         var substrate_conditions = document.getElementById("substrate_conditions")
         substrate_conditions.innerHTML = ''
         if (sub1_conc != '') {
-            substrate_conditions.innerHTML += "<p class='no_margin'><strong>Substrate 1: </strong>" + sub1_conc + "</p>"
+            substrate_conditions.innerHTML += "<p class='no_margin'>Substrate 1: <span class='text-secondary'>" + sub1_conc + "</span></p>"
         }
         if (sub2_conc != '') {
-            substrate_conditions.innerHTML += "<p class='no_margin'><strong>Substrate 2: </strong>" + sub2_conc + "</p>"
+            substrate_conditions.innerHTML += "<p class='no_margin'>Substrate 2: <span class='text-secondary'>" + sub2_conc + "</span></p>"
         }
-    }
 
+        var reaction_conditions = document.getElementById("reaction_conditions")
+        reaction_conditions.innerHTML = "<p class='no_margin text-secondary'><small>"+ other_conditions +"</small></p>"
+
+        var product_conditions = document.getElementById("product_conditions")
+        product_conditions.innerHTML = "<p class='no_margin text-secondary'><small>"+ notes +"</small></p>"
+    }
 
     function load_single_activity_data(activity_id) {
         $.post('/_load_single_activity_data', {
@@ -61,11 +69,12 @@
         }).done(function (data) {
             set_reaction_img(data.result.sub1_img, data.result.sub2_img, data.result.prod_img,
                              data.result.reaction, data.result.enzyme_name, data.result.enzyme_type,
-                             data.result.biocat_conc, data.result.formulation, data.result.selectivity)
-            add_reaction_conditions(data.result.sub1_conc, data.result.sub2_conc, 'other_conditions')
+                             data.result.biocat_conc, data.result.formulation, data.result.selectivity,
+                             data.result.temperature, data.result.ph, data.result.solvent, data.result.volume)
+
+            add_reaction_conditions(data.result.sub1_conc, data.result.sub2_conc, data.result.other_conditions, data.result.notes)
+
             document.getElementById("activity_added_by").innerHTML = data.result.added_by
-
-
         })
     }
 </script>

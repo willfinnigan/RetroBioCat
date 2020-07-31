@@ -50,6 +50,28 @@ def load_single_activity_data():
         if biocat_conc.replace('.', '').isnumeric():
             biocat_conc += ' mg/ml'
 
+    if activity.temperature is None:
+        temperature = ''
+    else:
+        temperature = activity.temperature
+        if temperature.replace('.','').isnumeric():
+            temperature += ' <sup>o</sup>C'
+
+    if activity.ph is None:
+        ph = ''
+    else:
+        ph = activity.ph
+        if ph.replace('.','').isnumeric():
+            ph = 'pH ' + ph
+
+    if activity.reaction_vol is None:
+        volume = ''
+    else:
+        volume = activity.reaction_vol
+        if volume.replace('.', '').isnumeric():
+            volume += ' mL scale'
+
+
     result = {'enzyme_name': activity.enzyme_name,
               'enzyme_type': activity.enzyme_type,
               'reaction': activity.reaction,
@@ -61,13 +83,16 @@ def load_single_activity_data():
               'sub2_conc': sub2_conc,
               'biocat_conc': biocat_conc,
               'formulation': activity.formulation,
-              'selectivity': activity.selectivity}
+              'selectivity': activity.selectivity,
+              'temperature': temperature,
+              'ph': ph,
+              'solvent': activity.solvent,
+              'volume': volume,
+              'other_conditions': activity.other_conditions,
+              'notes': activity.notes}
 
     for key in result:
         if result[key] is None:
             result[key] = ''
-
-    print(result)
-
     return jsonify(result=result)
 
