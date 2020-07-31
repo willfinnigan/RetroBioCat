@@ -14,7 +14,7 @@ class AddPaper(FlaskForm):
     submit = SubmitField('Go')
 
 @bp.route('/launch_add_paper', methods=['GET', 'POST'])
-@roles_required('contributor')
+@roles_required('paper_adder')
 def launch_add_paper():
     form = AddPaper()
 
@@ -31,7 +31,7 @@ def launch_add_paper():
         return render_template('add_paper_workflow/add_paper_start.html', form=form)
 
 @bp.route("/create_paper/", methods=["GET", "POST"])
-@roles_required('contributor')
+@roles_required('paper_adder')
 def create_paper():
     form = PaperInfo()
 

@@ -87,7 +87,9 @@ def create_app(config_class=Config, use_talisman=True):
         admin = user_datastore.find_or_create_role('admin', description='admin role')
         user_datastore.find_or_create_role('enzyme_types_admin', description='enzyme_types_admin')
         user_datastore.find_or_create_role('contributor', description='contributor')
+        user_datastore.find_or_create_role('super_contributor', description='contributor')
         user_datastore.find_or_create_role('rxn_rules_admin', description='rxn_rules_admin')
+        user_datastore.find_or_create_role('paper_adder', description='paper_finder')
         user_datastore.find_or_create_role('experimental', description='experimental')
 
         if not user_datastore.get_user(app.config['ADMIN_EMAIL']):

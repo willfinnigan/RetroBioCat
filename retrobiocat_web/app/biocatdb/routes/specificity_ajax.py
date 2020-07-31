@@ -60,7 +60,8 @@ def load_single_activity_data():
               'sub1_conc': sub1_conc,
               'sub2_conc': sub2_conc,
               'biocat_conc': biocat_conc,
-              'formulation': activity.formulation}
+              'formulation': activity.formulation,
+              'selectivity': activity.selectivity}
 
     for key in result:
         if result[key] is None:
