@@ -71,8 +71,31 @@ def load_single_activity_data():
         if volume.replace('.', '').isnumeric():
             volume += ' mL scale'
 
+    if activity.binary == True:
+        active = 'Active'
+    else:
+        active = 'Not active'
 
-    result = {'enzyme_name': activity.enzyme_name,
+    if activity.specific_activity is None:
+        sa = ''
+    else:
+        sa = str(round(activity.specific_activity,2))
+        sa += ' &#956;mol / min / mg'
+
+    if activity.conversion is None:
+        conv = ''
+    else:
+        conv = str(int(activity.conversion)) + " % conversion"
+        if activity.conversion_time is not None:
+            conv += f" in {str(int(activity.conversion_time))} hours"
+
+    if activity.kcat is None:
+        kinetics = ''
+    else:
+        kinetics = f"kcat: {str(round(activity.kcat,2))} min<sup>-1</sup> km: {str(round(activity.km,2))} mM"
+
+    result = {'short_cit': activity.paper.short_citation,
+              'enzyme_name': activity.enzyme_name,
               'enzyme_type': activity.enzyme_type,
               'reaction': activity.reaction,
               'sub1_img': sub1,
@@ -89,7 +112,12 @@ def load_single_activity_data():
               'solvent': activity.solvent,
               'volume': volume,
               'other_conditions': activity.other_conditions,
-              'notes': activity.notes}
+              'notes': activity.notes,
+              'active': active,
+              'category': activity.categorical,
+              'sa': sa,
+              'conv': conv,
+              'kinetics': kinetics}
 
     for key in result:
         if result[key] is None:

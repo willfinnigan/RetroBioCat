@@ -63,6 +63,48 @@
         product_conditions.innerHTML = "<p class='no_margin text-secondary'><small>"+ notes +"</small></p>"
     }
 
+    function add_activity(active, category, sa, conv, kinetics) {
+        var activity_1 = document.getElementById("activity_col1")
+        if (category !== '') {
+            activity_1.innerHTML = "<strong><p class='no_margin text-dark'>" + active + " - " + category + "</p></strong>"
+        } else {
+            activity_1.innerHTML = "<strong><p class='no_margin text-dark'>" + active + "</p></strong>"
+        }
+
+
+        var activity_2 = document.getElementById("activity_col2")
+        activity_2.innerHTML = ""
+        if (sa !== '') {
+            activity_2.innerHTML += "<p class='no_margin'><strong>Specific activity:</strong></p>"
+            activity_2.innerHTML += "<p class='no_margin'>        " + sa + "</p>"
+        }
+        if (conv !== '') {
+            activity_2.innerHTML += "<p class='no_margin'><strong>Conversion:</strong></p>"
+            activity_2.innerHTML += "<p class='no_margin'>" + conv + "</p>"
+        }
+        if (kinetics !== '') {
+            activity_2.innerHTML += "<p class='no_margin'><strong>Kinetics:</strong></p>"
+            activity_2.innerHTML += "<p class='no_margin'>" + kinetics + "</p>"
+        }
+    }
+
+    function set_colour(active, category) {
+        var activity_row = document.getElementById("row_1_activity")
+
+        if (active === 'Not active') {
+            activity_row.style = "background-image: linear-gradient(rgba(255, 179, 179,1), rgba(221, 252, 212,0));"
+        } else if (category === 'Medium') {
+            activity_row.style = "background-image: linear-gradient(rgba(255, 255, 204,1), rgba(221, 252, 212,0));"
+        } else if (category === 'Low') {
+            activity_row.style = "background-image: linear-gradient(rgba(255, 221, 204,1), rgba(221, 252, 212,0));"
+        } else {
+            activity_row.style = "background-image: linear-gradient(rgba(221, 252, 212,1), rgba(221, 252, 212,0));"
+        }
+
+    }
+
+
+
     function load_single_activity_data(activity_id) {
         $.post('/_load_single_activity_data', {
             activity_id: activity_id,
@@ -74,7 +116,12 @@
 
             add_reaction_conditions(data.result.sub1_conc, data.result.sub2_conc, data.result.other_conditions, data.result.notes)
 
+            add_activity(data.result.active, data.result.category, data.result.sa, data.result.conv, data.result.kinetics)
+
+            set_colour(data.result.active, data.result.category)
+
             document.getElementById("activity_added_by").innerHTML = data.result.added_by
+            document.getElementById("activity_modal_modalLabel").innerHTML = "More info - " + data.result.short_cit
         })
     }
 </script>

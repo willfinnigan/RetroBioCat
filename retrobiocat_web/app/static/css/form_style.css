@@ -2,6 +2,11 @@ body {
   padding-top: 3.4rem;
 }
 
+.no_margin {
+        margin:0px;
+        padding:0px
+    }
+
 #mynetwork {
     width: 100%;
     height:87vh;

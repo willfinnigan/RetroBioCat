@@ -1,24 +1,26 @@
 <style>
-    .no_margin {
-        margin:0px;
-        padding:0px
-    }
+
 
 </style>
-<div class="container">
-    <div id="row_1_images" class="row">
+<div class="container-fluid">
+    <div id="row_1_activity" class="row">
+        <div class='col-6 my-auto text-center no-gutters mt-4' id="activity_col1"></div>
+        <div class='col-6 my-auto text-center no-gutters mt-4' id="activity_col2"></div>
+    </div>
+
+    <div id="row_2_images" class="row">
         <div class='col my-auto text-center' id="substrate_images"></div>
         <div class='col my-auto text-center' id="reaction_images"></div>
         <div class='col my-auto text-center' id="product_images"></div>
     </div>
 
-    <div id="row_2_conditions" class="row">
+    <div id="row_3_conditions" class="row">
         <div class='col my-auto text-center' id="substrate_conditions"></div>
         <div class='col my-auto text-center' id="reaction_conditions"></div>
         <div class='col my-auto text-center' id="product_conditions"></div>
     </div>
 
-    <div class="row">
+    <div class="row mt-5">
         <div class="col">
             <p><strong>Data curated by: </strong><span id="activity_added_by"></span></p>
         </div>
