@@ -14,10 +14,6 @@
         return "<button class='btn btn-sm btn-outline-info'>Edit</button>";
     };
 
-    var paper_linkButton = function(cell, formatterParams, onRendered){ //plain text value
-        return "<button class='btn btn-sm btn-outline-primary'>Link</button>";
-    };
-
     var paper_self_assignButton = function(cell, formatterParams, onRendered){ //plain text value
         return "<button class='btn btn-sm btn-outline-success'>Self assign</button>";
     };
@@ -26,11 +22,22 @@
 
         {'title':"ID", align:"center", 'field':"_id", visible:false, headerSort:false},
 
-        {'title': "Short cit.", align:"center", 'field': "short_citation", headerFilter:"input"},
+        {'title': "Short cit.", align:"center", 'field': "short_citation", headerFilter:"input", formatter:"textarea"},
 
-        {'title': "Title", align:"center", 'field': "title", headerFilter:"input"},
+        {'title': "Title", align:"center", 'field': "title", headerFilter:"input", formatter:"textarea"},
 
-        {'title': "DOI", align:"center", 'field': "doi", headerFilter:"input"},
+        {'title': "DOI", align:"center", 'field': "doi", headerFilter:"input",
+            formatter:function(cell, formatterParams){
+                var cell_value = cell.getValue();
+                var row_data = cell.getData()
+                var doi = row_data['doi']
+                var url = "<a href='https://doi.org/" + doi + "' target='_blank'>" + cell_value + "</a>";
+
+                cell.getElement().style.display = 'inline-flex'
+                cell.getElement().style["white-space"]  = 'pre-wrap'
+                return url
+                }
+        },
 
         {'title': "Status", align:"center", 'field': "status", headerFilter:"select", headerFilterParams:{values:true}},
 
@@ -40,11 +47,6 @@
             {'title': "Owner", align:"center", 'field': "owner", headerFilter:"select", headerFilterParams:{values:true}},
         {% endif %}
 
-
-        {% if 'link' in papers_button_columns %}
-            {'title': 'Link', 'width':80, formatter:paper_linkButton, align:"center",
-                cellClick:function(e, cell){link_to_paper(cell.getRow().getData().doi)}},
-        {% endif %}
 
         {% if 'delete' in papers_button_columns %}
             {'title': 'Delete', 'width':80, formatter:paper_deleteButton, align:"center",
@@ -72,7 +74,9 @@
         maxHeight:"{{papers_table_height}}",
         layout:"fitColumns",
         addRowPos:"bottom",
-        columns:papers_columns})
+        columns:papers_columns,
+        cellHozAlign:"center",
+        cellVertAlign:"middle",})
 
     function link_to_paper(doi) {
         var url = 'https://doi.org/' + doi
