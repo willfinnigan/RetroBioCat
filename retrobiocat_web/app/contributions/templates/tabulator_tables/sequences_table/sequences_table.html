@@ -39,7 +39,7 @@
 
         {'title': "Name", align:"center", 'field': "enzyme_name", headerFilter:"input"},
 
-        {'title': "Sequence", align:"center", 'field': "sequence", 'width':250, headerFilter:"input"},
+        {'title': "Sequence", align:"left", 'field': "sequence", 'width':250, headerFilter:"input"},
 
         {'title': "Seq. unavailable", align:"center", 'field': "sequence_unavailable", headerFilter:"select", headerFilterParams:{values:true}},
 
@@ -94,7 +94,9 @@
         maxHeight:"{{seq_table_height}}",
         layout:"fitColumns",
         addRowPos:"bottom",
-        columns:seq_columns})
+        columns:seq_columns,
+        cellHozAlign:"center",
+        cellVertAlign:"middle",})
 
     {% if 'remove' in seq_button_columns %}
         function remove_sequence(name) {

@@ -11,7 +11,10 @@
     };
 
     var paper_editButton = function(cell, formatterParams, onRendered){ //plain text value
-        return "<button class='btn btn-sm btn-outline-info'>Edit</button>";
+        var row_data = cell.getData()
+        var id = row_data['_id']
+        var url = Flask.url_for("contributions.submission_main_page", {"paper_id": id})
+        return "<a href=" + url + " class='btn btn-sm btn-outline-info'>Edit</a>";
     };
 
     var paper_self_assignButton = function(cell, formatterParams, onRendered){ //plain text value
