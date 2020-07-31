@@ -19,7 +19,7 @@
 
 
 <script>
-    function set_reaction_img(sub1, sub2, prod, reaction_name, enzyme, enzyme_type, biocat_conc, formulation, selectivity,temperature, ph, solvent, volume) {
+    function set_reaction_img(sub1, sub2, prod, reaction_name, enzyme, enzyme_type, biocat_conc, formulation, selectivity,temperature, ph, solvent) {
 
         var substrate_images = document.getElementById("substrate_images")
         substrate_images.innerHTML = ''
@@ -37,7 +37,6 @@
         reaction_images.innerHTML += "<p class='no_margin text-info'><small>"+ biocat_conc +" " + formulation + "</small></p>"
         reaction_images.innerHTML += "<p class='no_margin text-danger'><small>"+ ph +", " + temperature + "</small></p>"
         reaction_images.innerHTML += "<p class='no_margin text-danger'><small>"+ solvent + "</small></p>"
-        reaction_images.innerHTML += "<p class='no_margin text-danger'><small>"+ volume + "</small></p>"
 
         var product_images = document.getElementById("product_images")
         product_images.innerHTML = ''
@@ -46,7 +45,7 @@
 
     }
 
-    function add_reaction_conditions(sub1_conc, sub2_conc, other_conditions, notes) {
+    function add_reaction_conditions(sub1_conc, sub2_conc, other_conditions, notes, volume) {
         var substrate_conditions = document.getElementById("substrate_conditions")
         substrate_conditions.innerHTML = ''
         if (sub1_conc != '') {
@@ -57,7 +56,8 @@
         }
 
         var reaction_conditions = document.getElementById("reaction_conditions")
-        reaction_conditions.innerHTML = "<p class='no_margin text-secondary'><small>"+ other_conditions +"</small></p>"
+        reaction_conditions.innerHTML = "<p class='no_margin text-secondary mt-2'><small>"+ volume + "</small></p>"
+        reaction_conditions.innerHTML += "<p class='no_margin text-secondary'><small>"+ other_conditions +"</small></p>"
 
         var product_conditions = document.getElementById("product_conditions")
         product_conditions.innerHTML = "<p class='no_margin text-secondary'><small>"+ notes +"</small></p>"
@@ -112,9 +112,9 @@
             set_reaction_img(data.result.sub1_img, data.result.sub2_img, data.result.prod_img,
                              data.result.reaction, data.result.enzyme_name, data.result.enzyme_type,
                              data.result.biocat_conc, data.result.formulation, data.result.selectivity,
-                             data.result.temperature, data.result.ph, data.result.solvent, data.result.volume)
+                             data.result.temperature, data.result.ph, data.result.solvent)
 
-            add_reaction_conditions(data.result.sub1_conc, data.result.sub2_conc, data.result.other_conditions, data.result.notes)
+            add_reaction_conditions(data.result.sub1_conc, data.result.sub2_conc, data.result.other_conditions, data.result.notes, data.result.volume)
 
             add_activity(data.result.active, data.result.category, data.result.sa, data.result.conv, data.result.kinetics)
 

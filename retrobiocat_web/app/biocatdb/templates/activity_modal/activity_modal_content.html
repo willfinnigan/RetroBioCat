@@ -3,14 +3,7 @@
         <a class="nav-link active" id="activity_info_link"
            data-toggle="tab" href="#activity_info"
            role="tab" aria-controls="activity_info"
-           aria-selected="true">Activity</a>
-    </li>
-
-    <li class="nav-item">
-        <a class="nav-link" id="reaction_info_link"
-           data-toggle="tab" href="#reaction_info"
-           role="tab" aria-controls="reaction_info"
-           aria-selected="false">Reaction</a>
+           aria-selected="true">Reaction</a>
     </li>
 
     <li class="nav-item">
@@ -31,10 +24,6 @@
 <div class="tab-content" id="tab_content">
     <div class="tab-pane fade show active" id="activity_info" role="tabpanel" aria-labelledby="activity_info_tab">
         {% include '/activity_modal/activity_tab.html' %}
-    </div>
-
-    <div class="tab-pane fade" id="reaction_info" role="tabpanel" aria-labelledby="reaction_info_tab">
-        {% include '/activity_modal/reaction_tab.html' %}
     </div>
 
     <div class="tab-pane fade" id="enzyme_info" role="tabpanel" aria-labelledby="enzyme_info_tab">
