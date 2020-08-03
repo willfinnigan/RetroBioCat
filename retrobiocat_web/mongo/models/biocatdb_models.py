@@ -27,7 +27,9 @@ class Paper(db.Document):
 
 class EnzymeType(db.Document):
     enzyme_type = db.StringField(max_length=120, unique=True, required=True)
+    full_name = db.StringField(default='')
     description = db.StringField(default='')
+    other_abbreviations = db.ListField(db.StringField())
 
     def __unicode__(self):
         return self.enzyme_type

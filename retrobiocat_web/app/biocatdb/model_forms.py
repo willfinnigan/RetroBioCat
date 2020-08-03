@@ -27,5 +27,7 @@ class PaperInfo(FlaskForm):
 
 class EnzymeTypeForm(FlaskForm):
     enzyme_type = StringField(validators=[DataRequired(), Length(max=120), is_type_taken])
+    full_name = StringField()
+    other_abbreviations = StringField()
     description = TextAreaField(validators=[Length(max=255)])
     submit = SubmitField()

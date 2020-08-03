@@ -14,10 +14,16 @@ def add_enzyme_type():
     if form.validate_on_submit() == True:
         if form.description.data == '':
             form.description.data = None
+        if form.other_abbreviations.data == '':
+            other_abbreviations = None
+        else:
+            other_abbreviations = form.other_abbreviations.data.split(', ')
 
-        type = EnzymeType(enzyme_type = form.enzyme_type.data,
-                          description = form.description.data)
-        type.save()
+        enz_type = EnzymeType(enzyme_type=form.enzyme_type.data,
+                              full_name=form.full_name.data,
+                              other_abbreviations=other_abbreviations,
+                              description=form.description.data)
+        enz_type.save()
 
         flash("Data added successfully", 'success')
         return redirect(url_for('biocatdb.add_enzyme_type'))
@@ -27,7 +33,7 @@ def add_enzyme_type():
 @bp.route('/edit_enzyme_types', methods=['GET', 'POST'])
 @roles_required('enzyme_types_admin')
 def edit_enzyme_types():
-    headings = ['Name', 'Description', 'Num rules']
+    headings = ['Name', 'Full name', 'Other abbreviations', 'Description', 'Num rules']
     enzyme_types = EnzymeType.objects().distinct("enzyme_type")
     enzyme_types.sort()
 
@@ -38,7 +44,9 @@ def edit_enzyme_types():
         new_enz_type_dict = {}
         enz_type = enz_type_dict.get('enzyme_type')
         new_enz_type_dict['Name'] = enz_type
-        new_enz_type_dict['Description'] = enz_type_dict.get('description')
+        new_enz_type_dict['Full name'] = enz_type_dict.get('full_name', '')
+        new_enz_type_dict['Other abbreviations'] = enz_type_dict.get('other_abbreviations', '')
+        new_enz_type_dict['Description'] = enz_type_dict.get('description', '')
         new_enz_type_dict['Num rules'] = len(Reaction.objects(enzyme_types=enz_type))
         renamed_enz_type_dict_list.append(new_enz_type_dict)
 

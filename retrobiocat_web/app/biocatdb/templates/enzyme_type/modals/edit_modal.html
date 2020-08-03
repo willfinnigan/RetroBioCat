@@ -16,6 +16,16 @@
           </div>
 
           <div class="form-group">
+              <label for='enzyme_type'>Full name</label>
+              <input type="text" class="form-control" id="full_name" placeholder="">
+          </div>
+
+          <div class="form-group">
+              <label for='enzyme_type'>Other abbreviations</label>
+              <input type="text" class="form-control" id="other_abbreviations" placeholder="">
+          </div>
+
+          <div class="form-group">
               <label for="description">Description</label>
               <textarea class="form-control" id="description" placeholder="" rows="6"></textarea>
           </div>
@@ -40,6 +50,8 @@
         $.post('/_save_enzyme_type_changes', {
             original_name: document.getElementById("original_name").innerHTML,
             new_name: document.getElementById("enzyme_type").value,
+            full_name: document.getElementById("full_name").value,
+            other_abbreviations: document.getElementById("other_abbreviations").value,
             description: document.getElementById("description").value
             }).done(function(data) {
                 console.log('saved')

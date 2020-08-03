@@ -23,6 +23,8 @@
                             <h3 class="card-title">Add a new enzyme type</h3>
                             {{ form.hidden_tag() }}
                             {{ text(form.enzyme_type, 'Enzyme type', 'Enter a type of enzyme', "") }}
+                            {{ text(form.full_name, 'Full name', 'Enter full name', "") }}
+                            {{ text(form.other_abbreviations, 'Other abbreviations', 'Comma separated list', "") }}
                             {{ text(form.description, 'Description', 'Optional - enter a description', "") }}
                             {{ form.submit }}
                             {% for message in get_flashed_messages() %}

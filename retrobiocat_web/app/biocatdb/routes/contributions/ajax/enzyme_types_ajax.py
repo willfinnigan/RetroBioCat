@@ -30,7 +30,9 @@ def load_enzyme_type_data():
     enz_type = EnzymeType.objects(enzyme_type=name)[0]
 
     result = {'name': enz_type.enzyme_type,
-              'description': enz_type.description}
+              'description': enz_type.description,
+              'full_name': enz_type.full_name,
+              'other_abbreviations': enz_type.other_abbreviations}
 
     return jsonify(result=result)
 
@@ -40,9 +42,17 @@ def save_enzyme_type_changes():
     original_name = request.form['original_name']
     new_name = request.form['new_name']
     description = request.form['description']
+    full_name = request.form['full_name']
+    other_abbreviations = request.form['other_abbreviations']
+    if other_abbreviations == '':
+        other_abbreviations = None
+    else:
+        other_abbreviations = other_abbreviations.split(', ')
 
     enz_type = EnzymeType.objects(enzyme_type=original_name)[0]
     enz_type.description = description
+    enz_type.full_name = full_name
+    enz_type.other_abbreviations = other_abbreviations
 
     if new_name != original_name:
         if new_name not in list(EnzymeType.objects().distinct('enzyme_type')):
