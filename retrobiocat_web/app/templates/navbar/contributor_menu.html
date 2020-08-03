@@ -2,32 +2,32 @@
     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Contributor</a>
     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
         <strong>Contributor</strong>
-        <a class="dropdown-item" href="{{url_for('contributions.papers_that_need_data')}}">Papers to be curated</a>
-        <a class="dropdown-item" href="{{url_for('contributions.my_sequences')}}">My sequences</a>
-        <a class="dropdown-item" href="{{url_for('contributions.my_papers')}}">My papers</a>
+        <a class="dropdown-item" href="{{url_for('biocatdb.papers_that_need_data')}}">Papers to be curated</a>
+        <a class="dropdown-item" href="{{url_for('biocatdb.my_sequences')}}">My sequences</a>
+        <a class="dropdown-item" href="{{url_for('biocatdb.my_papers')}}">My papers</a>
         {% if current_user.has_role('paper_adder') %}
             <strong>Paper adder</strong>
-            <a class="dropdown-item" href="{{url_for('contributions.launch_add_paper')}}">Add paper</a>
+            <a class="dropdown-item" href="{{url_for('biocatdb.launch_add_paper')}}">Add paper</a>
         {% endif %}
         {% if current_user.has_role('super_contributor') %}
             <strong>Super contributor</strong>
-            <a class="dropdown-item" href="{{url_for('contributions.edit_papers')}}">Edit papers</a>
-            <a class="dropdown-item" href="{{url_for('contributions.edit_sequences')}}">Edit sequences</a>
+            <a class="dropdown-item" href="{{url_for('biocatdb.edit_papers')}}">Edit papers</a>
+            <a class="dropdown-item" href="{{url_for('biocatdb.edit_sequences')}}">Edit sequences</a>
         {% endif %}
         {% if current_user.has_role('enzyme_types_admin') %}
             <strong>Enzyme types admin</strong>
-            <a class="dropdown-item" href="{{url_for('contributions.add_enzyme_type')}}">Add enzyme type</a>
-            <a class="dropdown-item" href="{{url_for('contributions.edit_enzyme_types')}}">Edit enzyme types</a>
+            <a class="dropdown-item" href="{{url_for('biocatdb.add_enzyme_type')}}">Add enzyme type</a>
+            <a class="dropdown-item" href="{{url_for('biocatdb.edit_enzyme_types')}}">Edit enzyme types</a>
         {% endif %}
         {% if current_user.has_role('rxn_rules_admin') %}
             <strong>Reaction rules admin</strong>
-            <a class="dropdown-item" href="{{url_for('contributions.rule_editor')}}">Rule Editor</a>
+            <a class="dropdown-item" href="{{url_for('biocatdb.rule_editor')}}">Rule Editor</a>
         {% endif %}
         {% if current_user.has_role('admin') %}
             <strong>Admin</strong>
-            <a class="dropdown-item" href="{{url_for('contributions.download_rxn_yaml')}}">Download Rxn Yamls</a>
-            <a class="dropdown-item" href="{{url_for('contributions.download_biocatdb')}}">Download BioCatDB</a>
-            <a class="dropdown-item" href="{{url_for('contributions.download_sequences')}}">Download Sequences</a>
+            <a class="dropdown-item" href="{{url_for('biocatdb.download_rxn_yaml')}}">Download Rxn Yamls</a>
+            <a class="dropdown-item" href="{{url_for('biocatdb.download_biocatdb')}}">Download BioCatDB</a>
+            <a class="dropdown-item" href="{{url_for('biocatdb.download_sequences')}}">Download Sequences</a>
         {% endif %}
     </div>
 </li>
