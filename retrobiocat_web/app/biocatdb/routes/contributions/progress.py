@@ -4,7 +4,7 @@ from retrobiocat_web.app.biocatdb.model_forms import PaperInfo
 from flask_security import roles_required, current_user
 from retrobiocat_web.mongo.models.user_models import User
 from retrobiocat_web.mongo.models.biocatdb_models import Paper, EnzymeType
-from retrobiocat_web.app.biocatdb.functions import papers_functions, papers_crossref
+from retrobiocat_web.app.biocatdb.functions.papers import papers_functions, papers_crossref
 from retrobiocat_web.app.app import user_datastore
 from flask_wtf import FlaskForm
 from wtforms import SubmitField, StringField

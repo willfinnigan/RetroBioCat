@@ -3,7 +3,7 @@ from flask import flash, url_for, request, jsonify
 from flask_security import roles_required, current_user
 from retrobiocat_web.mongo.models.biocatdb_models import Sequence, Activity, Paper, EnzymeType
 from retrobiocat_web.app.app import user_datastore
-from retrobiocat_web.app.biocatdb.functions import papers_functions, papers_crossref
+from retrobiocat_web.app.biocatdb.functions.papers import papers_functions, papers_crossref
 import mongoengine as db
 from distutils.util import strtobool
 

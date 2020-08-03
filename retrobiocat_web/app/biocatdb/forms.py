@@ -4,6 +4,7 @@ from wtforms.validators import DataRequired, NumberRange, ValidationError
 from retrobiocat_web.retro.generation import node_analysis
 from retrobiocat_web.retro.enzyme_identification import query_mongodb
 from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType, Sequence
+from retrobiocat_web.mongo.models.reaction_models import Reaction
 
 def is_accepted_by_rdkit(form, field):
     if node_analysis.rdkit_smile(field.data) == None:
@@ -75,4 +76,15 @@ class SequenceSearch(FlaskForm):
 
     def set_choices(self):
         self.enzyme_type.choices = [(c, c) for c in ['All'] + (list(Sequence.objects().distinct('enzyme_type')))]
+
+class PapersSearch(FlaskForm):
+    enzyme_type = SelectField('Enzyme type')
+    enzyme_name = SelectField('Enzyme name')
+    reaction = SelectField('Reaction')
+    submit = SubmitField('Submit')
+
+    def set_choices(self):
+        self.enzyme_type.choices = [(c, c) for c in ['All'] + (list(Sequence.objects().distinct('enzyme_type')))]
+        self.enzyme_name.choices = [(c, c) for c in ['All'] + (list(Sequence.objects().distinct('enzyme_name')))]
+        self.reaction.choices = [(c, c) for c in ['All'] + (list(Reaction.objects().distinct('name')))]
 

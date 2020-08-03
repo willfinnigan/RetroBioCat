@@ -4,7 +4,7 @@ from flask_security import roles_required, current_user
 from retrobiocat_web.mongo.models.biocatdb_models import Sequence, Activity, EnzymeType, Paper
 from retrobiocat_web.app.app import user_datastore
 from distutils.util import strtobool
-from retrobiocat_web.app.biocatdb.functions import paper_status
+from retrobiocat_web.app.biocatdb.functions.papers import paper_status
 from werkzeug.utils import secure_filename
 import os
 import pandas as pd

@@ -14,7 +14,8 @@ from flask_wtf import FlaskForm
 from wtforms import SubmitField, StringField
 from flask_wtf.file import FileField
 import pandas as pd
-from retrobiocat_web.app.biocatdb.functions import paper_status, papers_functions, papers_crossref, create_building_block_db
+from retrobiocat_web.app.biocatdb.functions.papers import paper_status, papers_functions, papers_crossref
+from retrobiocat_web.app.biocatdb.functions import create_building_block_db
 import time
 import datetime
 from pathlib import Path

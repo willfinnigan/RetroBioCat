@@ -7,10 +7,10 @@ from retrobiocat_web.mongo.models.reaction_models import Reaction
 from retrobiocat_web.app.app import user_datastore
 import json
 import numpy as np
-from retrobiocat_web.app.biocatdb.functions import papers_functions
+from retrobiocat_web.app.biocatdb.functions.papers import papers_functions
 from retrobiocat_web.app.biocatdb.functions.activity import check_activity_data, cascade_activity_data
 import mongoengine as db
-from retrobiocat_web.app.biocatdb.functions import paper_status
+from retrobiocat_web.app.biocatdb.functions.papers import paper_status
 
 def get_activity_data(paper):
     include = ['id', "reaction", "enzyme_name", "substrate_1_smiles", "substrate_2_smiles",
