@@ -1,0 +1,171 @@
+<p class="text-secondary no_margin"><small>Select a row for summary/more information</small></p>
+<div id="table"></div>
+
+{% include 'tabulator_tables/substrate_specificity/activity_modal/activity_modal.html' %}
+
+<script>
+
+    var high_colour = "#b8ffbf"
+    var medium_colour = "#fbffb8"
+    var low_colour = "#ffdab8"
+    var none_colour = "#ffb8b8"
+
+    var columns = [
+
+        {'title': "activity_id", 'field': "activity_id", visible:false},
+
+        {'title': "Reaction", 'field': "Reaction", 'width':100, formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
+
+        {'title': "Enzyme type", 'field': "Enzyme type", 'width':75, formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
+
+        {'title': "Enzyme name", 'field': "Enzyme name", 'width':75, formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
+
+        {'title': "Data source", 'field': "Data source", 'width':100, headerFilter:"select", headerFilterParams:{values:true},
+        formatter:function(cell, formatterParams){
+            var cell_value = cell.getValue();
+            var row_data = cell.getData()
+            var doi = row_data['Data source doi']
+            var url = "<a href='" + doi + "' target='_blank'>" + cell_value + "</a>";
+
+            cell.getElement().style.display = 'inline-flex'
+            cell.getElement().style.height  = '158px'
+            cell.getElement().style["white-space"]  = 'pre-wrap'
+            return url
+            }
+        },
+
+        {'title': "Data source doi", 'field': "Data source doi", visible:false},
+
+        {'title': "paper", 'field': "paper", visible:false},
+
+        {'title': "Substrate 1 SMILES", 'field': "Substrate 1 SMILES", 'width':150, formatter:"image"},
+
+        {'title': "Substrate 2 SMILES", 'field': "Substrate 2 SMILES", 'width':150, formatter:"image"},
+
+        {'title': "Product 1 SMILES", 'field': "Product 1 SMILES", 'width':150, formatter:"image"},
+
+        {'title': "Binary", 'field': "Binary", 'width':75, headerFilter:"select", headerFilterParams:{values:true},
+            formatter:function(cell, formatterParams){
+                var row_data = cell.getData()
+                var cell_value = cell.getValue();
+                var value = row_data['Categorical']
+                if(value === "High"){
+                      cell.getElement().style.backgroundColor = high_colour
+                } else if (value === 'Medium') {
+                    cell.getElement().style.backgroundColor = medium_colour
+                } else if (value === 'Low') {
+                    cell.getElement().style.backgroundColor = low_colour
+                } else if (value === 'None') {
+                    cell.getElement().style.backgroundColor = none_colour
+                } else if (cell_value === 'True') {
+                    cell.getElement().style.backgroundColor = high_colour
+                } else {
+                    cell.getElement().style.backgroundColor = none_colour
+                }
+                return cell_value}
+        },
+
+
+        {'title': "Categorical", 'field': "Categorical", 'width':75, headerFilter:"select", headerFilterParams:{values:true},
+        formatter:function(cell, formatterParams){
+            var value = cell.getValue();
+            if(value === "High"){
+                  cell.getElement().style.backgroundColor = high_colour
+            } else if (value === 'Medium') {
+                cell.getElement().style.backgroundColor = medium_colour
+            } else if (value === 'Low') {
+                cell.getElement().style.backgroundColor = low_colour
+            } else if (value === 'None') {
+                    cell.getElement().style.backgroundColor = none_colour
+            }
+            return value}
+        },
+
+        {'title': "Conversion (%)", 'field': "Conversion (%)", 'width':100, sorter:"number", headerFilter:minMaxFilterEditor, headerFilterFunc:minMaxFilterFunction, headerFilterLiveFilter:false,
+            formatter:function(cell, formatterParams){
+                var row_data = cell.getData()
+                var cell_value = cell.getValue()
+                if (cell_value !== '') {
+                    var value = row_data['Categorical']
+                    if(value === "High"){
+                          cell.getElement().style.backgroundColor = high_colour
+                    } else if (value === 'Medium') {
+                        cell.getElement().style.backgroundColor = medium_colour
+                    } else if (value === 'Low') {
+                        cell.getElement().style.backgroundColor = low_colour
+                    } else if (value === 'None') {
+                        cell.getElement().style.backgroundColor = none_colour
+                    }
+                }
+                return cell_value}
+        },
+
+        {'title': "Specific activity (U/mg)", 'field': "Specific activity (U/mg)", 'width':100, sorter:"number", headerFilter:minMaxFilterEditor, headerFilterFunc:minMaxFilterFunction, headerFilterLiveFilter:false,
+            formatter:function(cell, formatterParams){
+                var row_data = cell.getData()
+                var cell_value = cell.getValue()
+                if (cell_value !== '') {
+                    var value = row_data['Categorical']
+                    if(value === "High"){
+                          cell.getElement().style.backgroundColor = high_colour
+                    } else if (value === 'Medium') {
+                        cell.getElement().style.backgroundColor = medium_colour
+                    } else if (value === 'Low') {
+                        cell.getElement().style.backgroundColor = low_colour
+                    } else if (value === 'None') {
+                        cell.getElement().style.backgroundColor = none_colour
+                    }
+                }
+                return cell_value}
+            },
+
+        {'title': "Temperature", 'field': "Temperature", 'width':75, formatter:"textarea"},
+
+        {'title': "pH", 'field': "pH", 'width':50, formatter:"textarea"},
+
+        {'title': "Solvent", 'field': "Solvent", 'width':75, formatter:"textarea"},
+
+        {'title': "Other conditions", 'field': "Other conditions", 'width':200, formatter:"textarea"},
+
+        {'title': "Notes", 'field': "Notes", 'width':200, formatter:"textarea"},
+
+        {'title': "Reaction volume (ml)", 'field': "Reaction volume (ml)", 'width':75, formatter:"textarea"},
+
+        {'title': "Biocatalyst Formulation", 'field': "Biocatalyst Formulation", 'width':100, formatter:"textarea"},
+
+        {'title': "Biocatalyst Concentration (mg/ml)", 'field': "Biocatalyst Concentration (mg/ml)", 'width':100, formatter:"textarea"},
+
+        {'title': "kcat (min-1)", 'field': "kcat (min-1)", 'width':100, formatter:"textarea"},
+
+        {'title': "KM (mM)", 'field': "KM (mM)", 'width':100, formatter:"textarea"},
+
+        {'title': "Enz MW (Da)", 'field': "Enz MW (Da)", 'width':100, formatter:"textarea"},
+
+        {'title': "Substrate 1 conc (mM)", 'field': "Substrate 1 conc (mM)", 'width':100, formatter:"textarea"},
+
+        {'title': "Substrate 2 conc (mM)", 'field': "Substrate 2 conc (mM)", 'width':100, formatter:"textarea"},
+
+        {'title': "Conversion time (hrs)", 'field': "Conversion time (hrs)", 'width':100, formatter:"textarea"},
+
+        {'title': "Selectivity", 'field': "Selectivity", 'width':100, formatter:"textarea"},
+    ]
+
+    var tabledata = {{activity_data|safe}}
+
+    var table = new Tabulator("#table", {
+        data:tabledata, //assign data to table
+        maxHeight:"75vh",
+        layout:"fitColumns",
+        addRowPos:"bottom",
+        columns:columns,
+        cellHozAlign:"center",
+        cellVertAlign:"middle",
+        rowClick:function(e, row){
+            var rowData = row.getData();
+            var activity_id = rowData['activity_id']
+            load_single_activity_data(activity_id)
+            $('#activity_modal').modal('show');
+            },
+    });
+
+</script>

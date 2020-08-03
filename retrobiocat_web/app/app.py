@@ -32,7 +32,7 @@ from retrobiocat_web.app.admin import MyAdminIndexView, MyModelView
 
 user_datastore = MongoEngineUserDatastore(db, User, Role)
 
-from retrobiocat_web.app import main_site, retrobiocat, biocatdb, contributions
+from retrobiocat_web.app import main_site, retrobiocat, biocatdb
 
 def quick_db(config_class=Config):
     print("Make a quick app to init mongoengine..")
@@ -112,7 +112,6 @@ def create_app(config_class=Config, use_talisman=True):
         app.register_blueprint(main_site.bp)
         app.register_blueprint(retrobiocat.bp)
         app.register_blueprint(biocatdb.bp)
-        app.register_blueprint(contributions.bp)
 
         return app
 

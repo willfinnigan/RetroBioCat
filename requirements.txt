@@ -1,7 +1,7 @@
 flask
 gunicorn
-flask_wtf
-wtforms
+flask_wtf==0.14.3
+wtforms==2.3.3
 redis==3.3.11
 rq==1.1.0
 flask_talisman

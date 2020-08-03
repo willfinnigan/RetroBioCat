@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 from retrobiocat_web.mongo.models.user_models import User
 
-EXCEL_PATH = str(Path(__file__).parents[2]) + '/data/substrate_specificity/biocatdb.xlsx'
+EXCEL_PATH = str(Path(__file__).parents[2]) + '/data/substrate_specificity/biocatdb_2.xlsx'
 
 def make_added_by_user_dict():
     added_by_dict = {}
@@ -87,7 +87,7 @@ def load_df(excel_path):
 def df_to_db(spec_df):
     added_by_dict = make_added_by_user_dict()
 
-    print('Saving biocatdb excel to mongodb..')
+    print('Saving biocatdb_2 excel to mongodb..')
     for i, row in spec_df.iterrows():
         html_doi = row['Data source doi']
         doi = row['Data source doi']
