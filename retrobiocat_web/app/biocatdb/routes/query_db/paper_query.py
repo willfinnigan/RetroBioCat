@@ -50,6 +50,8 @@ def show_papers():
 
     args = request.args.to_dict()
 
+    status_query = db.Q(status_not = 'Data required')
+
     if 'enzyme_type' in args:
         enzyme_type_query = db.Q(tags=args['enzyme_type'])
     else:
