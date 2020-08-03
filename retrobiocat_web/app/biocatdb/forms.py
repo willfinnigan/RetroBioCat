@@ -3,6 +3,7 @@ from wtforms import StringField, BooleanField, SubmitField, IntegerField, Decima
 from wtforms.validators import DataRequired, NumberRange, ValidationError
 from retrobiocat_web.retro.generation import node_analysis
 from retrobiocat_web.retro.enzyme_identification import query_mongodb
+from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType
 
 def is_accepted_by_rdkit(form, field):
     if node_analysis.rdkit_smile(field.data) == None:
@@ -59,7 +60,6 @@ class SequenceByName(FlaskForm):
     submit = SubmitField('Submit')
 
 class SequenceByType(FlaskForm):
-
     def __init__(self, choices):
         super().__init__()
         self.type = SelectField('Enzyme type', choices=choices)
@@ -68,4 +68,16 @@ class SequenceByType(FlaskForm):
 class SequenceBySequence(FlaskForm):
     sequence = StringField('Protein sequence', validators=[DataRequired()])
     submit = SubmitField('Submit')
+
+class SequenceSearch(FlaskForm):
+    enzyme_type = SelectField('Enzyme type')
+    submit = SubmitField('Submit')
+
+    def set_choices(self):
+        self.enzyme_type.choices = [(c, c) for c in ['All'] + (list(EnzymeType.objects().distinct('enzyme_type')))]
+        self.enzyme_type.choices = [('All', 'All'), ('AAD', 'AAD'), ('AADH', 'AADH'), ('AAO', 'AAO'), ('ADC', 'ADC'), ('ADH', 'ADH'), ('ADH(FAD)', 'ADH(FAD)'), ('AHR', 'AHR'), ('AKR', 'AKR'), ('ALR', 'ALR'), ('Adenylating amidase', 'Adenylating amidase'), ('AlDH', 'AlDH'), ('AlOx', 'AlOx'), ('AlaDH', 'AlaDH'), ('Aldolase', 'Aldolase'), ('AmDH', 'AmDH'), ('AmOx', 'AmOx'), ('Amidase', 'Amidase'), ('BBE', 'BBE'), ('BVMO', 'BVMO'), ('CAR', 'CAR'), ('CMT', 'CMT'), ('Chemical', 'Chemical'), ('DC', 'DC'), ('DERA Aldolase', 'DERA Aldolase'), ('EDDS lyase', 'EDDS lyase'), ('EH', 'EH'), ('ERED', 'ERED'), ('Esterase', 'Esterase'), ('FMO', 'FMO'), ('Hydratase', 'Hydratase'), ('Hydroxynitrile Lyase', 'Hydroxynitrile Lyase'), ('IRED', 'IRED'), ('KRED', 'KRED'), ('Kinase', 'Kinase'), ('Limonene Hydratase', 'Limonene Hydratase'), ('Lipase', 'Lipase'), ('NHase', 'NHase'), ('NIR', 'NIR'), ('NMT', 'NMT'), ('NTR', 'NTR'), ('Nitrilase', 'Nitrilase'), ('Oxd', 'Oxd'), ('P450', 'P450'), ('PAL', 'PAL'), ('PAM', 'PAM'), ('PNP', 'PNP'), ('PSase', 'PSase'), ('Penicillin Acylase', 'Penicillin Acylase'), ('Phosphopentomutase', 'Phosphopentomutase'), ('SMO', 'SMO'), ('SOI', 'SOI'), ('TA', 'TA'), ('TAL', 'TAL'), ('TAM', 'TAM'), ('TDL', 'TDL'), ('TPL', 'TPL'), ('Threonine Aldolase', 'Threonine Aldolase'), ('TrpS', 'TrpS'), ('XOR', 'XOR')]
+
+        print(self.enzyme_type.choices)
+
+
 

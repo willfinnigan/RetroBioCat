@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% set active_page = "biocatdb" %}
+
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col"></div>
+            <div class="col">
+                <div class="card card-form my-5" style="width: 32rem;">
+                    <div class="card-body" align="center">
+                        <h3 class="card-title">Enzyme search</h3>
+                        <form method="POST" action="" novalidate>
+                            {{ form.hidden_tag() }}
+                            <div class="form-group">
+                                <label for="enzyme_type">Enzyme type</label>
+                                {{ form.enzyme_type(type='select', class="form-control custom-select w-50") }}
+                                {% for error in form.enzyme_type.errors %}
+                                    <span style="color: red;">[{{ error }}]</span>
+                                {% endfor %}
+                            </div>
+
+                            {{ form.submit(class="btn-lg btn-block btn-success") }}
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col"></div>
+        </div>
+    </div>
+
+{% endblock %}
