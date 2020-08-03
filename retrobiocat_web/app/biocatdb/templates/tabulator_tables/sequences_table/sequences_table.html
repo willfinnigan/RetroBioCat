@@ -60,7 +60,7 @@
         {% endif %}
 
         {% if include_owner == True %}
-            {'title': "Owner", align:"center", 'field': "owner", headerFilter:"select", headerFilterParams:{values:true}},
+            {'title': "Curated by", align:"center", 'field': "owner", headerFilter:"select", headerFilterParams:{values:true}},
         {% endif %}
 
         {% if 'delete' in seq_button_columns %}

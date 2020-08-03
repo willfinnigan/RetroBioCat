@@ -49,5 +49,5 @@ def show_sequences():
                            seq_table_height='80vh',
                            enzyme_types=enzyme_types,
                            show_header_filters=True,
-                           include_owner=False)
+                           include_owner=True)
 
