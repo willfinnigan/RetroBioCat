@@ -11,6 +11,7 @@ from retrobiocat_web.app.biocatdb.functions.papers import papers_functions
 from retrobiocat_web.app.biocatdb.functions.activity import check_activity_data, cascade_activity_data
 import mongoengine as db
 from retrobiocat_web.app.biocatdb.functions.papers import paper_status
+from retrobiocat_web.app.biocatdb.functions import check_permission
 
 def get_activity_data(paper):
     include = ['id', "reaction", "enzyme_name", "substrate_1_smiles", "substrate_2_smiles",
@@ -120,7 +121,7 @@ def submission_main_page(paper_id):
 
     paper = paper_query[0]
 
-    if (paper.owner != user) and (not current_user.has_role('super_contributor')):
+    if not check_permission.check_paper_permission(current_user.id, paper):
         flash('No access to edit this entry', 'fail')
         return redirect(url_for("biocatdb.launch_add_paper"))
 
@@ -137,6 +138,6 @@ def submission_main_page(paper_id):
                            activity_data=activity_data,
                            seq_data=enzyme_data, seq_button_columns=['edit', 'remove', 'papers'],
                            status=status_dict,
-                           seq_table_height='60vh', enzyme_types=enzyme_types, show_header_filters=False, include_owner=True,
+                           seq_table_height='60vh', enzyme_types=enzyme_types, show_header_filters=False, include_owner=True, lock_enz_type='false',
                            reactions=reactions, enzyme_names=enzyme_names+['Chemical'],
                            doi=paper.doi)

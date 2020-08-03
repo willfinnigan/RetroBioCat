@@ -14,6 +14,7 @@ import tempfile
 from werkzeug.utils import secure_filename
 import os
 import pandas as pd
+from retrobiocat_web.app.biocatdb.functions import check_permission
 
 def check_is_float(to_test):
     if type(to_test) != float:
@@ -43,7 +44,7 @@ def save_activity_data():
     user = user_datastore.get_user(current_user.id)
     paper = Paper.objects(id=request.form['paper_id'])[0]
 
-    if (paper.owner != user) and (not current_user.has_role('super_contributor')):
+    if not check_permission.check_paper_permission(current_user.id, paper):
         result = {'status': 'danger',
                   'msg': 'No access to modify this paper',
                   'issues': ['Paper not assigned to user, and not a super_contributor']}

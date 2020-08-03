@@ -20,7 +20,7 @@ def my_sequences():
 
     return render_template('edit_tables/edit_sequences.html',
                            seq_data=enzyme_data, seq_button_columns=['edit', 'delete', 'papers'],
-                           seq_table_height='80vh', enzyme_types=enzyme_types, show_header_filters=True, include_owner=True)
+                           seq_table_height='80vh', enzyme_types=enzyme_types, show_header_filters=True, include_owner=True, lock_enz_type='false')
 
 @bp.route('/edit_sequences', methods=['GET', 'POST'])
 @roles_required('super_contributor')
@@ -31,4 +31,21 @@ def edit_sequences():
 
     return render_template('edit_tables/edit_sequences.html',
                            seq_data=enzyme_data, seq_button_columns=['edit', 'merge', 'delete', 'papers'],
-                           seq_table_height='80vh', enzyme_types=enzyme_types, show_header_filters=True, include_owner=True)
+                           seq_table_height='80vh', enzyme_types=enzyme_types, show_header_filters=True, include_owner=True, lock_enz_type='false')
+
+@bp.route('/enz_champ_seqs/<enzyme_type>', methods=['GET'])
+@roles_required('enzyme_champion')
+def enzyme_champion_seq(enzyme_type):
+    user = user_datastore.get_user(current_user.id)
+    enzyme_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
+    if enzyme_type_obj not in user.enzyme_champion:
+        flash('No access', 'danger')
+        return redirect(url_for('main_site.home'))
+
+    query = db.Q(enzyme_type=enzyme_type)
+    enzyme_data = sequence_table.get_enzyme_data(query)
+    enzyme_types = sorted(list(EnzymeType.objects().distinct("enzyme_type")))
+
+    return render_template('edit_tables/edit_sequences.html',
+                           seq_data=enzyme_data, seq_button_columns=['edit', 'merge', 'delete', 'papers'],
+                           seq_table_height='80vh', enzyme_types=enzyme_types, show_header_filters=True, include_owner=True, lock_enz_type='true')

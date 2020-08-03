@@ -10,6 +10,7 @@ import os
 import pandas as pd
 import numpy as np
 from distutils.util import strtobool
+from retrobiocat_web.app.biocatdb.functions import check_permission
 
 def seqs_of_type(enzyme_type):
     sequences = Sequence.objects(enzyme_type=enzyme_type).distinct('enzyme_name')
@@ -108,11 +109,10 @@ def save_edited_sequence():
     else:
         seq.sequence = sequence
 
-    if (seq.owner != None) and (not current_user.has_role('super_contributor')):
-        if seq.owner != user:
-            status = 'danger'
-            msg = 'Could not update sequence'
-            issues.append('User does not have access to edit this sequence')
+    if not check_permission.check_seq_permissions(current_user.id, seq):
+        status = 'danger'
+        msg = 'Could not update sequence'
+        issues.append('User does not have access to edit this sequence')
 
     if status == 'success':
         seq.save()
@@ -146,7 +146,7 @@ def load_sequence_data():
     else:
         if seq.owner != '' and seq.owner is not None:
             other_user = True
-            if not user.has_role('super_contributor'):
+            if not check_permission.check_seq_permissions(current_user.id, seq):
                 can_edit = False
 
     other_names = ''
@@ -263,8 +263,7 @@ def load_sequence_papers():
         paper_dict['title'] = paper.title
 
         if current_user.is_authenticated:
-            user = user_datastore.get_user(current_user.id)
-            if user.has_role('super_contributor') or paper.owner == user:
+            if check_permission.check_seq_permissions(current_user.id, seq):
                 paper_dict['can_edit'] = "True"
             else:
                 paper_dict['can_edit'] = "False"

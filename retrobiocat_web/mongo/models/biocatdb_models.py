@@ -1,5 +1,21 @@
 import mongoengine as db
 from rdkit import Chem
+
+class EnzymeType(db.Document):
+    enzyme_type = db.StringField(max_length=120, unique=True, required=True)
+    full_name = db.StringField(default='')
+    description = db.StringField(default='')
+    other_abbreviations = db.ListField(db.StringField())
+
+    def __unicode__(self):
+        return self.enzyme_type
+
+    def __str__(self):
+        return self.enzyme_type
+
+    meta = {'indexes': ['enzyme_type']}
+
+
 from retrobiocat_web.mongo.models.user_models import User
 
 class Paper(db.Document):
@@ -25,19 +41,7 @@ class Paper(db.Document):
     def __str__(self):
         return self.short_citation
 
-class EnzymeType(db.Document):
-    enzyme_type = db.StringField(max_length=120, unique=True, required=True)
-    full_name = db.StringField(default='')
-    description = db.StringField(default='')
-    other_abbreviations = db.ListField(db.StringField())
 
-    def __unicode__(self):
-        return self.enzyme_type
-
-    def __str__(self):
-        return self.enzyme_type
-
-    meta = {'indexes': ['enzyme_type']}
 
 class Sequence(db.Document):
     enzyme_type = db.StringField(max_length=120, required=True)

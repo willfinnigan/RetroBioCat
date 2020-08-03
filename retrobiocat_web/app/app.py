@@ -7,7 +7,7 @@ from flask_wtf.csrf import CSRFProtect
 from flask_jsglue import JSGlue
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from flask_security import Security, MongoEngineUserDatastore, hash_password
+from flask_security import Security, MongoEngineUserDatastore, hash_password, current_user
 from flask_mail import Mail
 from flask_admin import Admin
 from flask_session import Session
@@ -91,6 +91,7 @@ def create_app(config_class=Config, use_talisman=True):
         user_datastore.find_or_create_role('rxn_rules_admin', description='rxn_rules_admin')
         user_datastore.find_or_create_role('paper_adder', description='paper_finder')
         user_datastore.find_or_create_role('experimental', description='experimental')
+        user_datastore.find_or_create_role('enzyme_champion', description='enzyme_champion')
 
         if not user_datastore.get_user(app.config['ADMIN_EMAIL']):
             user = user_datastore.create_user(email=app.config['ADMIN_EMAIL'],
@@ -104,8 +105,15 @@ def create_app(config_class=Config, use_talisman=True):
 
     @app.context_processor
     def inject_login_mode():
-        login_mode = app.config['USE_EMAIL_CONFIRMATION']
-        return dict(login_mode=login_mode)
+        inject_dict = {}
+        inject_dict['login_mode'] = app.config['USE_EMAIL_CONFIRMATION']
+
+        if current_user.is_authenticated:
+            user = user_datastore.get_user(current_user.id)
+            if user.has_role('enzyme_champion'):
+                inject_dict['enzyme_champion'] = user.enzyme_champion
+
+        return inject_dict
 
     print("Register blueprints...")
     with app.app_context():

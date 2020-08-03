@@ -26,6 +26,8 @@
 
 <script>
 
+    var lock_enz_type = {{lock_enz_type}};
+
     function set_select(select_id, arraySeq) {
         var select = document.getElementById(select_id);
         select.options.length = 1;
@@ -61,6 +63,10 @@
                     document.getElementById("self_assigned").disabled = true
                 } else {
                     document.getElementById("self_assigned").disabled = false
+                }
+
+                if (lock_enz_type === true) {
+                    document.getElementById("enzyme_type").disabled = true
                 }
             })
         }

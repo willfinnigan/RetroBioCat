@@ -10,9 +10,10 @@
             </div>
 
             <div class="modal-body">
-                <p>
-                    Warning - merging is quite drastic.  All references to this sequence in any activity data will be
+                <p class="text-danger"><strong>Warning - merging is quite drastic - proceed with caution</strong></p>
+                <p> All references to this sequence in any activity data will be
                     overwritten with the the merged sequence, and this entry will be deleted.
+                    <strong>This can not be undone</strong>
                 </p>
                 <p><strong id="original_name_merge"></strong></p>
                 <label for="c" class="control-label">Select a sequence to merge this entry
@@ -47,8 +48,7 @@
             }).done(function(data) {
                 response_msg(data.result.msg, data.result.status, data.result.issues, "merge_response")
                 if (data.result.status === 'success') {
-                    let url = '/edit_sequences'
-                    location.assign(url);
+                    location.reload()
                 }
             })
         }

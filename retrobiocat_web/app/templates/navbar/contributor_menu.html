@@ -29,6 +29,13 @@
             <a class="dropdown-item" href="{{url_for('biocatdb.download_biocatdb')}}">Download BioCatDB</a>
             <a class="dropdown-item" href="{{url_for('biocatdb.download_sequences')}}">Download Sequences</a>
         {% endif %}
+        {% if current_user.has_role('enzyme_champion') %}
+            {% for enz_type in enzyme_champion %}
+                <strong>{{enz_type}} champion</strong>
+                <a class="dropdown-item" href="{{url_for('biocatdb.enzyme_champion_papers', enzyme_type=enz_type)}}">{{enz_type}} papers</a>
+                <a class="dropdown-item" href="{{url_for('biocatdb.enzyme_champion_seq', enzyme_type=enz_type)}}">{{enz_type }} sequences</a>
+            {% endfor %}
+        {% endif %}
     </div>
 </li>
 

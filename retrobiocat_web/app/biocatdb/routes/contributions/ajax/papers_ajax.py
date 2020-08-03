@@ -6,6 +6,7 @@ from retrobiocat_web.app.app import user_datastore
 from retrobiocat_web.app.biocatdb.functions.papers import papers_functions, papers_crossref
 import mongoengine as db
 from distutils.util import strtobool
+from retrobiocat_web.app.biocatdb.functions import check_permission
 
 def unassign_seqs_in_paper(user, paper):
     seqs = Sequence.objects(papers=paper).select_related()
@@ -27,8 +28,7 @@ def unassign_seqs_in_paper(user, paper):
 def save_paper():
     user = user_datastore.get_user(current_user.id)
     paper = Paper.objects(id=request.form['paper_id'])[0]
-
-    if (paper.owner != user) and (not current_user.has_role('super_contributor')):
+    if not check_permission.check_paper_permission(current_user.id, paper):
         result = {'status': 'danger',
                   'msg': 'No access to edit this paper',
                   'issues': [],
@@ -75,7 +75,7 @@ def delete_paper():
     user = user_datastore.get_user(current_user.id)
     paper = Paper.objects(id=request.form['paper_id'])[0]
 
-    if paper.owner != user and not user.has_role('super_contributor'):
+    if not check_permission.check_paper_permission(current_user.id, paper):
         result = {'status': 'danger',
                   'msg': 'You are not the owner of this paper',
                   'issues': ['Assign this paper to yourself in order to delete it']}
@@ -245,14 +245,19 @@ def remove_sequence():
 
 
 @bp.route('/_review_paper', methods=['GET', 'POST'])
-@roles_required('super_contributor')
+@roles_required('contributor')
 def review_paper():
+    user = user_datastore.get_user(current_user.id)
     paper = Paper.objects(id=request.form['paper_id'])[0]
-    reviewed = bool(strtobool(request.form['reviewed']))
-    paper.reviewed = reviewed
-    paper.save()
+    if check_permission.check_seq_permissions(current_user.id, paper):
+        reviewed = bool(strtobool(request.form['reviewed']))
+        paper.reviewed = reviewed
+        paper.save()
 
-    flash("Paper review status updated", 'success')
+        flash("Paper review status updated", 'success')
+    else:
+        flash('No access to review')
+
     return jsonify({})
 
 @bp.route('/_self_assign', methods=['GET', 'POST'])
