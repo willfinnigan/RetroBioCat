@@ -140,20 +140,30 @@ def load_sequence_data():
     user = user_datastore.get_user(current_user.id)
     other_user = False
     self_assigned = False
-    can_edit = True
+
+    if check_permission.check_seq_permissions(current_user.id, seq):
+        can_edit = True
+    else:
+        can_edit = False
+
     if seq.owner == user:
         self_assigned = True
     else:
         if seq.owner != '' and seq.owner is not None:
             other_user = True
-            if not check_permission.check_seq_permissions(current_user.id, seq):
-                can_edit = False
+
+    owner = seq.owner
+    if owner == None:
+        owner = ''
+
 
     other_names = ''
     for i, name in enumerate(seq.other_names):
         other_names += name
         if (len(seq.other_names) > 1) and (i < len(seq.other_names)-1):
             other_names += ', '
+
+    enzyme_type_full = EnzymeType.objects(enzyme_type=seq.enzyme_type)[0].full_name
 
 
     result = {'enzyme_type': seq.enzyme_type,
@@ -168,7 +178,9 @@ def load_sequence_data():
               'can_edit': can_edit,
               'self_assigned': self_assigned,
               'owner_is_another_user': other_user,
-              'other_names': other_names}
+              'other_names': other_names,
+              'owner': owner,
+              'enzyme_type_full': enzyme_type_full}
 
     return jsonify(result=result)
 

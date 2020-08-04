@@ -5,10 +5,12 @@ from retrobiocat_web.mongo.models.biocatdb_models import Molecule
 from rdkit import DataStructs
 
 
+
 fingerprint_options = {'mfp_default': ['morgan', {}],
                        'rdfp_default': ['rdkit', {}]}
 
 default_fp_mode = 'rdfp_default'
+
 
 def make_fp_generator(fp_type, settings):
     if fp_type == 'morgan':
@@ -43,7 +45,7 @@ def make_fp_generator(fp_type, settings):
 
 def unique_smiles_list(df):
 
-    big_list = pd.concat([df['Substrate 1 SMILES'], df['Substrate 2 SMILES'], df['Product 1 SMILES']])
+    big_list = pd.concat([df['substrate_1_smiles'], df['substrate_2_smiles'], df['product_1_smiles']])
     unique = list(big_list.unique())
 
     if '' in unique:

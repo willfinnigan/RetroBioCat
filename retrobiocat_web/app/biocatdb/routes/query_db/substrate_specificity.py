@@ -1,4 +1,4 @@
-from flask import render_template, jsonify, session
+from flask import render_template, jsonify, session, request
 from retrobiocat_web.app.biocatdb.forms import SubstrateForm
 from flask import current_app
 from rq.job import Job
@@ -10,34 +10,38 @@ from rq import get_current_job
 from retrobiocat_web.mongo.models.biocatdb_models import Activity
 import numpy as np
 from retrobiocat_web.app.biocatdb.functions import process_activity_data
+import mongoengine as db
 
-COLUMNS = ["Reaction",
-           "Enzyme type",
-           "Enzyme name",
-           "Substrate 1 SMILES",
-           "Substrate 2 SMILES",
-           "Product 1 SMILES",
-           "Temperature",
-           "pH",
-           "Solvent",
-           "Other conditions",
-           "Notes",
-           "Reaction volume (ml)",
-           "Biocatalyst Formulation",
-           "Biocatalyst Concentration (mg/ml)",
-           "kcat (min-1)",
-           "KM (mM)",
-           "Enz MW (Da)",
-           "Substrate 1 conc (mM)",
-           "Substrate 2 conc (mM)",
-           "Specific activity (U/mg)",
-           "Conversion (%)",
-           "Conversion time (hrs)",
-           "Selectivity",
-           "Categorical",
-           "Binary",
-           'Data source',
-           'Data source doi',
+COLUMNS = ['reaction',
+           'enzyme_type',
+           'enzyme_name',
+           'short_citation',
+           'html_doi',
+           'cascade_num',
+           'substrate_1_smiles',
+           'substrate_2_smiles',
+           'product_1_smiles',
+           'temperature',
+           'ph',
+           'solvent',
+           'other_conditions',
+           'notes',
+           'reaction_vol',
+           'formulation',
+           'biocat_conc',
+           'kcat',
+           'km',
+           'mw',
+           'substrate_1_conc',
+           'substrate_2_conc',
+           'specific_activity',
+           'conversion',
+           'conversion_time',
+           'categorical',
+           'binary',
+           'added_by',
+           'selectivity',
+           'auto_generated',
            'paper',
            'activity_id']
 
@@ -136,7 +140,7 @@ def get_spec_data(form_data):
         return []
 
     if len(activity_df.index) == 0:
-        print('Len ctivity df index is 0')
+        print('Len activity df index is 0')
         return []
 
     activity_df = activity_df[COLUMNS]
@@ -150,6 +154,17 @@ def get_spec_data(form_data):
     activity_data = process_activity_data.smiles_to_svg(activity_data)
 
     return activity_data
+
+@bp.route("/substrate_specificity_2", methods=["GET"])
+def show_substrate_specificity():
+
+    args = request.args.to_dict()
+
+    if 'enzyme_type' in args:
+        enzyme_type_query = db.Q(tags=args['enzyme_type'])
+    else:
+        enzyme_type_query = db.Q()
+
 
 
 
@@ -165,10 +180,11 @@ if __name__ == '__main__':
 
     activity_df = scorer.querySpecificityDf(test_product, reactions, enzymes)
 
-    if len(activity_df.index) != 0:
+
+    if len(activity_df.index) == 0:
         activity_data = []
     else:
-        #activity_df = activity_df[COLUMNS]
+        activity_df = activity_df[COLUMNS]
         activity_df = activity_df.round(2)
         activity_df.replace(np.nan, '', inplace=True)
         activity_df.replace(True, 'True', inplace=True)
@@ -176,6 +192,5 @@ if __name__ == '__main__':
 
         activity_data = activity_df.to_dict(orient='records')
 
-    print(activity_data)
+        print(activity_data)
 
-    print(Activity.objects(id='5f1723fd5e413e263902cf17'))

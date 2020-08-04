@@ -2,71 +2,41 @@ from retrobiocat_web.mongo.models.biocatdb_models import Sequence, EnzymeType, A
 from mongoengine.queryset.visitor import Q
 import pandas as pd
 
-COLUMNS = ['Reaction',
-           'Enzyme type',
-           'Enzyme name',
-           'Data source',
-           'Data source doi',
-           'Cascade num',
-           'Substrate 1 SMILES',
-           'Substrate 2 SMILES',
-           'Product 1 SMILES',
-           'Temperature',
-           'pH',
-           'Solvent',
-           'Other conditions',
-           'Notes',
-           'Reaction volume (ml)',
-           'Biocatalyst Formulation',
-           'Biocatalyst Concentration (mg/ml)',
-           'kcat (min-1)',
-           'KM (mM)',
-           'Enz MW (Da)',
-           'Substrate 1 conc (mM)',
-           'Substrate 2 conc (mM)',
-           'Specific activity (U/mg)',
-           'Conversion (%)',
-           'Conversion time (hrs)',
-           'Categorical',
-           'Binary',
-           'Added by',
-           'Selectivity',
-           'Auto Generated',
+COLUMNS = ['reaction',
+           'enzyme_type',
+           'enzyme_name',
+           'short_citation',
+           'html_doi',
+           'cascade_num',
+           'substrate_1_smiles',
+           'substrate_2_smiles',
+           'product_1_smiles',
+           'temperature',
+           'ph',
+           'solvent',
+           'other_conditions',
+           'notes',
+           'reaction_vol',
+           'formulation',
+           'biocat_conc',
+           'kcat',
+           'km',
+           'mw',
+           'substrate_1_conc',
+           'substrate_2_conc',
+           'specific_activity',
+           'conversion',
+           'conversion_time',
+           'categorical',
+           'binary',
+           'added_by',
+           'selectivity',
+           'auto_generated',
            'paper',
            'activity_id']
 
-def rename_mongo_columns(df):
-    col_rename = {'reaction': 'Reaction',
-                  'enzyme_type': 'Enzyme type',
-                  'enzyme_name': 'Enzyme name',
-                  'short_citation': 'Data source',
-                  'html_doi': 'Data source doi',
-                  'cascade_num': 'Cascade num',
-                  'substrate_1_smiles': 'Substrate 1 SMILES',
-                  'substrate_2_smiles': 'Substrate 2 SMILES',
-                  'product_1_smiles': 'Product 1 SMILES',
-                  'temperature': 'Temperature',
-                  'ph': 'pH',
-                  'solvent': 'Solvent',
-                  'other_conditions': 'Other conditions',
-                  'notes': 'Notes',
-                  'reaction_vol': 'Reaction volume (ml)',
-                  'formulation': 'Biocatalyst Formulation',
-                  'biocat_conc': 'Biocatalyst Concentration (mg/ml)',
-                  'kcat': 'kcat (min-1)',
-                  'km': 'KM (mM)',
-                  'mw': 'Enz MW (Da)',
-                  'substrate_1_conc': 'Substrate 1 conc (mM)',
-                  'substrate_2_conc': 'Substrate 2 conc (mM)',
-                  'specific_activity': 'Specific activity (U/mg)',
-                  'conversion': 'Conversion (%)',
-                  'conversion_time': 'Conversion time (hrs)',
-                  'categorical': 'Categorical',
-                  'binary': 'Binary',
-                  'added_by': 'Added by',
-                  'selectivity': 'Selectivity',
-                  'auto_generated': 'Auto Generated',
-                  '_id': 'activity_id'}
+def organise_mongo_columns(df):
+    col_rename = {'_id': 'activity_id'}
     df.rename(columns=col_rename, inplace=True)
     df = df.reindex(columns=COLUMNS)
     return df
@@ -84,7 +54,7 @@ def query_specificity_data(listReactions, listEnzymes):
 
     result = Activity.objects(enzQ & reacQ).as_pymongo()
     spec_df = pd.DataFrame(list(result))
-    spec_df = rename_mongo_columns(spec_df)
+    spec_df = organise_mongo_columns(spec_df)
 
     return spec_df
 
