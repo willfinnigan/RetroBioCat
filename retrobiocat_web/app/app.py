@@ -112,9 +112,9 @@ def create_app(config_class=Config, use_talisman=True):
 
         if current_user.is_authenticated:
             user = User.objects(id=current_user.id).select_related()[0]
-            if user.has_role('enzyme_teams'):
+            if user.has_role('enzyme_teams') and user.enzyme_teams is not None:
                 inject_dict['enzyme_teams'] = [enz_type_obj.enzyme_type for enz_type_obj in user.enzyme_teams]
-            if user.has_role('enzyme_champion'):
+            if user.has_role('enzyme_champion') and user.enzyme_champion is not None:
                 inject_dict['enzyme_champion'] = [enz_type_obj.enzyme_type for enz_type_obj in user.enzyme_champion]
             if user.has_role('contributor'):
                 inject_dict['user_papers_need_data'] = len(Paper.objects(Q(owner=user) & (Q(status='Data required') | Q(status='Enzymes need protein sequences'))))
@@ -122,6 +122,7 @@ def create_app(config_class=Config, use_talisman=True):
             inject_dict['total_team_notifications'] = 0
             inject_dict['team_notifications'] = {}
             inject_dict['champ_notifications'] = {}
+
             for enz_type in inject_dict['enzyme_teams']:
                 num_papers = len(Paper.objects(Q(tags=enz_type) & Q(owner=None) & (Q(status='Data required') | Q(status='Enzymes need protein sequences'))))
                 inject_dict['team_notifications'][enz_type] = num_papers
