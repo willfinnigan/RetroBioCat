@@ -10,20 +10,29 @@
             <strong>{{enz_type}} team</strong>
             <a class="dropdown-item" href="{{url_for('biocatdb.papers_that_need_data', enzyme_type=enz_type)}}">
                 {% if team_notifications[enz_type] != 0 %}
-                    <span class="badge badge-danger">{{team_notifications[enz_type]}}</span>
+                    <span class="badge badge-danger">{{team_notifications[enz_type]}} <small>need data</small></span>
+                {% else %}
+                    <span class="badge badge-success">OK</span>
                 {% endif %}
-                {{enz_type}} papers that need data
-            {{ enzyme_champion }}
+                {{enz_type}} papers to curate
             </a>
             {% if enz_type in enzyme_champion %}
-                <strong>{{enz_type}} champion</strong>
                 <a class="dropdown-item" href="{{url_for('biocatdb.enzyme_champion_papers', enzyme_type=enz_type)}}">
                     {% if champ_notifications[enz_type] != 0 %}
-                        <span class="badge badge-danger">{{champ_notifications[enz_type]}}<small> to review</small></span>
+                        <span class="badge badge-danger">{{champ_notifications[enz_type]}} <small> to review</small></span>
+                    {% else %}
+                        <span class="badge badge-success">OK</span>
                     {% endif %}
-                    {{enz_type}} all papers
+                    {{enz_type}} papers
                 </a>
-                <a class="dropdown-item" href="{{url_for('biocatdb.enzyme_champion_seq', enzyme_type=enz_type)}}">{{enz_type }} all sequences</a>
+                <a class="dropdown-item" href="{{url_for('biocatdb.enzyme_champion_seq', enzyme_type=enz_type)}}">
+                    {% if champ_seq_notifications[enz_type] != 0 %}
+                        <span class="badge badge-danger">{{champ_seq_notifications[enz_type]}} <small>need sequences</small></span>
+                    {% else %}
+                        <span class="badge badge-success">OK</span>
+                    {% endif %}
+                    {{enz_type }} sequences
+                </a>
             {% endif %}
         {% endfor %}
     </div>

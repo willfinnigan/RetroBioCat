@@ -12,7 +12,7 @@
         <a class="dropdown-item" href="{{url_for('biocatdb.my_sequences')}}">My sequences</a>
         <a class="dropdown-item" href="{{url_for('biocatdb.my_papers')}}">
             {% if user_papers_need_data != 0 %}
-            <span class="badge badge-danger">{{user_papers_need_data}}</span>
+                <span class="badge badge-danger">{{user_papers_need_data}}</span>
             {% endif %}
             My papers
         </a>

@@ -121,6 +121,7 @@ def create_app(config_class=Config, use_talisman=True):
 
             inject_dict['total_team_notifications'] = 0
             inject_dict['team_notifications'] = {}
+            inject_dict['champ_seq_notifications'] = {}
             inject_dict['champ_notifications'] = {}
 
             if 'enzyme_teams' in inject_dict:
@@ -131,8 +132,10 @@ def create_app(config_class=Config, use_talisman=True):
             if 'enzyme_champion' in inject_dict:
                 for enz_type in inject_dict['enzyme_champion']:
                     num_papers = len(Paper.objects(Q(tags=enz_type) & Q(status='Complete - Awaiting review')))
+                    num_seqs = len(Sequence.objects(Q(enzyme_name=enz_type) & (Q(sequence=None) and Q(sequence_unavailable=None))))
                     inject_dict['champ_notifications'][enz_type] = num_papers
-                    inject_dict['total_team_notifications'] += num_papers
+                    inject_dict['champ_seq_notifications'][enz_type] = num_seqs
+                    inject_dict['total_team_notifications'] += num_papers + num_seqs
 
         return inject_dict
 
