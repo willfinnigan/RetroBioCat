@@ -4,7 +4,7 @@ from flask_security import roles_required, current_user
 from retrobiocat_web.mongo.models.biocatdb_models import Sequence, Activity, EnzymeType, Paper
 from retrobiocat_web.app.app import user_datastore
 from distutils.util import strtobool
-from retrobiocat_web.app.biocatdb.functions.papers import paper_status
+from retrobiocat_web.app.biocatdb.functions.papers import paper_status, papers_functions
 from werkzeug.utils import secure_filename
 import os
 import pandas as pd
@@ -291,6 +291,7 @@ def load_sequence_papers():
 def update_seq_papers_status(enzyme_name):
     seq = Sequence.objects(enzyme_name=enzyme_name).select_related()[0]
     for paper in seq.papers:
+        papers_functions.tag_paper_with_enzyme_types(paper)
         paper_progress_text, paper_progress = paper_status.paper_metadata_status(paper)
         sequence_progress_text, sequence_progress = paper_status.sequences_status(paper)
         activity_progress_text, activity_progress = paper_status.activity_status(paper)

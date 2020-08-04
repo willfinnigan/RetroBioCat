@@ -63,6 +63,7 @@ def save_paper():
 
     print(paper.to_json())
     paper.save()
+    papers_functions.tag_paper_with_enzyme_types(paper)
     result = {'status': 'success',
               'msg': 'Paper information updated',
               'issues': []}
