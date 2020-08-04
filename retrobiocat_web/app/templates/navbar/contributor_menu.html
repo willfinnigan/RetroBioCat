@@ -9,7 +9,12 @@
     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
         <strong>Contributor</strong>
         <a class="dropdown-item" href="{{url_for('biocatdb.papers_that_need_data')}}">Papers to be curated</a>
-        <a class="dropdown-item" href="{{url_for('biocatdb.my_sequences')}}">My sequences</a>
+        <a class="dropdown-item" href="{{url_for('biocatdb.my_sequences')}}">
+            {% if user_seqs_need_data != 0 %}
+                <span class="badge badge-danger">{{user_seqs_need_data}}</span>
+            {% endif %}
+            My sequences
+        </a>
         <a class="dropdown-item" href="{{url_for('biocatdb.my_papers')}}">
             {% if user_papers_need_data != 0 %}
                 <span class="badge badge-danger">{{user_papers_need_data}}</span>

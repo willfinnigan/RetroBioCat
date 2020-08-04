@@ -118,6 +118,7 @@ def create_app(config_class=Config, use_talisman=True):
                 inject_dict['enzyme_champion'] = [enz_type_obj.enzyme_type for enz_type_obj in user.enzyme_champion]
             if user.has_role('contributor'):
                 inject_dict['user_papers_need_data'] = len(Paper.objects(Q(owner=user) & (Q(status='Data required') | Q(status='Enzymes need protein sequences'))))
+                inject_dict['user_seqs_need_data'] = len(Sequence.objects(Q(owner=user) & ((Q(sequence=None)|Q(sequence='')) & (Q(sequence_unavailable__ne=True)))))
 
             inject_dict['total_team_notifications'] = 0
             inject_dict['team_notifications'] = {}
@@ -132,7 +133,7 @@ def create_app(config_class=Config, use_talisman=True):
             if 'enzyme_champion' in inject_dict:
                 for enz_type in inject_dict['enzyme_champion']:
                     num_papers = len(Paper.objects(Q(tags=enz_type) & Q(status='Complete - Awaiting review')))
-                    num_seqs = len(Sequence.objects(Q(enzyme_name=enz_type) & (Q(sequence=None) and Q(sequence_unavailable=None))))
+                    num_seqs = len(Sequence.objects(Q(enzyme_name=enz_type) & ((Q(sequence=None)|Q(sequence='')) & (Q(sequence_unavailable__ne=True)))))
                     inject_dict['champ_notifications'][enz_type] = num_papers
                     inject_dict['champ_seq_notifications'][enz_type] = num_seqs
                     inject_dict['total_team_notifications'] += num_papers + num_seqs
