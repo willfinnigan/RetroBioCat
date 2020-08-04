@@ -7,10 +7,11 @@ from retrobiocat_web.retro.generation.node_analysis import rdkit_smile
 from retrobiocat_web.retro.enzyme_identification import molecular_similarity
 from retrobiocat_web.app.biocatdb import bp
 from rq import get_current_job
-from retrobiocat_web.mongo.models.biocatdb_models import Activity
+from retrobiocat_web.mongo.models.biocatdb_models import Activity, Paper
 import numpy as np
 from retrobiocat_web.app.biocatdb.functions import process_activity_data
 import mongoengine as db
+import copy
 
 COLUMNS = ['reaction',
            'enzyme_type',
@@ -43,7 +44,7 @@ COLUMNS = ['reaction',
            'selectivity',
            'auto_generated',
            'paper',
-           'activity_id']
+           '_id']
 
 
 @bp.route('/substrate_specificity_form',  methods=['GET', 'POST'])
@@ -155,17 +156,33 @@ def get_spec_data(form_data):
 
     return activity_data
 
-@bp.route("/substrate_specificity_2", methods=["GET"])
-def show_substrate_specificity():
+@bp.route("/paper_substrates/<paper_id>", methods=["GET"])
+def paper_substrate_specificity(paper_id):
 
-    args = request.args.to_dict()
+    paper = Paper.objects(id=paper_id)[0]
 
-    if 'enzyme_type' in args:
-        enzyme_type_query = db.Q(tags=args['enzyme_type'])
-    else:
-        enzyme_type_query = db.Q()
+    cols = copy.copy(COLUMNS)
+    cols.remove('_id')
+    cols.append('id')
 
+    activity_data = list(Activity.objects(paper=paper).only(*cols).as_pymongo())
+    activity_data = process_activity_data.process_activity_data(activity_data)
+    activity_data = process_activity_data.smiles_to_svg(activity_data)
 
+    return render_template('substrate_specificity/table_result_specificity.html', activity_data=activity_data)
+
+@bp.route("/enzyme_substrates/<enzyme_name>", methods=["GET"])
+def enzyme_substrate_specificity(enzyme_name):
+
+    cols = copy.copy(COLUMNS)
+    cols.remove('_id')
+    cols.append('id')
+
+    activity_data = list(Activity.objects(enzyme_name=enzyme_name).only(*cols).as_pymongo())
+    activity_data = process_activity_data.process_activity_data(activity_data)
+    activity_data = process_activity_data.smiles_to_svg(activity_data)
+
+    return render_template('substrate_specificity/table_result_specificity.html', activity_data=activity_data)
 
 
 if __name__ == '__main__':

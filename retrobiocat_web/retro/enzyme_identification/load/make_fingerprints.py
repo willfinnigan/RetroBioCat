@@ -105,6 +105,7 @@ def load_fp_df_from_mongo(mode):
 
     query_result = Molecule.objects.as_pymongo().only('smiles', mode)
     fp_df = pd.DataFrame(list(query_result))
+    fp_df.drop(columns=['_id'], inplace=True)
 
     fp_df[mode] = fp_df[mode].apply(convert_to_fp)
     fp_df.rename(columns={mode:'fp'}, inplace=True)

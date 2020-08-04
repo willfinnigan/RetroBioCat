@@ -12,7 +12,7 @@
 
     var columns = [
 
-        {'title': "activity_id", 'field': "activity_id", visible:false},
+        {'title': "_id", 'field': "activity_id", visible:false},
 
         {'title': "Reaction", 'field': "reaction", 'width':100, formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
 
@@ -162,7 +162,7 @@
         cellVertAlign:"middle",
         rowClick:function(e, row){
             var rowData = row.getData();
-            var activity_id = rowData['activity_id']
+            var activity_id = rowData['_id']
             var enzyme_name = rowData['enzyme_name']
             load_sequence_data(enzyme_name)
             load_single_activity_data(activity_id)

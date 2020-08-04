@@ -91,7 +91,7 @@
             }
 
             document.getElementById('paper_feat_seq').href = Flask.url_for("biocatdb.show_papers", {"enzyme_name": data.result.enzyme_name});
-
+            document.getElementById('substrate_spec_of_seq').href = Flask.url_for("biocatdb.enzyme_substrate_specificity", {"enzyme_name": data.result.enzyme_name});
 
 
         })

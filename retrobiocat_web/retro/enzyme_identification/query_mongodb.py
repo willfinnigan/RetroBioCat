@@ -33,11 +33,11 @@ COLUMNS = ['reaction',
            'selectivity',
            'auto_generated',
            'paper',
-           'activity_id']
+           '_id']
 
 def organise_mongo_columns(df):
-    col_rename = {'_id': 'activity_id'}
-    df.rename(columns=col_rename, inplace=True)
+    #col_rename = {'_id': 'activity_id'}
+    #df.rename(columns=col_rename, inplace=True)
     df = df.reindex(columns=COLUMNS)
     return df
 
