@@ -21,6 +21,8 @@ def process_activity_data(activity_data):
             if type(activity_data[i][key]) == float:
                 activity_data[i][key] = round(activity_data[i][key], 2)
 
+    print(activity_data)
+
     return activity_data
 
 def smiles_to_svg(activity_data):
