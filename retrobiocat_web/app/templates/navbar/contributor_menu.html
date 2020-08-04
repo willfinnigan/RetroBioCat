@@ -1,7 +1,7 @@
 <li id='contributions_menu' class="nav-item dropdown ml-auto">
     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
         {% if user_papers_need_data != 0 %}
-            <span class="badge badge-danger">{{user_papers_need_data}}</span>
+            <span class="badge badge-danger">{{user_papers_need_data + user_seqs_need_data}}</span>
         {% endif %}
         Contributor
     </a>
