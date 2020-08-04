@@ -27,16 +27,16 @@ def get_authors_list(authors):
     return authors_list
 
 def select_a_date(result):
-    if 'created' in result:
-        date = result['created']['date-parts'][0]
-    elif 'deposited' in result:
-        date = result['deposited']['date-parts'][0]
-    elif 'published-online' in result:
+    if 'published-online' in result:
         date = result['published-online']['date-parts'][0]
     elif 'published-print' in result:
         date = result['published-print']['date-parts'][0]
+    elif 'journal-issue' in result:
+        date = result['journal-issue']['published-print']['date-parts'][0]
     elif 'issued' in result:
         date = result['issued']['date-parts'][0]
+    elif 'created' in result:
+        date = result['created']['date-parts'][0]
     else:
         date = ''
     return date
@@ -80,14 +80,15 @@ if __name__ == '__main__':
 
     #doi = '10.1016/j.molcatb.2013.10.023'
     #doi = '10.1021/acscatal.8b02386'
-    doi = "10.1002/cctc.201601249"
+    #doi = "10.1002/cctc.201601249"
     #doi = '10.1039/c7ob02299a'
     #doi = '10.1016/S0014-5793(00)01992-X'  # issue
     #doi = '10.1002/cctc.201300842'  # issue
     #doi = '10.1023/A:1005479910765'  # issue
+    doi = '10.1016/S0040-4020(01)89914-2' #incorrect data - should be 1993
 
     print(get_metadata_from_crossref(doi))
 
-    print_result(query_crossref(doi))
+    #print_result(query_crossref(doi))
 
 
