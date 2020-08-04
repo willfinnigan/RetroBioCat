@@ -123,4 +123,3 @@ def load_single_activity_data():
         if result[key] is None:
             result[key] = ''
     return jsonify(result=result)
-

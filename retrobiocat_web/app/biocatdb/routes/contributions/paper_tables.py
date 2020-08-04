@@ -57,10 +57,15 @@ def enzyme_champion_papers(enzyme_type):
 @roles_required('contributor')
 def papers_that_need_data():
     user = user_datastore.get_user(current_user.id)
+    args = request.args.to_dict()
     q_no_user = db.Q(owner=None)
     q_no_data = db.Q(status__nin=['Complete - Awaiting review', 'Complete'])
+    if 'enzyme_type' in args:
+        q_e_type = db.Q(enzyme_type=args['enzyme_type'])
+    else:
+        q_e_type = db.Q()
 
-    papers_data = list(Paper.objects(q_no_user & q_no_data).only(*papers_table.PAPERS_TABLE_FIELDS).order_by('-status').as_pymongo())
+    papers_data = list(Paper.objects(q_no_user & q_no_data & q_e_type).only(*papers_table.PAPERS_TABLE_FIELDS).order_by('-status').as_pymongo())
     papers_data = papers_table.process_papers_dict(papers_data, show_owner=False)
 
     return render_template('edit_tables/edit_papers.html',

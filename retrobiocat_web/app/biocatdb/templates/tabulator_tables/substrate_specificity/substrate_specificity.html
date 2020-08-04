@@ -1,7 +1,7 @@
 <p class="text-secondary no_margin"><small>Select a row for summary/more information</small></p>
 <div id="table"></div>
 
-{% include 'tabulator_tables/substrate_specificity/activity_modal/activity_modal.html' %}
+{% include 'tabulator_tables/substrate_specificity/substrate_specificity_modal/substrate_specificity_modal.html' %}
 
 <script>
 
@@ -12,19 +12,19 @@
 
     var columns = [
 
-        {'title': "activity_id", 'field': "activity_id", visible:false},
+        {'title': "_id", 'field': "activity_id", visible:false},
 
-        {'title': "Reaction", 'field': "Reaction", 'width':100, formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
+        {'title': "Reaction", 'field': "reaction", 'width':100, formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
 
-        {'title': "Enzyme type", 'field': "Enzyme type", 'width':75, formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
+        {'title': "Enzyme type", 'field': "enzyme_type", 'width':75, formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
 
-        {'title': "Enzyme name", 'field': "Enzyme name", 'width':75, formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
+        {'title': "Enzyme name", 'field': "enzyme_name", 'width':75, formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
 
-        {'title': "Data source", 'field': "Data source", 'width':100, headerFilter:"select", headerFilterParams:{values:true},
+        {'title': "Data source", 'field': "short_citation", 'width':100, headerFilter:"select", headerFilterParams:{values:true},
         formatter:function(cell, formatterParams){
             var cell_value = cell.getValue();
             var row_data = cell.getData()
-            var doi = row_data['Data source doi']
+            var doi = row_data['html_doi']
             var url = "<a href='" + doi + "' target='_blank'>" + cell_value + "</a>";
 
             cell.getElement().style.display = 'inline-flex'
@@ -34,21 +34,21 @@
             }
         },
 
-        {'title': "Data source doi", 'field': "Data source doi", visible:false},
+        {'title': "Data source doi", 'field': "html_doi", visible:false},
 
         {'title': "paper", 'field': "paper", visible:false},
 
-        {'title': "Substrate 1 SMILES", 'field': "Substrate 1 SMILES", 'width':150, formatter:"image"},
+        {'title': "Substrate 1 SMILES", 'field': "substrate_1_smiles", 'width':150, formatter:"image"},
 
-        {'title': "Substrate 2 SMILES", 'field': "Substrate 2 SMILES", 'width':150, formatter:"image"},
+        {'title': "Substrate 2 SMILES", 'field': "substrate_2_smiles", 'width':150, formatter:"image"},
 
-        {'title': "Product 1 SMILES", 'field': "Product 1 SMILES", 'width':150, formatter:"image"},
+        {'title': "Product 1 SMILES", 'field': "product_1_smiles", 'width':150, formatter:"image"},
 
-        {'title': "Binary", 'field': "Binary", 'width':75, headerFilter:"select", headerFilterParams:{values:true},
+        {'title': "Binary", 'field': "binary", 'width':75, headerFilter:"select", headerFilterParams:{values:true},
             formatter:function(cell, formatterParams){
                 var row_data = cell.getData()
                 var cell_value = cell.getValue();
-                var value = row_data['Categorical']
+                var value = row_data['categorical']
                 if(value === "High"){
                       cell.getElement().style.backgroundColor = high_colour
                 } else if (value === 'Medium') {
@@ -66,7 +66,7 @@
         },
 
 
-        {'title': "Categorical", 'field': "Categorical", 'width':75, headerFilter:"select", headerFilterParams:{values:true},
+        {'title': "Categorical", 'field': "categorical", 'width':75, headerFilter:"select", headerFilterParams:{values:true},
         formatter:function(cell, formatterParams){
             var value = cell.getValue();
             if(value === "High"){
@@ -81,12 +81,12 @@
             return value}
         },
 
-        {'title': "Conversion (%)", 'field': "Conversion (%)", 'width':100, sorter:"number", headerFilter:minMaxFilterEditor, headerFilterFunc:minMaxFilterFunction, headerFilterLiveFilter:false,
+        {'title': "Conversion (%)", 'field': "conversion", 'width':100, sorter:"number", headerFilter:minMaxFilterEditor, headerFilterFunc:minMaxFilterFunction, headerFilterLiveFilter:false,
             formatter:function(cell, formatterParams){
                 var row_data = cell.getData()
                 var cell_value = cell.getValue()
                 if (cell_value !== '') {
-                    var value = row_data['Categorical']
+                    var value = row_data['categorical']
                     if(value === "High"){
                           cell.getElement().style.backgroundColor = high_colour
                     } else if (value === 'Medium') {
@@ -100,12 +100,12 @@
                 return cell_value}
         },
 
-        {'title': "Specific activity (U/mg)", 'field': "Specific activity (U/mg)", 'width':100, sorter:"number", headerFilter:minMaxFilterEditor, headerFilterFunc:minMaxFilterFunction, headerFilterLiveFilter:false,
+        {'title': "Specific activity (U/mg)", 'field': "specific_activity", 'width':100, sorter:"number", headerFilter:minMaxFilterEditor, headerFilterFunc:minMaxFilterFunction, headerFilterLiveFilter:false,
             formatter:function(cell, formatterParams){
                 var row_data = cell.getData()
                 var cell_value = cell.getValue()
                 if (cell_value !== '') {
-                    var value = row_data['Categorical']
+                    var value = row_data['categorical']
                     if(value === "High"){
                           cell.getElement().style.backgroundColor = high_colour
                     } else if (value === 'Medium') {
@@ -119,35 +119,35 @@
                 return cell_value}
             },
 
-        {'title': "Temperature", 'field': "Temperature", 'width':75, formatter:"textarea"},
+        {'title': "Temperature", 'field': "temperature", 'width':75, formatter:"textarea"},
 
-        {'title': "pH", 'field': "pH", 'width':50, formatter:"textarea"},
+        {'title': "pH", 'field': "ph", 'width':50, formatter:"textarea"},
 
-        {'title': "Solvent", 'field': "Solvent", 'width':75, formatter:"textarea"},
+        {'title': "Solvent", 'field': "solvent", 'width':75, formatter:"textarea"},
 
-        {'title': "Other conditions", 'field': "Other conditions", 'width':200, formatter:"textarea"},
+        {'title': "Other conditions", 'field': "other_conditions", 'width':200, formatter:"textarea"},
 
-        {'title': "Notes", 'field': "Notes", 'width':200, formatter:"textarea"},
+        {'title': "Notes", 'field': "notes", 'width':200, formatter:"textarea"},
 
-        {'title': "Reaction volume (ml)", 'field': "Reaction volume (ml)", 'width':75, formatter:"textarea"},
+        {'title': "Reaction volume (ml)", 'field': "reaction_vol", 'width':75, formatter:"textarea"},
 
-        {'title': "Biocatalyst Formulation", 'field': "Biocatalyst Formulation", 'width':100, formatter:"textarea"},
+        {'title': "Biocatalyst Formulation", 'field': "formulation", 'width':100, formatter:"textarea"},
 
-        {'title': "Biocatalyst Concentration (mg/ml)", 'field': "Biocatalyst Concentration (mg/ml)", 'width':100, formatter:"textarea"},
+        {'title': "Biocatalyst Concentration (mg/ml)", 'field': "biocat_conc", 'width':100, formatter:"textarea"},
 
-        {'title': "kcat (min-1)", 'field': "kcat (min-1)", 'width':100, formatter:"textarea"},
+        {'title': "kcat (min-1)", 'field': "kcat", 'width':100, formatter:"textarea"},
 
-        {'title': "KM (mM)", 'field': "KM (mM)", 'width':100, formatter:"textarea"},
+        {'title': "KM (mM)", 'field': "km", 'width':100, formatter:"textarea"},
 
-        {'title': "Enz MW (Da)", 'field': "Enz MW (Da)", 'width':100, formatter:"textarea"},
+        {'title': "Enz MW (Da)", 'field': "mw", 'width':100, formatter:"textarea"},
 
-        {'title': "Substrate 1 conc (mM)", 'field': "Substrate 1 conc (mM)", 'width':100, formatter:"textarea"},
+        {'title': "Substrate 1 conc (mM)", 'field': "substrate_1_conc", 'width':100, formatter:"textarea"},
 
-        {'title': "Substrate 2 conc (mM)", 'field': "Substrate 2 conc (mM)", 'width':100, formatter:"textarea"},
+        {'title': "Substrate 2 conc (mM)", 'field': "substrate_2_conc", 'width':100, formatter:"textarea"},
 
-        {'title': "Conversion time (hrs)", 'field': "Conversion time (hrs)", 'width':100, formatter:"textarea"},
+        {'title': "Conversion time (hrs)", 'field': "conversion_time", 'width':100, formatter:"textarea"},
 
-        {'title': "Selectivity", 'field': "Selectivity", 'width':100, formatter:"textarea"},
+        {'title': "Selectivity", 'field': "selectivity", 'width':100, formatter:"textarea"},
     ]
 
     var tabledata = {{activity_data|safe}}
@@ -162,9 +162,11 @@
         cellVertAlign:"middle",
         rowClick:function(e, row){
             var rowData = row.getData();
-            var activity_id = rowData['activity_id']
+            var activity_id = rowData['_id']
+            var enzyme_name = rowData['enzyme_name']
+            load_sequence_data(enzyme_name)
             load_single_activity_data(activity_id)
-            $('#activity_modal').modal('show');
+            $('#substrate_specificity_modal').modal('show');
             },
     });
 

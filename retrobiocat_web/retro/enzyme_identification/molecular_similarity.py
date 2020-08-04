@@ -11,19 +11,24 @@ from retrobiocat_web.retro.enzyme_identification import query_mongodb
 class SpecificityColumns():
 
     def __init__(self):
-        self.subOneSmiCol = 'Substrate 1 SMILES'
-        self.subOneFingCol = 'Substrate 1 Fingerprint'
-        self.subTwoSmiCol = 'Substrate 2 SMILES'
-        self.subTwoFingCol = 'Substrate 2 Fingerprint'
-        self.prodOneSmiCol = 'Product 1 SMILES'
-        self.prodOneFingCol = 'Product 1 Fingerprint'
-        self.subSimCol = 'Substrate Similarity'
-        self.prodSimCol = 'Product 1 Similarity'
-        self.reactionCol = 'Reaction'
-        self.enzCol = 'Enzyme type'
-        self.simScoreCol = 'Similarity'
-        self.binaryCol = 'Binary'
-        self.auto_generated = 'Auto Generated'
+        self.subOneSmiCol = 'substrate_1_smiles'
+        self.subOneFingCol = 'substrate_1_fingerprint'
+        self.subTwoSmiCol = 'substrate_2_smiles'
+        self.subTwoFingCol = 'substrate_2_fingerprint'
+        self.prodOneSmiCol = 'product_1_smiles'
+        self.prodOneFingCol = 'product_1_fingerprint'
+        self.subSimCol = 'substrate_similarity'
+        self.prodSimCol = 'product_1_similarity'
+        self.reactionCol = 'reaction'
+        self.enzCol = 'enzyme_type'
+        self.simScoreCol = 'similarity'
+        self.binaryCol = 'binary'
+        self.auto_generated = 'auto_generated'
+        self.enzymeName = 'enzyme_name'
+        self.dataSource = 'short_citation'
+        self.categorical = 'categorical'
+        self.conversion = 'conversion'
+        self.sa = 'specific_activity'
 
 class SubstrateSpecificityScorer():
 
@@ -210,18 +215,18 @@ class SubstrateSpecificityScorer():
         info = {'Score' : top_df.iloc[0][self.cols.simScoreCol]}
         for index, row in top_df.iterrows():
             smiles_dict = {}
-            smiles = row['Product 1 SMILES']
-            smiles_dict['Similarity'] = round(row['Similarity'],2)
-            smiles_dict['Active (1 or 0)'] = row['Binary']
-            smiles_dict['Enzyme name'] = row['Enzyme name']
-            smiles_dict['Data source'] = row['Data source']
+            smiles = row[self.cols.prodOneSmiCol]
+            smiles_dict['Similarity'] = round(row[self.cols.simScoreCol],2)
+            smiles_dict['Active (1 or 0)'] = row[self.cols.binaryCol]
+            smiles_dict['Enzyme name'] = row[self.cols.enzymeName]
+            smiles_dict['Data source'] = row[self.cols.dataSource]
 
-            if type(row['Categorical']) == str:
-                smiles_dict['Activity Level'] = row['Categorical']
-            if np.isnan(row['Conversion (%)']) == False:
-                smiles_dict['Conversion (%)'] = row['Conversion (%)']
-            if np.isnan(row['Specific activity (U/mg)']) == False:
-                smiles_dict['Specific activity (U/mg)'] = round(row['Specific activity (U/mg)'],2)
+            if type(row[self.cols.categorical]) == str:
+                smiles_dict['Activity Level'] = row[self.cols.categorical]
+            if np.isnan(row[self.cols.conversion]) == False:
+                smiles_dict['Conversion (%)'] = row[self.cols.conversion]
+            if np.isnan(row[self.cols.sa]) == False:
+                smiles_dict['Specific activity (U/mg)'] = round(row[self.cols.sa],2)
 
             info[smiles] = smiles_dict
 
@@ -230,15 +235,15 @@ class SubstrateSpecificityScorer():
     def filter_df_by_data_level(self, df, data_level):
         if data_level != 'All':
             if data_level == 'Categorical':
-                df = df[df['Categorical'].notnull()]
+                df = df[df[self.cols.categorical].notnull()]
             elif data_level == 'Quantitative':
-                df1 = df[df['Specific activity (U/mg)'].notnull()]
-                df2 = df[df['Conversion (%)'].notnull()]
+                df1 = df[df[self.cols.sa].notnull()]
+                df2 = df[df[self.cols.conversion].notnull()]
                 df = pd.concat([df1, df2])
             elif data_level == 'Specific Activity':
-                df = df[df['Specific activity (U/mg)'].notnull()]
+                df = df[df[self.cols.sa].notnull()]
             elif data_level == 'Conversion':
-                df = df[df['Conversion (%)'].notnull()]
+                df = df[df[self.cols.conversion].notnull()]
 
         self._log(f'Filtered by data level {data_level}, {len(df.index)} entries returned')
         return df
@@ -263,23 +268,23 @@ class SubstrateSpecificityScorer():
         binary = True
 
         for index, row in df.iterrows():
-            if np.isnan(row['Specific activity (U/mg)']) == True:
+            if np.isnan(row[self.cols.sa]) == True:
                 specific = False
-            if np.isnan(row['Conversion (%)']) == True:
+            if np.isnan(row[self.cols.conversion]) == True:
                 conversion = False
-            if row['Categorical'] != type(str):
+            if row[self.cols.categorical] != type(str):
                 categorical = False
             # if np.isnan(row['Binary Activity (True or False)']) == True:
             # binary = False
 
         if specific == True:
-            return 'Specific activity (U/mg)'
+            return self.cols.sa
         elif conversion == True:
-            return 'Conversion (%)'
+            return self.cols.conversion
         elif categorical == True:
-            return 'Categorical'
+            return self.cols.categorical
         elif binary == True:
-            return 'Binary'
+            return self.cols.binaryCol
         else:
             print('Error no activity category is suitable')
             return None

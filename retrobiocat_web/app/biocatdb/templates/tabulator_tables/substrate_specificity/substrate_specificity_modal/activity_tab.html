@@ -1,18 +1,24 @@
-<div class="modal fade" id="activity_modal" tabindex="-1" role="dialog"
-     aria-labelledby="activity_modal_modalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="activity_modal_modalLabel">More info</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
+<div class="container-fluid">
+    <div id="row_1_activity" class="row">
+        <div class='col-6 my-auto text-center no-gutters mt-4' id="activity_col1"></div>
+        <div class='col-6 my-auto text-center no-gutters mt-4' id="activity_col2"></div>
+    </div>
 
-                {% include 'tabulator_tables/substrate_specificity/activity_modal/activity_modal_content.html' %}
+    <div id="row_2_images" class="row">
+        <div class='col my-auto text-center' id="substrate_images"></div>
+        <div class='col my-auto text-center' id="reaction_images"></div>
+        <div class='col my-auto text-center' id="product_images"></div>
+    </div>
 
-            </div>
+    <div id="row_3_conditions" class="row">
+        <div class='col my-auto text-center' id="substrate_conditions"></div>
+        <div class='col my-auto text-center' id="reaction_conditions"></div>
+        <div class='col my-auto text-center' id="product_conditions"></div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col">
+            <p><strong>Data curated by: </strong><span id="activity_added_by"></span></p>
         </div>
     </div>
 </div>
@@ -103,8 +109,6 @@
 
     }
 
-
-
     function load_single_activity_data(activity_id) {
         $.post('/_load_single_activity_data', {
             activity_id: activity_id,
@@ -121,7 +125,8 @@
             set_colour(data.result.active, data.result.category)
 
             document.getElementById("activity_added_by").innerHTML = data.result.added_by
-            document.getElementById("activity_modal_modalLabel").innerHTML = "More info - " + data.result.short_cit
+            document.getElementById("substrate_specificity_modal_modalLabel").innerHTML = data.result.short_cit
         })
     }
 </script>
+
