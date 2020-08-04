@@ -40,9 +40,7 @@ COLUMNS = ['reaction',
            'conversion_time',
            'categorical',
            'binary',
-           'added_by',
            'selectivity',
-           'auto_generated',
            'paper',
            '_id']
 

@@ -11,6 +11,9 @@ def process_activity_data(activity_data):
         else:
             activity_data[i]['_id'] = str(activity_data[i]['_id'])
 
+        if 'added_by' in activity_data[i]:
+            activity_data[i]['added_by'] = str(activity_data[i]['added_by'])
+
         for key in activity_data[i]:
             if activity_data[i][key] == True:
                 activity_data[i][key] = "True"
