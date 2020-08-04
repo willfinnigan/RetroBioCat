@@ -39,6 +39,12 @@
             </li>
         </ul>
 
+        {% if current_user.has_role('enzyme_teams') or current_user.has_role('enzyme_champion')  %}
+            <ul class="navbar-nav">
+                {% include 'navbar/enzyme_teams.html' %}
+            </ul>
+        {% endif %}
+
 
         {% if current_user.has_role('contributor') %}
             <ul class="navbar-nav">

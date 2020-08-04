@@ -61,7 +61,7 @@ def papers_that_need_data():
     q_no_user = db.Q(owner=None)
     q_no_data = db.Q(status__nin=['Complete - Awaiting review', 'Complete'])
     if 'enzyme_type' in args:
-        q_e_type = db.Q(enzyme_type=args['enzyme_type'])
+        q_e_type = db.Q(tags=args['enzyme_type'])
     else:
         q_e_type = db.Q()
 

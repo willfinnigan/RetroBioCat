@@ -25,6 +25,7 @@ class User(db.Document, UserMixin):
     affiliation = db.StringField(max_length=255)
     email_opt_in = db.BooleanField()
     enzyme_champion = db.ListField(db.ReferenceField(EnzymeType))
+    enzyme_teams = db.ListField(db.ReferenceField(EnzymeType))
 
     current_login_at = db.DateTimeField()
     current_login_ip = db.StringField()

@@ -14,6 +14,7 @@ from flask_session import Session
 from flask_mongoengine import MongoEngine
 import datetime
 from mongoengine import disconnect
+from mongoengine import Q
 
 csrf = CSRFProtect()
 jsglue = JSGlue()
@@ -92,6 +93,7 @@ def create_app(config_class=Config, use_talisman=True):
         user_datastore.find_or_create_role('paper_adder', description='paper_finder')
         user_datastore.find_or_create_role('experimental', description='experimental')
         user_datastore.find_or_create_role('enzyme_champion', description='enzyme_champion')
+        user_datastore.find_or_create_role('enzyme_teams', description='enzyme_teams')
 
         if not user_datastore.get_user(app.config['ADMIN_EMAIL']):
             user = user_datastore.create_user(email=app.config['ADMIN_EMAIL'],
@@ -109,9 +111,25 @@ def create_app(config_class=Config, use_talisman=True):
         inject_dict['login_mode'] = app.config['USE_EMAIL_CONFIRMATION']
 
         if current_user.is_authenticated:
-            user = user_datastore.get_user(current_user.id)
+            user = User.objects(id=current_user.id).select_related()[0]
+            if user.has_role('enzyme_teams'):
+                inject_dict['enzyme_teams'] = [enz_type_obj.enzyme_type for enz_type_obj in user.enzyme_teams]
             if user.has_role('enzyme_champion'):
-                inject_dict['enzyme_champion'] = user.enzyme_champion
+                inject_dict['enzyme_champion'] = [enz_type_obj.enzyme_type for enz_type_obj in user.enzyme_champion]
+            if user.has_role('contributor'):
+                inject_dict['user_papers_need_data'] = len(Paper.objects(Q(owner=user) & (Q(status='Data required') | Q(status='Enzymes need protein sequences'))))
+
+            inject_dict['total_team_notifications'] = 0
+            inject_dict['team_notifications'] = {}
+            inject_dict['champ_notifications'] = {}
+            for enz_type in inject_dict['enzyme_teams']:
+                num_papers = len(Paper.objects(Q(tags=enz_type) & Q(owner=None) & (Q(status='Data required') | Q(status='Enzymes need protein sequences'))))
+                inject_dict['team_notifications'][enz_type] = num_papers
+                inject_dict['total_team_notifications'] += num_papers
+            for enz_type in inject_dict['enzyme_champion']:
+                num_papers = len(Paper.objects(Q(tags=enz_type) & Q(status='Complete - Awaiting review')))
+                inject_dict['champ_notifications'][enz_type] = num_papers
+                inject_dict['total_team_notifications'] += num_papers
 
         return inject_dict
 
