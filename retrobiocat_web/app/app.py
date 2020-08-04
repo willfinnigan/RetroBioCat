@@ -123,14 +123,16 @@ def create_app(config_class=Config, use_talisman=True):
             inject_dict['team_notifications'] = {}
             inject_dict['champ_notifications'] = {}
 
-            for enz_type in inject_dict['enzyme_teams']:
-                num_papers = len(Paper.objects(Q(tags=enz_type) & Q(owner=None) & (Q(status='Data required') | Q(status='Enzymes need protein sequences'))))
-                inject_dict['team_notifications'][enz_type] = num_papers
-                inject_dict['total_team_notifications'] += num_papers
-            for enz_type in inject_dict['enzyme_champion']:
-                num_papers = len(Paper.objects(Q(tags=enz_type) & Q(status='Complete - Awaiting review')))
-                inject_dict['champ_notifications'][enz_type] = num_papers
-                inject_dict['total_team_notifications'] += num_papers
+            if 'enzyme_teams' in inject_dict:
+                for enz_type in inject_dict['enzyme_teams']:
+                    num_papers = len(Paper.objects(Q(tags=enz_type) & Q(owner=None) & (Q(status='Data required') | Q(status='Enzymes need protein sequences'))))
+                    inject_dict['team_notifications'][enz_type] = num_papers
+                    inject_dict['total_team_notifications'] += num_papers
+            if 'enzyme_champion' in inject_dict:
+                for enz_type in inject_dict['enzyme_champion']:
+                    num_papers = len(Paper.objects(Q(tags=enz_type) & Q(status='Complete - Awaiting review')))
+                    inject_dict['champ_notifications'][enz_type] = num_papers
+                    inject_dict['total_team_notifications'] += num_papers
 
         return inject_dict
 
