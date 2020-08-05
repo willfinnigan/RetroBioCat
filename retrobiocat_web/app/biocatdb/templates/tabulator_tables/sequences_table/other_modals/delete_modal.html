@@ -37,8 +37,7 @@
             }).done(function(data) {
                 response_msg(data.result.msg, data.result.status, data.result.issues, "delete_response")
                 if (data.result.status === 'success') {
-                    let url = '/edit_sequences'
-                    location.assign(url);
+                    location.reload()
                 }
             })
         }

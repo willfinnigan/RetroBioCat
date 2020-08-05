@@ -3,7 +3,7 @@ from flask import render_template, flash, redirect, url_for, session, request, j
 from retrobiocat_web.app.biocatdb.model_forms import PaperInfo
 from flask_security import roles_required, current_user
 from retrobiocat_web.mongo.models.user_models import User
-from retrobiocat_web.mongo.models.biocatdb_models import Paper, EnzymeType
+from retrobiocat_web.mongo.models.biocatdb_models import Paper, EnzymeType, Activity, Sequence
 from retrobiocat_web.app.biocatdb.functions.papers import papers_functions, papers_table
 from retrobiocat_web.app.app import user_datastore
 from flask_wtf import FlaskForm
@@ -75,4 +75,25 @@ def papers_that_need_data():
                            papers_data=papers_data, papers_table_height='80vh',
                            papers_button_columns=['self_assign'],
                            show_owner=False,
+                           title=title)
+
+@bp.route('/papers_with_orhpan_sequences', methods=['GET', 'POST'])
+@roles_required('admin')
+def papers_with_orhpan_sequences():
+    title = "Papers with orphan sequences"
+
+    activity_enzyme_names = list(set(Activity.objects().distinct('enzyme_name')))
+    paper_ids = []
+    for name in activity_enzyme_names:
+        if len(Sequence.objects(enzyme_name=name)) == 0:
+            act = Activity.objects(enzyme_name=name)[0]
+            paper_ids.append(act.paper)
+
+    papers_data = list(Paper.objects(id__in=paper_ids).only(*papers_table.PAPERS_TABLE_FIELDS).order_by('-status').as_pymongo())
+    papers_data = papers_table.process_papers_dict(papers_data, show_owner=False)
+
+    return render_template('edit_tables/edit_papers.html',
+                           papers_data=papers_data, papers_table_height='80vh',
+                           papers_button_columns=['delete', 'edit'],
+                           show_owner=True,
                            title=title)
