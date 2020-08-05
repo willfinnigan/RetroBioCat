@@ -1,0 +1,105 @@
+<style>
+    .seq_heading {
+        font-weight: bold;
+        margin: 0px;
+        padding: 0px;
+        padding-top: 20px;
+    }
+
+    .seq_field {
+        margin: 0px;
+        padding: 5px;
+        padding-left:30px;
+    }
+
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class='col'>
+            <h3 class="text-center mt-3"><span id="enzyme_name"></span></h3>
+            <p class="no_margin text-center"><small id="other_names"></small></p>
+
+            <p class="seq_heading">Enzyme type</p>
+            <p class="seq_field"><span id="enzyme_type"></span> - <span id="enzyme_type_full"></span></p>
+
+            <p class="seq_heading">Sequence</p>
+            <p class="seq_field"><span id="sequence"></span></p>
+
+            <p class="seq_heading">Identifier / Accession number / PDB Code</p>
+            <p class="seq_field"><span id="accession"></span></p>
+
+            <p class="seq_heading" id="mutant_of_heading">Mutant of:</p>
+            <p class="seq_field"><span id="mutant_of"></span></p>
+
+            <p class="seq_heading" id="notes_heading">Notes:</p>
+            <p class="seq_field"><span id="notes"></span></p>
+
+            <p class="seq_heading">Links:</p>
+            <a id="substrate_spec_of_seq" href="" target="_blank"><button class="btn btn-outline-primary">Substrate specificity of <span id="enzyme_name_2"></span></button></a>
+            <a id="paper_feat_seq" href="" target="_blank"><button class="btn btn-outline-info">Papers featuring <span id="enzyme_name_3"></span></button></a>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col">
+            <p><strong>Enzyme entry curated by: </strong><span id="sequence_owner"></span></p>
+        </div>
+    </div>
+
+</div>
+
+
+<script>
+    function parse_sequence_data(data) {
+        document.getElementById("enzyme_type").innerHTML = data.result.enzyme_type;
+        document.getElementById("enzyme_type_full").innerHTML = data.result.enzyme_type_full;
+        document.getElementById("enzyme_name").innerHTML = data.result.enzyme_name;
+        document.getElementById("enzyme_name_2").innerHTML = data.result.enzyme_name;
+        document.getElementById("enzyme_name_3").innerHTML = data.result.enzyme_name;
+        document.getElementById("other_names").innerHTML = data.result.other_names;
+        document.getElementById("sequence").innerHTML = data.result.sequence;
+
+        if (data.result.sequence === '' && data.result.sequence_unavailable === true) {
+            document.getElementById("sequence").innerHTML = "Sequence not available"
+        }
+
+        document.getElementById("mutant_of").innerHTML = data.result.mutant_of;
+        document.getElementById("notes").innerHTML = data.result.notes;
+
+        if (data.result.mutant_of === '') {
+            document.getElementById("mutant_of").style.display = "none";
+            document.getElementById("mutant_of_heading").style.display = "none";
+        } else {
+            document.getElementById("mutant_of").style.display = "inline";
+            document.getElementById("mutant_of_heading").style.display = "inline";
+        }
+
+        if (data.result.notes === '') {
+            document.getElementById("notes").style.display = "none";
+            document.getElementById("notes_heading").style.display = "none";
+        } else {
+            document.getElementById("notes").style.display = "inline";
+            document.getElementById("notes_heading").style.display = "inline";
+        }
+
+        document.getElementById('paper_feat_seq').href = Flask.url_for("biocatdb.show_papers", {"enzyme_name": data.result.enzyme_name});
+        document.getElementById('substrate_spec_of_seq').href = Flask.url_for("biocatdb.enzyme_substrate_specificity", {"enzyme_name": data.result.enzyme_name});
+    }
+
+    function load_sequence_data(enzyme_name) {
+        $.post('/_load_sequence_data', {
+            name: enzyme_name,
+        }).done(function (data) {
+            parse_sequence_data(data)
+        })
+    }
+
+    window.onload = function() {
+        var enzyme_name = "{{enzyme_name}}"
+        load_sequence_data(enzyme_name);
+    }
+
+    </script>
+
+</script>

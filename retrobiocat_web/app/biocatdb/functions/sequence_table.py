@@ -24,4 +24,8 @@ def get_enzyme_data(query):
         else:
             enzyme_data[i]['owner'] = ''
 
+        if 'sequence' in enzyme_data[i]:
+            if len(enzyme_data[i]['sequence']) > 50:
+                enzyme_data[i]['sequence'] = enzyme_data[i]['sequence'][0:50] + "..."
+
     return enzyme_data

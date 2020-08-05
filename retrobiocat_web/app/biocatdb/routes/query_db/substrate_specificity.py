@@ -9,41 +9,8 @@ from retrobiocat_web.app.biocatdb import bp
 from rq import get_current_job
 from retrobiocat_web.mongo.models.biocatdb_models import Activity, Paper
 import numpy as np
-from retrobiocat_web.app.biocatdb.functions import process_activity_data
+from retrobiocat_web.app.biocatdb.functions.substrate_specificity import process_activity_data
 import mongoengine as db
-import copy
-
-COLUMNS = ['reaction',
-           'enzyme_type',
-           'enzyme_name',
-           'short_citation',
-           'html_doi',
-           'cascade_num',
-           'substrate_1_smiles',
-           'substrate_2_smiles',
-           'product_1_smiles',
-           'temperature',
-           'ph',
-           'solvent',
-           'other_conditions',
-           'notes',
-           'reaction_vol',
-           'formulation',
-           'biocat_conc',
-           'kcat',
-           'km',
-           'mw',
-           'substrate_1_conc',
-           'substrate_2_conc',
-           'specific_activity',
-           'conversion',
-           'conversion_time',
-           'categorical',
-           'binary',
-           'selectivity',
-           'paper',
-           '_id']
-
 
 @bp.route('/substrate_specificity_form',  methods=['GET', 'POST'])
 def substrate_specificity_form():
@@ -60,7 +27,7 @@ def substrate_specificity_form():
 
     if form.validate_on_submit() == True:
         form_data = form.data
-        task = current_app.task_queue.enqueue(get_spec_data, form_data)
+        task = current_app.task_queue.enqueue(task_get_spec_data, form_data)
         if old_task_id != None:
             try:
                 old_job = Job.fetch(old_task_id, connection=current_app.redis)
@@ -102,10 +69,10 @@ def substrate_specificity(task_id):
     task = current_app.task_queue.fetch_job(task_id)
     activity_data = task.result
 
-    return render_template('substrate_specificity/table_result_specificity.html', activity_data=activity_data)
+    return render_template('substrate_specificity/table_result_specificity.html', activity_data=activity_data, title="Substrate specificity query")
 
 
-def get_spec_data(form_data):
+def task_get_spec_data(form_data):
     job = get_current_job()
     job.meta['progress'] = 'started'
     job.save_meta()
@@ -142,7 +109,7 @@ def get_spec_data(form_data):
         print('Len activity df index is 0')
         return []
 
-    activity_df = activity_df[COLUMNS]
+    activity_df = activity_df[process_activity_data.COLUMNS]
     activity_df = activity_df.round(2)
     activity_df.replace(np.nan, '', inplace=True)
     activity_df.replace(True, 'True', inplace=True)
@@ -159,28 +126,20 @@ def paper_substrate_specificity(paper_id):
 
     paper = Paper.objects(id=paper_id)[0]
 
-    cols = copy.copy(COLUMNS)
-    cols.remove('_id')
-    cols.append('id')
-
-    activity_data = list(Activity.objects(paper=paper).only(*cols).as_pymongo())
+    activity_data = list(Activity.objects(paper=paper).only(*process_activity_data.mongo_cols).as_pymongo())
     activity_data = process_activity_data.process_activity_data(activity_data)
     activity_data = process_activity_data.smiles_to_svg(activity_data)
 
-    return render_template('substrate_specificity/table_result_specificity.html', activity_data=activity_data)
+    return render_template('substrate_specificity/table_result_specificity.html', activity_data=activity_data, title=f"{paper.short_citation} activity data")
 
 @bp.route("/enzyme_substrates/<enzyme_name>", methods=["GET"])
 def enzyme_substrate_specificity(enzyme_name):
 
-    cols = copy.copy(COLUMNS)
-    cols.remove('_id')
-    cols.append('id')
-
-    activity_data = list(Activity.objects(enzyme_name=enzyme_name).only(*cols).as_pymongo())
+    activity_data = list(Activity.objects(enzyme_name=enzyme_name).only(*process_activity_data.mongo_cols).as_pymongo())
     activity_data = process_activity_data.process_activity_data(activity_data)
     activity_data = process_activity_data.smiles_to_svg(activity_data)
 
-    return render_template('substrate_specificity/table_result_specificity.html', activity_data=activity_data)
+    return render_template('substrate_specificity/table_result_specificity.html', activity_data=activity_data, title=f"{enzyme_name} substrate specificity")
 
 
 if __name__ == '__main__':
@@ -199,7 +158,7 @@ if __name__ == '__main__':
     if len(activity_df.index) == 0:
         activity_data = []
     else:
-        activity_df = activity_df[COLUMNS]
+        activity_df = activity_df[process_activity_data.COLUMNS]
         activity_df = activity_df.round(2)
         activity_df.replace(np.nan, '', inplace=True)
         activity_df.replace(True, 'True', inplace=True)

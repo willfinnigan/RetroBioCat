@@ -22,7 +22,7 @@ def edit_papers():
     return render_template('edit_tables/edit_papers.html',
                            papers_data=papers_data, papers_table_height='80vh',
                            papers_button_columns=['delete', 'edit', 'link'],
-                           show_owner=True)
+                           show_owner=True, title="Super contributor access to all papers")
 
 @bp.route('/my_papers', methods=['GET', 'POST'])
 @roles_required('contributor')
@@ -34,7 +34,7 @@ def my_papers():
     return render_template('edit_tables/edit_papers.html',
                            papers_data=papers_data, papers_table_height='80vh',
                            papers_button_columns=['delete', 'edit'],
-                           show_owner=True)
+                           show_owner=True, title=f"Papers assigned to {user.first_name} {user.last_name}")
 
 @bp.route('/enz_champ_papers/<enzyme_type>', methods=['GET'])
 @roles_required('enzyme_champion')
@@ -51,17 +51,20 @@ def enzyme_champion_papers(enzyme_type):
     return render_template('edit_tables/edit_papers.html',
                            papers_data=papers_data, papers_table_height='80vh',
                            papers_button_columns=['delete', 'edit'],
-                           show_owner=True)
+                           show_owner=True, title=f"Enzyme champion for {enzyme_type} papers")
 
 @bp.route('/papers_need_data', methods=['GET', 'POST'])
 @roles_required('contributor')
 def papers_that_need_data():
     user = user_datastore.get_user(current_user.id)
+    title = "Papers that require curating"
+
     args = request.args.to_dict()
     q_no_user = db.Q(owner=None)
     q_no_data = db.Q(status__nin=['Complete - Awaiting review', 'Complete'])
     if 'enzyme_type' in args:
         q_e_type = db.Q(tags=args['enzyme_type'])
+        title += f" - {args['enzyme_type']}"
     else:
         q_e_type = db.Q()
 
@@ -71,4 +74,5 @@ def papers_that_need_data():
     return render_template('edit_tables/edit_papers.html',
                            papers_data=papers_data, papers_table_height='80vh',
                            papers_button_columns=['self_assign'],
-                           show_owner=False)
+                           show_owner=False,
+                           title=title)

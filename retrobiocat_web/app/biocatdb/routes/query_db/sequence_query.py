@@ -2,7 +2,7 @@ from flask import render_template, jsonify, session, request, redirect, url_for
 from retrobiocat_web.app.biocatdb import bp
 import mongoengine as db
 from retrobiocat_web.app.biocatdb.functions import sequence_table
-from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType
+from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType, Paper
 from retrobiocat_web.app.biocatdb.forms import SequenceSearch
 
 
@@ -29,14 +29,18 @@ def sequence_search():
 def show_sequences():
 
     args = request.args.to_dict()
+    title = "Enzyme sequences"
 
     if 'enzyme_type' in args:
         enzyme_type_query = db.Q(enzyme_type=args['enzyme_type'])
+        title += f" for {args['enzyme_type']} enzymes"
     else:
         enzyme_type_query = db.Q()
 
     if 'paper_id' in args:
         paper_query = db.Q(papers=args['paper_id'])
+        paper = Paper.objects(id=args['paper_id'])[0]
+        title += f" in {paper.short_citation}"
     else:
         paper_query = db.Q()
 
@@ -49,5 +53,6 @@ def show_sequences():
                            seq_table_height='80vh',
                            enzyme_types=enzyme_types,
                            show_header_filters=True,
-                           include_owner=True)
+                           include_owner=True,
+                           title=title)
 

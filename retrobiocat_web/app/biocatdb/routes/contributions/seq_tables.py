@@ -20,7 +20,9 @@ def my_sequences():
 
     return render_template('edit_tables/edit_sequences.html',
                            seq_data=enzyme_data, seq_button_columns=['edit', 'delete', 'papers'],
-                           seq_table_height='80vh', enzyme_types=enzyme_types, show_header_filters=True, include_owner=True, lock_enz_type='false')
+                           seq_table_height='80vh', enzyme_types=enzyme_types, show_header_filters=True,
+                           include_owner=True, lock_enz_type='false',
+                           title=f"Enzyme sequences assigned to {user.first_name} {user.last_name}")
 
 @bp.route('/edit_sequences', methods=['GET', 'POST'])
 @roles_required('super_contributor')
@@ -31,7 +33,9 @@ def edit_sequences():
 
     return render_template('edit_tables/edit_sequences.html',
                            seq_data=enzyme_data, seq_button_columns=['edit', 'merge', 'delete', 'papers'],
-                           seq_table_height='80vh', enzyme_types=enzyme_types, show_header_filters=True, include_owner=True, lock_enz_type='false')
+                           seq_table_height='80vh', enzyme_types=enzyme_types, show_header_filters=True,
+                           include_owner=True, lock_enz_type='false',
+                           title="Super contributor access to all sequences")
 
 @bp.route('/enz_champ_seqs/<enzyme_type>', methods=['GET'])
 @roles_required('enzyme_champion')
@@ -48,4 +52,6 @@ def enzyme_champion_seq(enzyme_type):
 
     return render_template('edit_tables/edit_sequences.html',
                            seq_data=enzyme_data, seq_button_columns=['edit', 'merge', 'delete', 'papers'],
-                           seq_table_height='80vh', enzyme_types=enzyme_types, show_header_filters=True, include_owner=True, lock_enz_type='true')
+                           seq_table_height='80vh', enzyme_types=enzyme_types,
+                           show_header_filters=True, include_owner=True, lock_enz_type='true',
+                           title=f"Enzyme champion for {enzyme_type} sequences")

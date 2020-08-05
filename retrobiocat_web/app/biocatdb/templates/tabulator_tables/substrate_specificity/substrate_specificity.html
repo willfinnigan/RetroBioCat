@@ -1,7 +1,9 @@
+<p id="loading_please_wait">Loading, please wait...</p>
+<h5 class="text-center">{{title}}</h5>
 <p class="text-secondary no_margin"><small>Select a row for summary/more information</small></p>
-<div id="table"></div>
+<div id="substrate_specificity_table"></div>
 
-{% include 'tabulator_tables/substrate_specificity/substrate_specificity_modal/substrate_specificity_modal.html' %}
+{% include 'tabulator_tables/substrate_specificity/substrate_specificity_modal.html' %}
 
 <script>
 
@@ -152,9 +154,9 @@
 
     var tabledata = {{activity_data|safe}}
 
-    var table = new Tabulator("#table", {
+    var table = new Tabulator("#substrate_specificity_table", {
         data:tabledata, //assign data to table
-        maxHeight:"75vh",
+        maxHeight:"80vh",
         layout:"fitColumns",
         addRowPos:"bottom",
         columns:columns,
@@ -170,4 +172,9 @@
             },
     });
 
+    window.addEventListener("load", function(){
+        document.getElementById("loading_please_wait").remove();
+    });
+
 </script>
+

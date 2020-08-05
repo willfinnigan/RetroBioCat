@@ -49,30 +49,37 @@ def papers_search():
 def show_papers():
 
     args = request.args.to_dict()
+    title = "Papers"
 
     status_query = db.Q(status_not = 'Data required')
 
     if 'enzyme_type' in args:
         enzyme_type_query = db.Q(tags=args['enzyme_type'])
+        title += f" - featuring {args['enzyme_type']} enzymes"
     else:
         enzyme_type_query = db.Q()
 
     papers = Paper.objects(enzyme_type_query)
 
+
+
     if 'enzyme_name' in args:
         papers = filter_papers_by_enzyme_name(papers, args['enzyme_name'])
+        title += f" - featuring {args['enzyme_name']}"
 
     if 'reaction' in args:
         papers = filter_papers_by_reaction(papers, args['reaction'])
+        title += f" - featuring a {args['reaction']} reaction"
 
     paper_ids = [paper.id for paper in papers]
     papers_data = list(Paper.objects(id__in=paper_ids).only(*papers_table.PAPERS_TABLE_FIELDS).order_by('-status').as_pymongo())
     papers_data = papers_table.process_papers_dict(papers_data)
 
+
     return render_template('edit_tables/edit_papers.html',
                            papers_data=papers_data, papers_table_height='80vh',
                            papers_button_columns=[],
-                           show_owner=True)
+                           show_owner=True, title=title)
 
 
 

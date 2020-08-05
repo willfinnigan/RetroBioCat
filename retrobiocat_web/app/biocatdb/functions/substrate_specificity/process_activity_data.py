@@ -1,7 +1,42 @@
 from rdkit import Chem
-from retrobiocat_web.app.biocatdb.functions import images
+from retrobiocat_web.app.biocatdb.functions.substrate_specificity import images
 import numpy as np
+import copy
 
+COLUMNS = ['reaction',
+           'enzyme_type',
+           'enzyme_name',
+           'short_citation',
+           'html_doi',
+           'cascade_num',
+           'substrate_1_smiles',
+           'substrate_2_smiles',
+           'product_1_smiles',
+           'temperature',
+           'ph',
+           'solvent',
+           'other_conditions',
+           'notes',
+           'reaction_vol',
+           'formulation',
+           'biocat_conc',
+           'kcat',
+           'km',
+           'mw',
+           'substrate_1_conc',
+           'substrate_2_conc',
+           'specific_activity',
+           'conversion',
+           'conversion_time',
+           'categorical',
+           'binary',
+           'selectivity',
+           'paper',
+           '_id']
+
+mongo_cols = copy.copy(COLUMNS)
+mongo_cols.remove('_id')
+mongo_cols.append('id')
 
 def process_activity_data(activity_data):
     for i, record in enumerate(activity_data):
@@ -44,4 +79,7 @@ def smiles_to_svg(activity_data):
             activity_data[i]["product_1_smiles"] = url
 
     return activity_data
+
+
+
 

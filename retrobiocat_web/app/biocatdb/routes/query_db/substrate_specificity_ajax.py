@@ -1,7 +1,7 @@
 from flask import render_template, jsonify, session, current_app, request
 from retrobiocat_web.app.biocatdb import bp
 from retrobiocat_web.mongo.models.biocatdb_models import Activity, Sequence
-from retrobiocat_web.app.biocatdb.functions import images
+from retrobiocat_web.app.biocatdb.functions.substrate_specificity import images
 
 
 @bp.route('/_load_single_activity_data', methods=['GET', 'POST'])

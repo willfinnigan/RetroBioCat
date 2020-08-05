@@ -6,22 +6,13 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-12">
-                <div class="card card-form my-5">
+                <div class="card card-form">
                     <div class="card-body">
-                        <p id="loading_please_wait">Loading, please wait...</p>
                         {% include 'tabulator_tables/substrate_specificity/substrate_specificity.html' %}
-
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <script>
-        window.addEventListener("load", function(){
-            document.getElementById("loading_please_wait").remove();
-        });
-    </script>
-
 
 {% endblock %}
