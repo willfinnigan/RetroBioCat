@@ -15,6 +15,8 @@
 
                         <button class="btn btn-info" onclick="assign_papers()" id="assign_papers">Assign papers</button>
                         <button class="btn btn-danger" onclick="delete_sequences_no_paper()" id="delete_seqs">Delete sequences with no papers</button>
+                        <button class="btn btn-warning" onclick="orphan_enzymes()" id="orphan_enzymes_id">Find orphan enzymes</button>
+
                     </div>
                 </div>
             </div>
@@ -25,18 +27,25 @@
 
     <script>
         function assign_papers() {
-        $.post('/_assign_papers', {
-            }).done(function(data) {
-                response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
-            })
-        }
+            $.post('/_assign_papers', {
+                }).done(function(data) {
+                    response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+                })
+            }
 
         function delete_sequences_no_paper() {
-        $.post('/_delete_sequences_no_paper', {
-            }).done(function(data) {
-                response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
-            })
-        }
+            $.post('/_delete_sequences_no_paper', {
+                }).done(function(data) {
+                    response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+                })
+            }
+
+        function orphan_enzymes() {
+            $.post('/_orphan_enzymes', {
+                }).done(function(data) {
+                    response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+                })
+            }
 
 
     </script>

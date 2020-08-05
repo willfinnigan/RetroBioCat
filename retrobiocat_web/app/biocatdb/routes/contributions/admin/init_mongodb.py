@@ -216,6 +216,29 @@ def task_get_paper_metadata():
 
                 paper_status.update_status(paper)
 
+
+@bp.route('/_orphan_enzymes', methods=['GET', 'POST'])
+@roles_required('admin')
+def orphan_enzymes():
+    current_app.db_queue.enqueue(task_search_for_orphan_enzymes)
+
+    result = {'status': 'success',
+              'msg': 'search for orphan enzymes',
+              'issues': []}
+
+    return jsonify(result=result)
+
+def task_search_for_orphan_enzymes():
+    activity_enzyme_names = list(set(Activity.objects().distinct('enzyme_name')))
+    for name in activity_enzyme_names:
+        if len(Sequence.objects(enzyme_name=name)) == 0:
+            enzyme_type = Activity.objects(enzyme_name=name)[0].enzyme_type
+            new_seq = Sequence(enzyme_name=name,
+                               enzyme_type=enzyme_type)
+            new_seq.save()
+            print(f"found orphan enzyme, added sequence entry for {name} - {enzyme_type}")
+
+
 def task_init_building_block_db(df):
 
     df_smi = df[['SMILES']]
