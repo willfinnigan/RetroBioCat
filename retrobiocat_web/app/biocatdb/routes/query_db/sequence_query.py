@@ -49,11 +49,12 @@ def show_sequences():
 
     return render_template('edit_tables/edit_sequences.html',
                            seq_data=enzyme_data,
-                           seq_button_columns=['papers'],
+                           seq_button_columns=[],
                            seq_table_height='80vh',
                            enzyme_types=enzyme_types,
                            show_header_filters=True,
                            include_owner=True,
                            lock_enz_type='false',
-                           title=title)
+                           title=title,
+                           row_click_modal=True)
 
