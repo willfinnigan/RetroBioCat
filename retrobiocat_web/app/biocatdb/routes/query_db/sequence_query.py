@@ -54,5 +54,6 @@ def show_sequences():
                            enzyme_types=enzyme_types,
                            show_header_filters=True,
                            include_owner=True,
+                           lock_enz_type='false',
                            title=title)
 

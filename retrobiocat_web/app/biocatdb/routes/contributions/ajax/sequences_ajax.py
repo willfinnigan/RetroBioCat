@@ -72,6 +72,13 @@ def save_edited_sequence():
     seq = Sequence.objects(enzyme_name=original_name)[0]
     user = user_datastore.get_user(current_user.id)
 
+    if (seq.enzyme_type != enzyme_type) or (seq.enzyme_name != enzyme_name):
+        acts = Activity.objects(enzyme_name=enzyme_name)
+        for act in acts:
+            act.enzyme_name = enzyme_name
+            act.enzyme_type = enzyme_type
+            act.save()
+
     seq.enzyme_type = enzyme_type
     seq.sequence_unavailable = sequence_unavailable
     seq.accession = accession
@@ -122,6 +129,7 @@ def save_edited_sequence():
               'msg': msg,
               'issues': issues}
     return jsonify(result=result)
+
 
 @bp.route('/_load_sequence_data', methods=['GET', 'POST'])
 @roles_required('contributor')
