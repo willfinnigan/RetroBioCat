@@ -1,6 +1,6 @@
 <p id="loading_please_wait">Loading, please wait...</p>
 <h5 class="text-center">{{title}}</h5>
-<p class="text-secondary no_margin"><small>Select a row for summary/more information</small></p>
+<p class="text-info no_margin"><small>Click on a row for more information and links to related data</small></p>
 <div id="substrate_specificity_table"></div>
 
 {% include 'tabulator_tables/substrate_specificity/substrate_specificity_modal.html' %}
@@ -156,7 +156,7 @@
 
     var table = new Tabulator("#substrate_specificity_table", {
         data:tabledata, //assign data to table
-        maxHeight:"80vh",
+        maxHeight:"75vh",
         layout:"fitColumns",
         addRowPos:"bottom",
         columns:columns,

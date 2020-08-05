@@ -79,7 +79,9 @@ def show_papers():
     return render_template('edit_tables/edit_papers.html',
                            papers_data=papers_data, papers_table_height='80vh',
                            papers_button_columns=[],
-                           show_owner=True, title=title)
+                           show_owner=True,
+                           title=title,
+                           row_click_modal=True)
 
 
 

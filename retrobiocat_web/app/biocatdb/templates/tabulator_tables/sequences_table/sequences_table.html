@@ -2,12 +2,20 @@
 <!-- Requires jinja variables: seq_data, seq_button_columns, seq_table_height, enzyme_types-->
 
 <h5 class="text-center">{{title}}</h5>
+{% if row_click_modal == True %}
+<p class="text-info no_margin"><small>Click on a row for more information and links to related data</small></p>
+{% endif %}
 <div id="seq_table"></div>
 <div id="seq_response"></div>
 {% include 'tabulator_tables/sequences_table/other_modals/merge_modal.html' %}
 {% include 'tabulator_tables/sequences_table/other_modals/delete_modal.html' %}
 {% include 'tabulator_tables/sequences_table/edit_seq_modal/edit_seq_modal.html' %}
-{% include 'tabulator_tables/sequences_table/seq_row_click_modal.html' %}
+
+{% if row_click_modal == True %}
+    {% include 'tabulator_tables/sequences_table/seq_row_click_modal.html' %}
+{% else %}
+    {% include 'tabulator_tables/sequences_table/other_modals/seq_papers_modal.html' %}
+{% endif %}
 
 <script>
 
@@ -25,6 +33,10 @@
 
     var mergeButton = function(cell, formatterParams, onRendered){ //plain text value
         return "<button class='btn btn-sm btn-outline-warning' data-toggle='modal' data-target='#merge_modal'>Merge</button>";
+    };
+
+    var seePapersButton = function(cell, formatterParams, onRendered){ //plain text value
+        return "<button class='btn btn-sm btn-outline-primary' data-toggle='modal' data-target='#seq_papers_modal'>Papers</button>";
     };
 
     var seq_columns = [
@@ -55,6 +67,10 @@
             {'title': "Curated by", align:"center", 'field': "owner", headerFilter:"select", headerFilterParams:{values:true}},
         {% endif %}
 
+        {% if 'papers' in seq_button_columns %}
+            {'title': 'See papers', 'width':80, formatter:seePapersButton, align:"center", cellClick:function(e, cell){load_seq_papers(cell.getRow().getData().enzyme_name)}},
+        {% endif %}
+
         {% if 'delete' in seq_button_columns %}
             {'title': 'Delete', 'width':80, formatter:deleteButton, align:"center", cellClick:function(e, cell){load_seq_delete(cell.getRow().getData().enzyme_name)}},
         {% endif %}
@@ -83,7 +99,7 @@
 
     var seq_table = new Tabulator("#seq_table", {
         data:seq_tabledata, //assign data to table
-        maxHeight:"{{seq_table_height}}",
+        maxHeight:"75vh",
         layout:"fitColumns",
         addRowPos:"bottom",
         columns:seq_columns,

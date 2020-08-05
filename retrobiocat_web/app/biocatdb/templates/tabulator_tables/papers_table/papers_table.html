@@ -1,9 +1,13 @@
 
 <div class="no_margin" id="papers_response"></div>
 <h5 class="text-center">{{title}}</h5>
+{% if row_click_modal == True %}
+    <p class="text-info no_margin"><small>Click on a row for more information and links to related data</small></p>
+{% endif %}
 <div id="papers_table"></div>
 
-{% include '/tabulator_tables/papers_table/paper_delete_modal.html' %}
+{% include 'tabulator_tables/papers_table/paper_delete_modal.html' %}
+{% include 'tabulator_tables/papers_table/paper_row_click_modal.html' %}
 
 <script>
 
@@ -43,7 +47,7 @@
                 }
         },
 
-        {'title': "Status", align:"center", 'field': "status", headerFilter:"select", headerFilterParams:{values:true}},
+        {'title': "Status", align:"center", 'field': "status", formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
 
         {'title': "Tags", align:"center", 'field': "tags", headerFilter:"input"},
 
@@ -75,12 +79,26 @@
 
     var papers_table = new Tabulator("#papers_table", {
         data:papers_tabledata, //assign data to table
-        maxHeight:"{{papers_table_height}}",
+        maxHeight:"75vh",
         layout:"fitColumns",
         addRowPos:"bottom",
         columns:papers_columns,
         cellHozAlign:"center",
-        cellVertAlign:"middle",})
+        cellVertAlign:"middle",
+        {% if row_click_modal == True %}
+            rowClick:function(e, row){
+                var rowData = row.getData();
+                var paper_id = rowData['_id']
+                var short_cit = rowData['short_citation']
+                load_paper_data(paper_id)
+                document.getElementById('paper_row_click_model_title').innerHTML = short_cit;
+                $('#paper_row_modal').modal('show');
+                },
+        {% endif %}
+    });
+
+
+
 
     function link_to_paper(doi) {
         var url = 'https://doi.org/' + doi
