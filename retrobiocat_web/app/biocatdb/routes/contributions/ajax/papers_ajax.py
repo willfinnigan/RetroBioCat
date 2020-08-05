@@ -23,6 +23,44 @@ def unassign_seqs_in_paper(user, paper):
             seq.save()
 
 
+
+@bp.route('/_load_paper_data', methods=['GET', 'POST'])
+def load_paper_data():
+    paper = Paper.objects(id=request.form['paper_id'])[0].select_related()
+
+    authors_str = ""
+    for author in paper.authors:
+        authors_str += f"{author}, "
+    authors_str = authors_str[0:-2]
+
+    if paper.owner is None:
+        owner = ''
+    else:
+        owner = f"{paper.owner.first_name} {paper.owner.last_name}, {paper.owner.affiliation}"
+
+    tags_str = ""
+    for tag in paper.tags:
+        tags_str += f"{tag}, "
+    tags_str = tags_str[0:-2]
+
+    if len(paper.authors) != 0:
+        v_short_cit = f"{paper.authors[0]} et al"
+    else:
+        v_short_cit = paper.title[0:10] + '..'
+
+    result = {'title': paper.title,
+              'authors': authors_str,
+              'owner': owner,
+              'journal': paper.journal,
+              'date': paper.date.strftime('%B-%Y'),
+              'tags': tags_str,
+              'status': paper.status,
+              'doi': paper.doi,
+              'paper_id': str(paper.id),
+              'v_short_cit': f"<i>{v_short_cit}</i>"}
+
+    return jsonify(result=result)
+
 @bp.route('/_save_paper', methods=['GET', 'POST'])
 @roles_required('contributor')
 def save_paper():

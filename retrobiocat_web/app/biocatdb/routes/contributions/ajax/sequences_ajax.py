@@ -126,9 +126,13 @@ def save_edited_sequence():
 @bp.route('/_load_sequence_data', methods=['GET', 'POST'])
 @roles_required('contributor')
 def load_sequence_data():
+
     name = request.form['name']
 
-    seq = Sequence.objects(enzyme_name=name)[0]
+    if name == '':
+        return jsonify(result={})
+
+    seq = Sequence.objects(enzyme_name=name).exclude('papers')[0].select_related()
 
     sequences_same_type = Sequence.objects(enzyme_type=seq.enzyme_type).distinct('enzyme_name')
     sequences_same_type.sort()
@@ -152,9 +156,10 @@ def load_sequence_data():
         if seq.owner != '' and seq.owner is not None:
             other_user = True
 
-    owner = seq.owner
-    if owner == None:
+    if seq.owner is None:
         owner = ''
+    else:
+        owner = f"{seq.owner.first_name} {seq.owner.last_name}, {seq.owner.affiliation}"
 
 
     other_names = ''

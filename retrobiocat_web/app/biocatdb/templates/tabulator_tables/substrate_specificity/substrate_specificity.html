@@ -166,8 +166,10 @@
             var rowData = row.getData();
             var activity_id = rowData['_id']
             var enzyme_name = rowData['enzyme_name']
+            var paper_id = rowData['paper']
             load_sequence_data(enzyme_name)
             load_single_activity_data(activity_id)
+            load_paper_data(paper_id)
             $('#substrate_specificity_modal').modal('show');
             },
     });

@@ -27,7 +27,7 @@ def load_single_activity_data():
     if activity.added_by is not None:
         added_by = f"{activity.added_by.first_name} {activity.added_by.last_name}, {activity.added_by.affiliation}"
     else:
-        added_by = ''
+        added_by = 'Unattributed'
 
     if activity.substrate_1_conc is None:
         sub1_conc = ''
@@ -61,7 +61,7 @@ def load_single_activity_data():
         ph = ''
     else:
         ph = activity.ph
-        if ph.replace('.','').isnumeric():
+        if ph.replace('.', '').isnumeric():
             ph = 'pH ' + ph
 
     if activity.reaction_vol is None:

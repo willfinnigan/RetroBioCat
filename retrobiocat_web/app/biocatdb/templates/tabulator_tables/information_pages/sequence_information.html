@@ -36,8 +36,10 @@
             <p class="seq_field"><span id="notes"></span></p>
 
             <p class="seq_heading">Links:</p>
-            <a id="substrate_spec_of_seq" href="" target="_blank"><button class="btn btn-outline-primary">Substrate specificity of <span id="enzyme_name_2"></span></button></a>
-            <a id="paper_feat_seq" href="" target="_blank"><button class="btn btn-outline-info">Papers featuring <span id="enzyme_name_3"></span></button></a>
+            <div class="text-center">
+                <a id="substrate_spec_of_seq" href="" target="_blank"><button class="btn btn-outline-primary">Substrate specificity of <span id="enzyme_name_2"></span></button></a>
+                <a id="paper_feat_seq" href="" target="_blank"><button class="btn btn-outline-info">Papers featuring <span id="enzyme_name_3"></span></button></a>
+            </div>
         </div>
     </div>
 
@@ -85,6 +87,8 @@
 
         document.getElementById('paper_feat_seq').href = Flask.url_for("biocatdb.show_papers", {"enzyme_name": data.result.enzyme_name});
         document.getElementById('substrate_spec_of_seq').href = Flask.url_for("biocatdb.enzyme_substrate_specificity", {"enzyme_name": data.result.enzyme_name});
+
+        document.getElementById('sequence_owner').innerHTML = data.result.owner;
     }
 
     function load_sequence_data(enzyme_name) {
@@ -94,12 +98,5 @@
             parse_sequence_data(data)
         })
     }
-
-    window.onload = function() {
-        var enzyme_name = "{{enzyme_name}}"
-        load_sequence_data(enzyme_name);
-    }
-
-    </script>
 
 </script>

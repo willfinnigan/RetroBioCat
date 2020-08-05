@@ -1,10 +1,78 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<style>
+    .paper_heading {
+        font-weight: bold;
+        margin: 0px;
+        padding: 0px;
+        padding-top: 20px;
+    }
 
-</body>
-</html>
+    .paper_field {
+        margin: 0px;
+        padding: 5px;
+        padding-left:30px;
+    }
+
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class='col'>
+            <h4 class="text-center mt-3"><span id="title"></span></h4>
+            <p class="no_margin text-center" id="authors"></p>
+            <a id="doi_link" href="#"><p class="no_margin text-center"><small id="doi"></small></p></a>
+            <p class="no_margin text-center"><small id="journal"></small></p>
+            <p class="no_margin text-center"><small id="date"></small></p>
+
+            <p class="paper_heading">Status:</p>
+            <p class="paper_field"><span id="status"></span></p>
+
+            <p class="paper_heading">Tags:</p>
+            <p class="paper_field"><span id="tags"></span></p>
+
+            <p class="seq_heading">Links:</p>
+            <div class="text-center">
+                <a id="activity_data_in_paper" href="" target="_blank"><button class="btn btn-outline-primary">Activity data in <span id="short_cit_1"></span></button></a>
+                <a id="seq_in_paper" href="" target="_blank"><button class="btn btn-outline-success">Sequences in <span id="short_cit_2"></span></button></a>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="row mt-5">
+        <div class="col">
+            <p><strong>Paper curated by: </strong><span id="paper_owner"></span></p>
+        </div>
+    </div>
+
+</div>
+
+
+<script>
+    function parse_paper_data(data) {
+        document.getElementById("title").innerHTML = data.result.title;
+        document.getElementById("authors").innerHTML = data.result.authors;
+        document.getElementById('journal').innerHTML = data.result.journal;
+        document.getElementById('date').innerHTML = data.result.date;
+        document.getElementById('doi').innerHTML = data.result.doi;
+        document.getElementById('doi_link').href = "https://doi.org/" + data.result.doi;
+        document.getElementById('tags').innerHTML = data.result.tags;
+        document.getElementById('status').innerHTML = data.result.status;
+
+        document.getElementById('activity_data_in_paper').href = Flask.url_for("biocatdb.paper_substrate_specificity", {"paper_id": data.result.paper_id});
+        document.getElementById('seq_in_paper').href = Flask.url_for("biocatdb.show_sequences", {"paper_id": data.result.paper_id});
+        document.getElementById('short_cit_1').innerHTML = data.result.v_short_cit;
+        document.getElementById('short_cit_2').innerHTML = data.result.v_short_cit;
+
+        document.getElementById('paper_owner').innerHTML = data.result.owner;
+    }
+
+    function load_paper_data(paper_id) {
+        $.post('/_load_paper_data', {
+            paper_id: paper_id,
+        }).done(function (data) {
+            parse_paper_data(data)
+        })
+    }
+
+</script>
