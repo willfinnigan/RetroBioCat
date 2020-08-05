@@ -17,35 +17,35 @@
 <div class="container-fluid">
     <div class="row">
         <div class='col'>
-            <h3 class="text-center mt-3"><span id="enzyme_name"></span></h3>
-            <p class="no_margin text-center"><small id="other_names"></small></p>
+            <h3 class="text-center mt-3"><span id="enzyme_name_query"></span></h3>
+            <p class="no_margin text-center"><small id="other_names_query"></small></p>
 
             <p class="seq_heading">Enzyme type</p>
-            <p class="seq_field"><span id="enzyme_type"></span> - <span id="enzyme_type_full"></span></p>
+            <p class="seq_field"><span id="enzyme_type_query"></span> - <span id="enzyme_type_full_query"></span></p>
 
             <p class="seq_heading">Sequence</p>
-            <p class="seq_field"><span id="sequence"></span></p>
+            <p class="seq_field"><span id="sequence_query"></span></p>
 
             <p class="seq_heading">Identifier / Accession number / PDB Code</p>
-            <p class="seq_field"><span id="accession"></span></p>
+            <p class="seq_field"><span id="accession_query"></span></p>
 
-            <p class="seq_heading" id="mutant_of_heading">Mutant of:</p>
-            <p class="seq_field"><span id="mutant_of"></span></p>
+            <p class="seq_heading" id="mutant_of_heading_query">Mutant of:</p>
+            <p class="seq_field"><span id="mutant_of_query"></span></p>
 
-            <p class="seq_heading" id="notes_heading">Notes:</p>
-            <p class="seq_field"><span id="notes"></span></p>
+            <p class="seq_heading" id="notes_heading_query">Notes:</p>
+            <p class="seq_field"><span id="notes_query"></span></p>
 
             <p class="seq_heading">Links:</p>
             <div class="text-center">
-                <a id="substrate_spec_of_seq" href="" target="_blank"><button class="btn btn-outline-primary">Substrate specificity of <span id="enzyme_name_2"></span></button></a>
-                <a id="paper_feat_seq" href="" target="_blank"><button class="btn btn-outline-info">Papers featuring <span id="enzyme_name_3"></span></button></a>
+                <a id="substrate_spec_of_seq_query" href="" target="_blank"><button class="btn btn-outline-primary">Substrate specificity of <span id="enzyme_name_2_query"></span></button></a>
+                <a id="paper_feat_seq_query" href="" target="_blank"><button class="btn btn-outline-info">Papers featuring <span id="enzyme_name_3_query"></span></button></a>
             </div>
         </div>
     </div>
 
     <div class="row mt-5">
         <div class="col">
-            <p><strong>Enzyme entry curated by: </strong><span id="sequence_owner"></span></p>
+            <p><strong>Enzyme entry curated by: </strong><span id="sequence_owner_query"></span></p>
         </div>
     </div>
 
@@ -54,41 +54,41 @@
 
 <script>
     function parse_sequence_data(data) {
-        document.getElementById("enzyme_type").innerHTML = data.result.enzyme_type;
-        document.getElementById("enzyme_type_full").innerHTML = data.result.enzyme_type_full;
-        document.getElementById("enzyme_name").innerHTML = data.result.enzyme_name;
-        document.getElementById("enzyme_name_2").innerHTML = data.result.enzyme_name;
-        document.getElementById("enzyme_name_3").innerHTML = data.result.enzyme_name;
-        document.getElementById("other_names").innerHTML = data.result.other_names;
-        document.getElementById("sequence").innerHTML = data.result.sequence;
+        document.getElementById("enzyme_type_query").innerHTML = data.result.enzyme_type;
+        document.getElementById("enzyme_type_full_query").innerHTML = data.result.enzyme_type_full;
+        document.getElementById("enzyme_name_query").innerHTML = data.result.enzyme_name;
+        document.getElementById("enzyme_name_2_query").innerHTML = data.result.enzyme_name;
+        document.getElementById("enzyme_name_3_query").innerHTML = data.result.enzyme_name;
+        document.getElementById("other_names_query").innerHTML = data.result.other_names;
+        document.getElementById("sequence_query").innerHTML = data.result.sequence;
 
         if (data.result.sequence === '' && data.result.sequence_unavailable === true) {
-            document.getElementById("sequence").innerHTML = "Sequence not available"
+            document.getElementById("sequence_query").innerHTML = "Sequence not available"
         }
 
-        document.getElementById("mutant_of").innerHTML = data.result.mutant_of;
-        document.getElementById("notes").innerHTML = data.result.notes;
+        document.getElementById("mutant_of_query").innerHTML = data.result.mutant_of;
+        document.getElementById("notes_query").innerHTML = data.result.notes;
 
         if (data.result.mutant_of === '') {
-            document.getElementById("mutant_of").style.display = "none";
-            document.getElementById("mutant_of_heading").style.display = "none";
+            document.getElementById("mutant_of_query").style.display = "none";
+            document.getElementById("mutant_of_heading_query").style.display = "none";
         } else {
-            document.getElementById("mutant_of").style.display = "inline";
-            document.getElementById("mutant_of_heading").style.display = "inline";
+            document.getElementById("mutant_of_query").style.display = "inline";
+            document.getElementById("mutant_of_heading_query").style.display = "inline";
         }
 
         if (data.result.notes === '') {
-            document.getElementById("notes").style.display = "none";
-            document.getElementById("notes_heading").style.display = "none";
+            document.getElementById("notes_query").style.display = "none";
+            document.getElementById("notes_heading_query").style.display = "none";
         } else {
-            document.getElementById("notes").style.display = "inline";
-            document.getElementById("notes_heading").style.display = "inline";
+            document.getElementById("notes_query").style.display = "inline";
+            document.getElementById("notes_heading_query").style.display = "inline";
         }
 
-        document.getElementById('paper_feat_seq').href = Flask.url_for("biocatdb.show_papers", {"enzyme_name": data.result.enzyme_name});
-        document.getElementById('substrate_spec_of_seq').href = Flask.url_for("biocatdb.enzyme_substrate_specificity", {"enzyme_name": data.result.enzyme_name});
+        document.getElementById('paper_feat_seq_query').href = Flask.url_for("biocatdb.show_papers", {"enzyme_name": data.result.enzyme_name});
+        document.getElementById('substrate_spec_of_seq_query').href = Flask.url_for("biocatdb.enzyme_substrate_specificity", {"enzyme_name": data.result.enzyme_name});
 
-        document.getElementById('sequence_owner').innerHTML = data.result.owner;
+        document.getElementById('sequence_owner_query').innerHTML = data.result.owner;
     }
 
     function load_sequence_data(enzyme_name) {

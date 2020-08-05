@@ -1,0 +1,45 @@
+<div class="modal fade" id="sequence_row_modal" tabindex="-1" role="dialog"
+     aria-labelledby="sequence_row_modal_modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="sequence_row_click_model_title"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+
+                <ul class="nav nav-tabs" id="tab_list" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="sequence_info_link"
+                           data-toggle="tab" href="#sequence_info"
+                           role="tab" aria-controls="sequence_info"
+                           aria-selected="true">Enzyme</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" id="papers_info_link"
+                           data-toggle="tab" href="#papers_info"
+                           role="tab" aria-controls="papers_info"
+                           aria-selected="false">Papers</a>
+                    </li>
+
+                </ul>
+
+                <div class="tab-content" id="tab_content">
+                    <div class="tab-pane fade show active" id="sequence_info" role="tabpanel" aria-labelledby="sequence_info_tab">
+                        {% include 'tabulator_tables/information_pages/sequence_information.html' %}
+                    </div>
+
+                    <div class="tab-pane fade" id="papers_info" role="tabpanel" aria-labelledby="papers_info_tab">
+                        <p>Papers</p>
+                        {% include 'tabulator_tables/information_pages/small_papers_table.html' %}
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,70 @@
+<div id="seq_papers_table"></div>
+
+<script>
+    var short_paper_editButton = function(cell, formatterParams, onRendered){ //plain text value
+        var row_data = cell.getData()
+        var can_edit = row_data['can_edit']
+        if (can_edit === 'True') {
+            return "<button class='btn btn-sm btn-outline-info'>Edit</button>";
+        } else {
+            return ""
+        }
+    };
+
+    var papers_short_columns = [
+
+        {'title':"_id",  'field':"_id", visible:false, headerSort:false},
+
+        {'title':"can_edit", 'field':"can_edit", visible:false, headerSort:false},
+
+        {'title': "Short cit.", 'field': "short_citation", headerFilter:"input", formatter:"textarea"},
+
+        {'title': "DOI", 'field': "doi", headerFilter:"input",
+            formatter:function(cell, formatterParams){
+                var cell_value = cell.getValue();
+                var row_data = cell.getData()
+                var doi = row_data['doi']
+                var url = "<a href='https://doi.org/" + doi + "' target='_blank'>" + cell_value + "</a>";
+
+                cell.getElement().style.display = 'inline-flex'
+                cell.getElement().style["white-space"]  = 'pre-wrap'
+                return url
+                }
+            },
+
+        {'title': "Title", 'field': "title", headerFilter:"input", formatter:"textarea"},
+
+        {% if current_user.has_role('contributor') %}
+        {'title': 'Edit', 'width':80, formatter:short_paper_editButton, align:"center", headerSort:false,
+            cellClick:function(e, cell){edit_paper(cell.getRow().getData()._id)}},
+        {% endif %}
+    ];
+
+    var short_papers_tabledata = [];
+
+    var short_papers_table = new Tabulator("#seq_papers_table", {
+        data:short_papers_tabledata, //assign data to table
+        maxHeight:"60vh",
+        layout:"fitColumns",
+        addRowPos:"bottom",
+        columns:papers_short_columns})
+
+
+    function edit_paper(id) {
+        var url = Flask.url_for("biocatdb.submission_main_page", {"paper_id": id});
+        window.open(url, "_blank")
+    }
+
+    function load_seq_papers(name) {
+        $.post('/_load_sequence_papers', {
+            name: name,
+            }).done(function(data) {
+                short_papers_table.replaceData(data.result.papers)
+            })
+    }
+
+    $(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
+        short_papers_table.redraw()
+    })
+
+</script>
