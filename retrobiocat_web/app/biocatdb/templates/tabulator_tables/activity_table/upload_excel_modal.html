@@ -27,6 +27,7 @@
             </div>
 
             <div class="modal-footer">
+                <button id="clear_current_data" class="btn btn-danger" onclick="clear_current_data()">Clear current data</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
 
@@ -37,6 +38,13 @@
 
 
 <script>
+    function clear_current_data() {
+        table.replaceData([])
+        $('#upload_excel_modal').modal('hide')
+        response_msg('Data cleared. Not saved.', 'success', ['(click save to update the database)'], "activity_save_response")
+    }
+
+
     $(function() {
         $('#upload-file-btn').click(function() {
             var form_data = new FormData($('#upload-file')[0]);
