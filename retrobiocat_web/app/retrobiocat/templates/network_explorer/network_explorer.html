@@ -109,6 +109,7 @@
         }
 
         function renew_session() {
+
                 $.post(Flask.url_for("retrobiocat.keep_session_open"), {
                     task_id: window.task_id
                 })}

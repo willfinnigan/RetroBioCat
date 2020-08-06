@@ -141,3 +141,7 @@ def submission_main_page(paper_id):
                            seq_table_height='60vh', enzyme_types=enzyme_types, show_header_filters=False, include_owner=True, lock_enz_type='false',
                            reactions=reactions, enzyme_names=enzyme_names+['Chemical'],
                            doi=paper.doi)
+
+@bp.route('/_check_connection', methods=['GET', 'POST'])
+def check_connection():
+    return jsonify({'status': 'success'})

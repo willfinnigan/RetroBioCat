@@ -7,4 +7,4 @@ from flask import current_app
 def keep_session_open():
     task_id = request.form['task_id']
     current_app.redis.expire(task_id, 5*60)
-    return jsonify({})
+    return jsonify({'status': 'success'})

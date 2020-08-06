@@ -9,6 +9,7 @@
                 <div class="card card-form my-5">
                     <div class="card-body">
                         <h3 class="card-title">{{paper['short_cit']}}</h3>
+                        <p id="checking_connection" style="display: None" class="text-danger">Checking connection.  If this is message persists, connection to retrobiocat has been lost.  Please refresh the page before continuing.</p>
                         <ul class="nav nav-tabs" id="tab_list" role="tablist">
                           <li class="nav-item">
                             <a class="nav-link active" id="check_and_save_tab" data-toggle="tab" href="#status" role="tab" aria-controls="status" aria-selected="true">Status</a>
@@ -52,7 +53,24 @@
     {% include '/data_submission/add_enzyme_modal.html' %}
     {% include '/data_submission/upload_seq_excel_modal.html' %}
 
-    <script src="{{url_for('.static', filename='js/response_alert.js')}}?v={{v}}" type="text/javascript"></script>
+    <script>
+        function renew_session() {
+            document.getElementById("checking_connection").style.display = "inline";
+            $.post(Flask.url_for("biocatdb.check_connection"), {
+                task_id: window.task_id
+            }).done(function(data) {
+                if (data.status === 'success') {
+                    document.getElementById("checking_connection").style.display = "None";
+                } else {
+                    setTimeout(renew_session(), 5000)
+                }
+
+            })
+        }
+
+        setInterval(renew_session(), 30000);
+
+    </script>
 
 
 {% endblock %}
