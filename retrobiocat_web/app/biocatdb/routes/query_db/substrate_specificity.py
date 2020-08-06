@@ -142,24 +142,19 @@ def enzyme_substrate_specificity(enzyme_name):
 
     return render_template('substrate_specificity/table_result_specificity.html', activity_data=activity_data, title=f"{enzyme_name} substrate specificity")
 
-@bp.route("/enzyme_substrates/<enzyme_type>/<enzyme_name>", methods=["GET"])
-def enzyme_substrate_specificity_type_and_name(enzyme_type, enzyme_name):
+@bp.route("/enzyme_substrates_type/<enzyme_type>", methods=["GET"])
+def enzyme_substrate_specificity_type(enzyme_type):
     if enzyme_type == 'All':
         enz_type_q = db.Q()
     else:
         enz_type_q = db.Q(enzyme_type=enzyme_type)
 
-    if enzyme_name == 'All':
-        enz_name_q = db.Q()
-    else:
-        enz_name_q = db.Q(enzyme_name=enzyme_name)
-
-    activity_data = list(Activity.objects(enz_type_q | enz_name_q).only(*process_activity_data.mongo_cols).as_pymongo())
+    activity_data = list(Activity.objects(enz_type_q).only(*process_activity_data.mongo_cols).as_pymongo())
     activity_data = process_activity_data.process_activity_data(activity_data)
     activity_data = process_activity_data.smiles_to_svg(activity_data)
 
     return render_template('substrate_specificity/table_result_specificity.html', activity_data=activity_data,
-                           title=f"Substrate scope for: enzyme type: {enzyme_type}, enzyme name: {enzyme_name}")
+                           title=f"Substrate scope for all {enzyme_type} enzymes")
 
 @bp.route("/substrate_scope_search", methods=["GET", "POST"])
 def substrate_scope_search():
@@ -168,9 +163,11 @@ def substrate_scope_search():
 
     if form.validate_on_submit() == True:
         form_data = form.data
-        return redirect(url_for("biocatdb.enzyme_substrate_specificity_type_and_name",
-                                enzyme_type=form_data['enzyme_type'],
-                                enzyme_name=form_data['enzyme_name']))
+
+        if form_data['enzyme_name'] != 'All':
+            return redirect(url_for("biocatdb.enzyme_substrate_specificity", enzyme_name=form_data['enzyme_name']))
+        elif form_data['enzyme_type'] != 'All':
+            return redirect(url_for("biocatdb.enzyme_substrate_specificity_type", enzyme_type=form_data['enzyme_type']))
 
     return render_template('substrate_specificity/substrate_scope_form.html', form=form)
 

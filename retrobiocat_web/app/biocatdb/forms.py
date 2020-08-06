@@ -96,3 +96,18 @@ class SubstrateScopeForm(FlaskForm):
     def set_choices(self):
         self.enzyme_type.choices = [(c, c) for c in ['All'] + (list(Sequence.objects().distinct('enzyme_type')))]
         self.enzyme_name.choices = [(c, c) for c in ['All'] + (list(Sequence.objects().distinct('enzyme_name')))]
+
+    def validate(self):
+        if not FlaskForm.validate(self):
+            return False
+        result = True
+        seen = set()
+
+        if self.enzyme_type.data == 'All' and self.enzyme_name.data == 'All':
+            self.enzyme_type.errors.append("Can't both be All")
+            self.enzyme_name.errors.append("Can't both be All")
+            result = False
+        else:
+            seen.add(self.enzyme_type.data)
+            seen.add(self.enzyme_name.data)
+        return result
