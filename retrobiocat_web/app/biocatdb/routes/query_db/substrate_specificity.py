@@ -1,4 +1,4 @@
-from flask import render_template, jsonify, session, request
+from flask import render_template, jsonify, session, request, redirect, url_for
 from retrobiocat_web.app.biocatdb.forms import SubstrateForm
 from flask import current_app
 from rq.job import Job
@@ -11,6 +11,7 @@ from retrobiocat_web.mongo.models.biocatdb_models import Activity, Paper
 import numpy as np
 from retrobiocat_web.app.biocatdb.functions.substrate_specificity import process_activity_data
 import mongoengine as db
+from retrobiocat_web.app.biocatdb.forms import SubstrateScopeForm
 
 @bp.route('/substrate_specificity_form',  methods=['GET', 'POST'])
 def substrate_specificity_form():
@@ -140,6 +141,39 @@ def enzyme_substrate_specificity(enzyme_name):
     activity_data = process_activity_data.smiles_to_svg(activity_data)
 
     return render_template('substrate_specificity/table_result_specificity.html', activity_data=activity_data, title=f"{enzyme_name} substrate specificity")
+
+@bp.route("/enzyme_substrates/<enzyme_type>/<enzyme_name>", methods=["GET"])
+def enzyme_substrate_specificity_type_and_name(enzyme_type, enzyme_name):
+    if enzyme_type == 'All':
+        enz_type_q = db.Q()
+    else:
+        enz_type_q = db.Q(enzyme_type=enzyme_type)
+
+    if enzyme_name == 'All':
+        enz_name_q = db.Q()
+    else:
+        enz_name_q = db.Q(enzyme_name=enzyme_name)
+
+    activity_data = list(Activity.objects(enz_type_q | enz_name_q).only(*process_activity_data.mongo_cols).as_pymongo())
+    activity_data = process_activity_data.process_activity_data(activity_data)
+    activity_data = process_activity_data.smiles_to_svg(activity_data)
+
+    return render_template('substrate_specificity/table_result_specificity.html', activity_data=activity_data,
+                           title=f"Substrate scope for: enzyme type: {enzyme_type}, enzyme name: {enzyme_name}")
+
+@bp.route("/substrate_scope_search", methods=["GET", "POST"])
+def substrate_scope_search():
+    form = SubstrateScopeForm()
+    form.set_choices()
+
+    if form.validate_on_submit() == True:
+        form_data = form.data
+        return redirect(url_for("biocatdb.enzyme_substrate_specificity_type_and_name",
+                                enzyme_type=form_data['enzyme_type'],
+                                enzyme_name=form_data['enzyme_name']))
+
+    return render_template('substrate_specificity/substrate_scope_form.html', form=form)
+
 
 
 if __name__ == '__main__':

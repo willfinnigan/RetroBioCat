@@ -26,8 +26,14 @@
             <p class="seq_heading">Sequence</p>
             <p class="seq_field"><span id="sequence_query"></span></p>
 
-            <p class="seq_heading">Identifier / Accession number / PDB Code</p>
-            <p class="seq_field"><span id="accession_query"></span></p>
+            <p class="seq_heading" id="accession_heading_query">Identifier / Accession number / PDB Code</p>
+            <p class="seq_field my-auto">
+                <span id="accession_query"></span>
+                <a href="#" id="ncbi_accession_link" target="_blank"><button class="btn btn-sm btn-outline-warning">NCBI</button></a>
+                <a href="#" id="uni_accession_link" target="_blank"><button class="btn btn-sm btn-outline-success">UniProt</button></a>
+                <a href="#" id="pdb_accession_link" target="_blank"><button class="btn btn-sm btn-outline-danger">PDB</button></a>
+
+            </p>
 
             <p class="seq_heading" id="mutant_of_heading_query">Mutant of:</p>
             <p class="seq_field"><span id="mutant_of_query"></span></p>
@@ -37,8 +43,8 @@
 
             <p class="seq_heading">Links:</p>
             <div class="text-center">
-                <a id="substrate_spec_of_seq_query" href="" target="_blank"><button class="btn btn-outline-primary">Substrate specificity of <span id="enzyme_name_2_query"></span></button></a>
-                <a id="paper_feat_seq_query" href="" target="_blank"><button class="btn btn-outline-info">Papers featuring <span id="enzyme_name_3_query"></span></button></a>
+                <a id="substrate_spec_of_seq_query" href=""><button class="btn btn-outline-primary">Substrate specificity of <span id="enzyme_name_2_query"></span></button></a>
+                <a id="paper_feat_seq_query" href=""><button class="btn btn-outline-info">Papers featuring <span id="enzyme_name_3_query"></span></button></a>
             </div>
         </div>
     </div>
@@ -50,7 +56,6 @@
     </div>
 
 </div>
-
 
 <script>
     function parse_sequence_data(data) {
@@ -68,6 +73,32 @@
 
         document.getElementById("mutant_of_query").innerHTML = data.result.mutant_of;
         document.getElementById("notes_query").innerHTML = data.result.notes;
+        document.getElementById("accession_query").innerHTML = data.result.accession;
+
+        document.getElementById('ncbi_accession_link').href = "https://www.ncbi.nlm.nih.gov/protein/" + data.result.accession
+        document.getElementById('uni_accession_link').href = "https://www.uniprot.org/uniparc/?query=" + data.result.accession + "&sort=score"
+        document.getElementById('pdb_accession_link').href = "https://www.ebi.ac.uk/pdbe/entry/pdb/" + data.result.accession
+
+        console.log(data.result.structure)
+
+        if (data.result.structure === true) {
+            document.getElementById("pdb_accession_link").style.display = "inline";
+        } else {
+            document.getElementById("pdb_accession_link").style.display = "none";
+        }
+
+        if (data.result.accession === '') {
+            document.getElementById("accession_query").style.display = "none";
+            document.getElementById("accession_heading_query").style.display = "none";
+            document.getElementById("ncbi_accession_link").style.display = "none";
+            document.getElementById("uni_accession_link").style.display = "none";
+        } else {
+            document.getElementById("accession_query").style.display = "inline";
+            document.getElementById("accession_heading_query").style.display = "inline";
+            document.getElementById("ncbi_accession_link").style.display = "inline";
+            document.getElementById("uni_accession_link").style.display = "inline";
+        }
+
 
         if (data.result.mutant_of === '') {
             document.getElementById("mutant_of_query").style.display = "none";

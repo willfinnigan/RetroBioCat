@@ -13,8 +13,12 @@ from distutils.util import strtobool
 from retrobiocat_web.app.biocatdb.functions import check_permission
 
 def seqs_of_type(enzyme_type):
-    sequences = Sequence.objects(enzyme_type=enzyme_type).distinct('enzyme_name')
-    sequences.sort()
+    if enzyme_type == 'All':
+        sequences = Sequence.objects().distinct('enzyme_name')
+        sequences.sort()
+    else:
+        sequences = Sequence.objects(enzyme_type=enzyme_type).distinct('enzyme_name')
+        sequences.sort()
 
     seq_array = {}
     for seq in sequences:

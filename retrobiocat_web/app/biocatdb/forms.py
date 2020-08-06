@@ -88,3 +88,11 @@ class PapersSearch(FlaskForm):
         self.enzyme_name.choices = [(c, c) for c in ['All'] + (list(Sequence.objects().distinct('enzyme_name')))]
         self.reaction.choices = [(c, c) for c in ['All'] + (list(Reaction.objects().distinct('name')))]
 
+class SubstrateScopeForm(FlaskForm):
+    enzyme_type = SelectField('Enzyme name')
+    enzyme_name = SelectField('Enzyme name')
+    submit = SubmitField('Submit')
+
+    def set_choices(self):
+        self.enzyme_type.choices = [(c, c) for c in ['All'] + (list(Sequence.objects().distinct('enzyme_type')))]
+        self.enzyme_name.choices = [(c, c) for c in ['All'] + (list(Sequence.objects().distinct('enzyme_name')))]
