@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% set active_page = "biocatdb" %}
+
+
+{% block content %}
+
+    <style>
+        .td_p {
+            padding: 0 15px;
+        }
+
+    </style>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col"></div>
+            <div class="col">
+                <div class="card card-form my-5" style="width: 64rem;">
+                    <div class="card-body" align="center">
+                        <h3 class="card-title text-center" >Database contributors</h3>
+
+                        <h4 class="text-center mt-5 text-success">Papers curated</h4>
+                            <table>
+                                {% for name in top_papers %}
+                                    <tr>
+                                        <td>{{ loop.index }}.</td>
+                                        <td class="td_p">{{ name }}</td>
+                                        <td class="td_p"><strong>{{ top_papers[name] }}</strong></td>
+                                    </tr>
+                                {% endfor %}
+                            </table>
+
+
+                        <h4 class="text-center mt-5 text-primary">Sequences curated</h4>
+                            <table>
+                                {% for name in top_sequences %}
+                                    <tr>
+                                        <td>{{ loop.index }}.</td>
+                                        <td class="td_p">{{ name }}</td>
+                                        <td class="td_p"><strong>{{ top_sequences[name] }}</strong></td>
+                                    </tr>
+                                {% endfor %}
+                            </table>
+
+                        <h4 class="text-center mt-5 text-danger">Activity data added</h4>
+                            <table>
+                                {% for name in top_activity %}
+                                    <tr>
+                                        <td>{{ loop.index }}.</td>
+                                        <td class="td_p">{{ name }}</td>
+                                        <td class="td_p"><strong>{{ top_activity[name] }}</strong></td>
+                                    </tr>
+                                {% endfor %}
+                            </table>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col"></div>
+        </div>
+    </div>
+
+{% endblock %}

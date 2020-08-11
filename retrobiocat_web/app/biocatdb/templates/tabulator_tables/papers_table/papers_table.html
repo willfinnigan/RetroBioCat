@@ -30,11 +30,11 @@
 
         {'title':"ID", align:"center", 'field':"_id", visible:false, headerSort:false},
 
-        {'title': "Short cit.", align:"center", 'field': "short_citation", headerFilter:"input", formatter:"textarea"},
+        {'title': "Short cit.", align:"center", 'width':200, 'field': "short_citation", headerFilter:"input", formatter:"textarea"},
 
-        {'title': "Title", align:"center", 'field': "title", headerFilter:"input", formatter:"textarea"},
+        {'title': "Title", align:"center", 'field': "title", 'width':300, headerFilter:"input", formatter:"textarea"},
 
-        {'title': "DOI", align:"center", 'field': "doi", headerFilter:"input",
+        {'title': "DOI", align:"center", 'width':200, 'field': "doi", headerFilter:"input",
             formatter:function(cell, formatterParams){
                 var cell_value = cell.getValue();
                 var row_data = cell.getData()
@@ -47,12 +47,12 @@
                 }
         },
 
-        {'title': "Status", align:"center", 'field': "status", formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
+        {'title': "Status", align:"center", 'width':125, 'field': "status", formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
 
-        {'title': "Tags", align:"center", 'field': "tags", headerFilter:"input"},
+        {'title': "Tags", align:"center", 'width':100, 'field': "tags", headerFilter:"input"},
 
         {% if show_owner == True %}
-            {'title': "Curated by", align:"center", 'field': "owner", headerFilter:"select", headerFilterParams:{values:true}},
+            {'title': "Curated by", align:"center", 'width':100, 'field': "owner", headerFilter:"select", headerFilterParams:{values:true}},
         {% endif %}
 
 
