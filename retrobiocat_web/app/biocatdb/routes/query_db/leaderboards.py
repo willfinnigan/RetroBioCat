@@ -20,20 +20,16 @@ def leaderboard():
         username = f"{user.first_name} {user.last_name}, {user.affiliation}"
         num_papers = len(Paper.objects(owner=user))
         num_sequences = len(Sequence.objects(owner=user))
-        num_activity = len(Activity.objects(added_by=user))
         papers_dict[username] = num_papers
         sequence_dict[username] = num_sequences
-        activity_dict[username] = num_activity
 
     papers_dict = {k: v for k, v in sorted(papers_dict.items(), key=lambda item: item[1], reverse=True)}
     papers_dict = {k: v for k, v in papers_dict.items() if v != 0}
     sequence_dict = {k: v for k, v in sorted(sequence_dict.items(), key=lambda item: item[1], reverse=True)}
     sequence_dict = {k: v for k, v in sequence_dict.items() if v != 0}
-    activity_dict = {k: v for k, v in sorted(activity_dict.items(), key=lambda item: item[1], reverse=True)}
-    activity_dict = {k: v for k, v in activity_dict.items() if v != 0}
+
 
 
     return render_template('leaderboard.html',
                            top_papers=papers_dict,
-                           top_sequences=sequence_dict,
-                           top_activity=activity_dict)
+                           top_sequences=sequence_dict)
