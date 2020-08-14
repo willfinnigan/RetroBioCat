@@ -43,28 +43,28 @@
 
         {'title':"ID", align:"center", 'field':"_id", visible:false, headerSort:false},
 
-        {'title': "Type", align:"center", 'field': "enzyme_type", 'width':100, headerFilter:"select", headerFilterParams:{values:true}},
+        {'title': "Type", align:"center", 'field': "enzyme_type", 'minWidth':100, headerFilter:"select", headerFilterParams:{values:true}},
 
-        {'title': "Name", align:"center", 'field': "enzyme_name", headerFilter:"input", 'width':100},
+        {'title': "Name", align:"center", 'field': "enzyme_name", headerFilter:"input", 'minWidth':100},
 
-        {'title': "Sequence", align:"left", 'field': "sequence", 'width':250, headerFilter:"input"},
+        {'title': "Sequence", align:"left", 'field': "sequence", 'minWidth':250, headerFilter:"input"},
 
-        {'title': "Seq. unavailable", align:"center", 'width':80, 'field': "sequence_unavailable", headerFilter:"select", headerFilterParams:{values:true}},
+        {'title': "Seq. unavailable", align:"center", 'minWidth':80, 'field': "sequence_unavailable", headerFilter:"select", headerFilterParams:{values:true}},
 
-        {'title': "Accession", align:"center", 'width':80, 'field': "accession", headerFilter:"input"},
+        {'title': "Accession", align:"center", 'minWidth':80, 'field': "accession", headerFilter:"input"},
 
-        {'title': "Structure", align:"center", 'width':80, 'field': "structure", headerFilter:"select", headerFilterParams:{values:true}},
+        {'title': "Structure", align:"center", 'minWidth':80, 'field': "structure", headerFilter:"select", headerFilterParams:{values:true}},
 
-        {'title': "Mutant of", align:"center", 'width':80, 'field': "mutant_of", headerFilter:"input"},
+        {'title': "Mutant of", align:"center", 'minWidth':80, 'field': "mutant_of", headerFilter:"input"},
 
-        {'title': "Notes", align:"center", 'field': "notes", 'width':150, headerFilter:"input"},
+        {'title': "Notes", align:"center", 'field': "notes", 'minWidth':150, headerFilter:"input"},
 
-        {'title': "Other names", align:"center", 'field': "other_names", 'width':150, headerFilter:"input"},
+        {'title': "Other names", align:"center", 'field': "other_names", 'minWidth':150, headerFilter:"input"},
 
-        {'title': "Num. papers", align:"center", 'width':80, 'field': "papers"},
+        {'title': "Num. papers", align:"center", 'minWidth':80, 'field': "papers"},
 
         {% if include_owner == True %}
-            {'title': "Curated by", align:"center", 'field': "owner", 'width':100, headerFilter:"select", headerFilterParams:{values:true}},
+            {'title': "Curated by", align:"center", 'field': "owner", 'minWidth':100, headerFilter:"select", headerFilterParams:{values:true}},
         {% endif %}
 
         {% if 'papers' in seq_button_columns %}

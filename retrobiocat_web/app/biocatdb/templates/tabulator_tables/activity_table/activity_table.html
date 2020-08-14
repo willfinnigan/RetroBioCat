@@ -24,62 +24,62 @@
         {'title': "N", 'field':'n', formatter:'rownum', width:30, headerSort:false, align:"center"},
 
 
-        {'title': "Reaction", 'field': "reaction", 'width':200,
+        {'title': "Reaction", 'field': "reaction", 'minWidth':200,
             'editor': "autocomplete",
             'headerSort': false,
             'editorParams': {'values': {{reactions|safe}}, 'freetext': 'true', 'showListOnEmpty': true}},
 
-        {'title': "Enzyme name", 'field': "enzyme_name", 'width':120,
+        {'title': "Enzyme name", 'field': "enzyme_name", 'minWidth':120,
             'editor': "autocomplete",
             'headerSort': false,
             'editorParams': {'values': {{enzyme_names|safe}}, 'showListOnEmpty': true}},
 
-        {'title': "Substrate 1 SMILES", 'field': "substrate_1_smiles", 'width':150, 'editor': "input", 'headerSort': false},
+        {'title': "Substrate 1 SMILES", 'field': "substrate_1_smiles", 'minWidth':150, 'editor': "input", 'headerSort': false},
 
-        {'title': "Substrate 2 SMILES", 'field': "substrate_2_smiles", 'width':150, 'editor': "input", 'headerSort': false},
+        {'title': "Substrate 2 SMILES", 'field': "substrate_2_smiles", 'minWidth':150, 'editor': "input", 'headerSort': false},
 
-        {'title': "Product 1 SMILES", 'field': "product_1_smiles", 'width':150, 'editor': "input", 'headerSort': false},
+        {'title': "Product 1 SMILES", 'field': "product_1_smiles", 'minWidth':150, 'editor': "input", 'headerSort': false},
 
-        {'title': "Temp.", 'field': "temperature", 'width':75, 'editor': "input", 'headerSort': false},
+        {'title': "Temp.", 'field': "temperature", 'minWidth':75, 'editor': "input", 'headerSort': false},
 
-        {'title': "pH", 'field': "ph", 'width':50, 'editor': "number", 'headerSort': false, editorParams:{min:1, max:12}},
+        {'title': "pH", 'field': "ph", 'minWidth':50, 'editor': "number", 'headerSort': false, editorParams:{min:1, max:12}},
 
-        {'title': "Solvent", 'field': "solvent", 'width':75, 'editor': "input", 'headerSort': false},
+        {'title': "Solvent", 'field': "solvent", 'minWidth':75, 'editor': "input", 'headerSort': false},
 
-        {'title': "Other conditions", 'field': "other_conditions", 'width':150, 'editor': "textarea", 'headerSort': false},
+        {'title': "Other conditions", 'field': "other_conditions", 'minWidth':150, 'editor': "textarea", 'headerSort': false},
 
-        {'title': "Notes", 'field': "notes", 'width':150, 'editor': "textarea", 'headerSort': false},
+        {'title': "Notes", 'field': "notes", 'minWidth':150, 'editor': "textarea", 'headerSort': false},
 
-        {'title': "Reaction vol.", 'field': "reaction_vol", 'width':75, 'editor': "input", 'headerSort': false},
+        {'title': "Reaction vol.", 'field': "reaction_vol", 'minWidth':75, 'editor': "input", 'headerSort': false},
 
-        {'title': "Formulation", 'field': "formulation", 'width':100, 'editor': "input", 'headerSort': false},
+        {'title': "Formulation", 'field': "formulation", 'minWidth':100, 'editor': "input", 'headerSort': false},
 
-        {'title': "Biocatalyst conc.", 'field': "biocat_conc", 'width':100, 'editor': "input", 'headerSort': false},
+        {'title': "Biocatalyst conc.", 'field': "biocat_conc", 'minWidth':100, 'editor': "input", 'headerSort': false},
 
-        {'title': "Kcat (min-1)", 'field': "kcat", 'width':100, 'editor': "number", 'headerSort': false},
+        {'title': "Kcat (min-1)", 'field': "kcat", 'minWidth':100, 'editor': "number", 'headerSort': false},
 
-        {'title': "Km (mM)", 'field': "km", 'width':100, 'editor': "number", 'headerSort': false},
+        {'title': "Km (mM)", 'field': "km", 'minWidth':100, 'editor': "number", 'headerSort': false},
 
-        {'title': "MW (Da)", 'field': "mw", 'width':100, 'editor': "number", 'headerSort': false, editorParams:{min:1000, max:500000}},
+        {'title': "MW (Da)", 'field': "mw", 'minWidth':100, 'editor': "number", 'headerSort': false, editorParams:{min:1000, max:500000}},
 
-        {'title': "Substrate 1 conc. (mM)", 'field': "substrate_1_conc", 'width':100, 'editor': "number", 'headerSort': false},
+        {'title': "Substrate 1 conc. (mM)", 'field': "substrate_1_conc", 'minWidth':100, 'editor': "number", 'headerSort': false},
 
-        {'title': "Substrate 2 conc. (mM)", 'field': "substrate_2_conc", 'width':100, 'editor': "number", 'headerSort': false},
+        {'title': "Substrate 2 conc. (mM)", 'field': "substrate_2_conc", 'minWidth':100, 'editor': "number", 'headerSort': false},
 
-        {'title': "Specific activity (U/mg)", 'field': "specific_activity", 'width':100, 'editor': "number", 'headerSort': false},
+        {'title': "Specific activity (U/mg)", 'field': "specific_activity", 'minWidth':100, 'editor': "number", 'headerSort': false},
 
-        {'title': "Conversion (%)", 'field': "conversion", 'width':100, 'editor': "number", 'headerSort': false, editorParams:{min:0, max:100}},
+        {'title': "Conversion (%)", 'field': "conversion", 'minWidth':100, 'editor': "number", 'headerSort': false, editorParams:{min:0, max:100}},
 
-        {'title': "Conversion time (hrs)", 'field': "conversion_time", 'width':100, 'editor': "number", 'headerSort': false},
+        {'title': "Conversion time (hrs)", 'field': "conversion_time", 'minWidth':100, 'editor': "number", 'headerSort': false},
 
-        {'title': "Selectivity", 'field': "selectivity", 'width':100, 'editor': "input", 'headerSort': false},
+        {'title': "Selectivity", 'field': "selectivity", 'minWidth':100, 'editor': "input", 'headerSort': false},
 
-        {'title': "Categorical", 'field': "categorical", 'width':100,
+        {'title': "Categorical", 'field': "categorical", 'minWidth':100,
             'editor': "autocomplete",
             'headerSort': false,
             'editorParams': {'values': ['High', 'Medium', 'Low', 'None'], 'freetext': 'true', 'showListOnEmpty': true}},
 
-        {'title': "Binary", 'field': "binary", 'width':100,
+        {'title': "Binary", 'field': "binary", 'minWidth':100,
             'editor': "autocomplete",
             'headerSort': false,
             'editorParams': {'values': [1, 0], 'freetext': 'true', 'showListOnEmpty': true}},
