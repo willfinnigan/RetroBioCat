@@ -35,14 +35,6 @@ user_datastore = MongoEngineUserDatastore(db, User, Role)
 
 from retrobiocat_web.app import main_site, retrobiocat, biocatdb
 
-def quick_db(config_class=Config):
-    print("Make a quick app to init mongoengine..")
-    app = Flask(__name__)
-    app.config.from_object(config_class)
-    disconnect()
-    db.init_app(app)
-    print('..done')
-    return app
 
 def create_app(config_class=Config, use_talisman=True):
     print("Create app...")
