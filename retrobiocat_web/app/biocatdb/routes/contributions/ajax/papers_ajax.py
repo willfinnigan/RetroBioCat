@@ -210,7 +210,12 @@ def add_new_enzymes():
     user = user_datastore.get_user(current_user.id)
     paper = Paper.objects(id=request.form['paper_id'])[0]
 
-    if existing_name == new_name and new_name == "":
+    if enzyme_type == '' or enzyme_type is None:
+        result = {'status': 'danger',
+                  'msg': 'Must select an enzyme type',
+                  'issues': []}
+
+    elif existing_name == new_name and new_name == "":
         result = {'status': 'danger',
                   'msg': 'Must select an enzyme or enter a new name',
                   'issues': []}

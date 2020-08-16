@@ -28,7 +28,7 @@ session = Session()
 from retrobiocat_web.mongo.models.user_models import User, Role
 from retrobiocat_web.app.user_model_forms import ExtendedConfirmRegisterForm, ExtendedRegisterForm
 
-from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType, Sequence, Paper, Molecule, Activity
+from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType, Sequence, Paper, Molecule, Activity, Tag
 from retrobiocat_web.app.admin import MyAdminIndexView, MyModelView
 
 user_datastore = MongoEngineUserDatastore(db, User, Role)
@@ -68,6 +68,7 @@ def create_app(config_class=Config, use_talisman=True):
     admin_ext.init_app(app, index_view=MyAdminIndexView())
     admin_ext.add_view(MyModelView(User))
     admin_ext.add_view(MyModelView(Role))
+    admin_ext.add_view(MyModelView(Tag))
     admin_ext.add_view(MyModelView(EnzymeType))
     admin_ext.add_view(MyModelView(Sequence))
     admin_ext.add_view(MyModelView(Paper))

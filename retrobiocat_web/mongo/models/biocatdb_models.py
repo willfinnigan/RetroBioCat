@@ -15,7 +15,6 @@ class EnzymeType(db.Document):
 
     meta = {'indexes': ['enzyme_type']}
 
-
 from retrobiocat_web.mongo.models.user_models import User
 
 class Paper(db.Document):
@@ -41,15 +40,16 @@ class Paper(db.Document):
     def __str__(self):
         return self.short_citation
 
-
-
 class Sequence(db.Document):
     enzyme_type = db.StringField(max_length=120, required=True)
     enzyme_name = db.StringField(max_length=120, unique=True, required=True)
     other_names = db.ListField(db.StringField())
+    n_tag = db.StringField()
     sequence = db.StringField(default='')
+    c_tag = db.StringField()
     sequence_unavailable = db.BooleanField(default=False)
     accession = db.StringField(max_length=20, default='')
+    other_identifiers = db.ListField(db.StringField(max_length=20))
     structure = db.BooleanField(default=False)
     mutant_of = db.StringField(default='')
     notes = db.StringField(default='')
@@ -119,3 +119,15 @@ class Activity(db.Document):
 
     selectivity = db.StringField()
     auto_generated = db.BooleanField()
+
+class Tag(db.Document):
+    seq = db.StringField()
+    n_term = db.BooleanField(default=False)
+    c_term = db.BooleanField(default=False)
+
+    def __unicode__(self):
+        return self.seq
+
+    def __str__(self):
+        return self.seq
+

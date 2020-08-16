@@ -181,14 +181,15 @@ def task_add_sequence_data(df):
     users = User.objects()
 
     for i, row in df.iterrows():
-        seq_query = Sequence.objects(enzyme_name=row['Enzyme name'])
+        seq_query = Sequence.objects(enzyme_name=row['enzyme_name'])
         if len(seq_query) != 0:
             seq = seq_query[0]
-            seq.sequence = row['Protein Sequence']
+            if row['sequence'] != '' and row['sequence'] is not None:
+                seq.sequence = str(row['sequence'])
 
             for user in users:
                 usernames = get_usernames(user)
-                if does_username_match(usernames, row['Added by']):
+                if does_username_match(usernames, row['added_by']):
                     seq.added_by = user
                     seq.owner = user
 
@@ -238,32 +239,15 @@ def task_search_for_orphan_enzymes():
             new_seq.save()
             print(f"found orphan enzyme, added sequence entry for {name} - {enzyme_type}")
 
+@bp.route('/_find_tags', methods=['GET', 'POST'])
+@roles_required('admin')
+def find_tags():
 
-def task_init_building_block_db(df):
+    result = {'status': 'success',
+              'msg': 'search for orphan enzymes',
+              'issues': []}
 
-    df_smi = df[['SMILES']]
-    df_smi = df_smi.drop_duplicates()
-
-    db_path = str(Path(__file__).parents[4]) + '/retro/data/buyability/building_blocks.db'
-
-    create_building_block_db.make_db(db_path)
-    create_building_block_db.df_to_sql(db_path, df_smi)
-    create_building_block_db.create_index(db_path, 'SMILES')
-
-
-def test_db(db_path):
-
-    try:
-        ev = StartingMaterialEvaluator(alternative_db_path=db_path)
-        t0 = time.time()
-        print(ev.eval('O=CC(=O)Cc1ccccc1'))
-        t1 = time.time()
-        print(f"Time  = {round(t1 - t0, 4)}")
-    except:
-        print('DB test failed')
-        return False
-
-    return True
+    return jsonify(result=result)
 
 
 
