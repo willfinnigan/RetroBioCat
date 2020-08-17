@@ -3,7 +3,7 @@
         font-weight: bold;
         margin: 0px;
         padding: 0px;
-        padding-top: 20px;
+
     }
 
     .seq_field {
@@ -23,17 +23,29 @@
             <p class="seq_heading">Enzyme type</p>
             <p class="seq_field"><span id="enzyme_type_query"></span> - <span id="enzyme_type_full_query"></span></p>
 
+            <p class="seq_heading" id="n_tag_query_heading">N-terminal tag</p>
+            <p class="seq_field"><span id="n_tag_query"></span></p>
+
             <p class="seq_heading">Sequence</p>
             <p class="seq_field"><span id="sequence_query"></span></p>
 
-            <p class="seq_heading" id="accession_heading_query">Identifier / Accession number / PDB Code</p>
+            <p class="seq_heading" id="c_tag_query_heading">C-terminal tag</p>
+            <p class="seq_field"><span id="c_tag_query"></span></p>
+
+            <p class="seq_heading" id="accession_heading_query">Identifier / Accession number</p>
             <p class="seq_field my-auto">
                 <span id="accession_query"></span>
                 <a href="#" id="ncbi_accession_link" target="_blank"><button class="btn btn-sm btn-outline-warning">NCBI</button></a>
                 <a href="#" id="uni_accession_link" target="_blank"><button class="btn btn-sm btn-outline-success">UniProt</button></a>
-                <a href="#" id="pdb_accession_link" target="_blank"><button class="btn btn-sm btn-outline-danger">PDB</button></a>
-
             </p>
+
+            <p class="seq_heading" id="pdb_heading_query">PDB</p>
+            <p class="seq_field my-auto">
+                <span id="pdb_query"></span>
+            <a href="#" id="pdb_link" target="_blank"><button class="btn btn-sm btn-outline-danger">PDB</button></a>
+
+            <p class="seq_heading" id="other_identifiers_heading_query">Other identifiers</p>
+            <p class="seq_field"><span id="other_identifiers_query"></span></p>
 
             <p class="seq_heading" id="mutant_of_heading_query">Mutant of:</p>
             <p class="seq_field"><span id="mutant_of_query"></span></p>
@@ -66,6 +78,8 @@
         document.getElementById("enzyme_name_3_query").innerHTML = data.result.enzyme_name;
         document.getElementById("other_names_query").innerHTML = data.result.other_names;
         document.getElementById("sequence_query").innerHTML = data.result.sequence;
+        document.getElementById("n_tag_query").innerHTML = data.result.n_tag;
+        document.getElementById("c_tag_query").innerHTML = data.result.c_tag;
 
         if (data.result.sequence === '' && data.result.sequence_unavailable === true) {
             document.getElementById("sequence_query").innerHTML = "Sequence not available"
@@ -74,17 +88,18 @@
         document.getElementById("mutant_of_query").innerHTML = data.result.mutant_of;
         document.getElementById("notes_query").innerHTML = data.result.notes;
         document.getElementById("accession_query").innerHTML = data.result.accession;
+        document.getElementById("pdb_query").innerHTML = data.result.pdb;
 
         document.getElementById('ncbi_accession_link').href = "https://www.ncbi.nlm.nih.gov/protein/" + data.result.accession
         document.getElementById('uni_accession_link').href = "https://www.uniprot.org/uniparc/?query=" + data.result.accession + "&sort=score"
-        document.getElementById('pdb_accession_link').href = "https://www.ebi.ac.uk/pdbe/entry/pdb/" + data.result.accession
+        document.getElementById('pdb_link').href = "https://www.ebi.ac.uk/pdbe/entry/pdb/" + data.result.pdb
 
-        console.log(data.result.structure)
-
-        if (data.result.structure === true) {
-            document.getElementById("pdb_accession_link").style.display = "inline";
+        if (data.result.pdb === '') {
+            document.getElementById("pdb_link").style.display = "none";
+            document.getElementById("pdb_heading_query").style.display = "none";
         } else {
-            document.getElementById("pdb_accession_link").style.display = "none";
+            document.getElementById("pdb_link").style.display = "inline";
+            document.getElementById("pdb_heading_query").style.display = "inline";
         }
 
         if (data.result.accession === '') {
@@ -99,6 +114,30 @@
             document.getElementById("uni_accession_link").style.display = "inline";
         }
 
+        if (data.result.other_identifiers === '') {
+            document.getElementById("other_identifiers_query").style.display = "none";
+            document.getElementById("other_identifiers_heading_query").style.display = "none";
+        } else {
+            document.getElementById("other_identifiers_query").style.display = "inline";
+            document.getElementById("other_identifiers_heading_query").style.display = "inline";
+        }
+
+
+        if (data.result.c_tag === '') {
+            document.getElementById("c_tag_query").style.display = "none";
+            document.getElementById("c_tag_query_heading").style.display = "none";
+        } else {
+            document.getElementById("c_tag_query").style.display = "inline";
+            document.getElementById("c_tag_query_heading").style.display = "inline";
+        }
+
+        if (data.result.n_tag === '') {
+            document.getElementById("n_tag_query").style.display = "none";
+            document.getElementById("n_tag_query_heading").style.display = "none";
+        } else {
+            document.getElementById("n_tag_query").style.display = "inline";
+            document.getElementById("n_tag_query_heading").style.display = "inline";
+        }
 
         if (data.result.mutant_of === '') {
             document.getElementById("mutant_of_query").style.display = "none";

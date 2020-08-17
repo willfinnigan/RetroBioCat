@@ -194,6 +194,12 @@ def load_sequence_data():
 
     enzyme_type_full = EnzymeType.objects(enzyme_type=seq.enzyme_type)[0].full_name
 
+    if seq.n_tag is None:
+        seq.n_tag = ''
+    if seq.c_tag is None:
+        seq.c_tag = ''
+    if seq.pdb is None:
+        seq.pdb = ''
 
     result = {'enzyme_type': seq.enzyme_type,
               'enzyme_name': seq.enzyme_name,
