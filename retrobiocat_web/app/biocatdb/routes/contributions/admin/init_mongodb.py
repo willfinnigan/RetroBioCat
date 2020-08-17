@@ -6,7 +6,7 @@ from retrobiocat_web.mongo.models.user_models import User
 from retrobiocat_web.mongo.init_db import rxn_rules_to_db
 from retrobiocat_web.mongo.init_db import biocatdb_excel_to_db, make_molecule_db
 from retrobiocat_web.mongo.models.reaction_models import Reaction
-from retrobiocat_web.mongo.models.biocatdb_models import Paper, Activity, Sequence, Molecule
+from retrobiocat_web.mongo.models.biocatdb_models import Paper, Activity, Sequence, Molecule, Tag
 import tempfile
 from werkzeug.utils import secure_filename
 import os
@@ -21,11 +21,13 @@ import datetime
 from pathlib import Path
 from retrobiocat_web.retro.evaluation.starting_material import StartingMaterialEvaluator
 
+
 class InitDB(FlaskForm):
     rxns = FileField("Reactions")
     biocatdb = FileField("biocatdb_2")
     sequences = FileField("sequences")
     submit = SubmitField('Submit')
+
 
 class Assign(FlaskForm):
     submit = SubmitField('Submit')
@@ -85,15 +87,16 @@ def init_db():
             except Exception as e:
                 flash(f"Problem loading sequences excel - {e}", "fail")
 
-
             os.remove(filename)
 
     return render_template('init_db/init_db.html', form=form)
+
 
 @bp.route('/other_admin_functions', methods=['GET', 'POST'])
 @roles_required('admin')
 def other_admin_functions():
     return render_template('init_db/other_admin_functions.html')
+
 
 @bp.route('/_delete_sequences_no_paper', methods=['GET', 'POST'])
 @roles_required('admin')
@@ -102,6 +105,7 @@ def delete_sequences_no_paper():
     return jsonify(result={'status': 'success',
                            'msg': f'Job added to queue to delete sequences',
                            'issues': []})
+
 
 def task_delete_sequences_no_paper():
     print('Deleting sequences with no papers')
@@ -113,6 +117,7 @@ def task_delete_sequences_no_paper():
             count += 1
 
     print(f"Deleted {count} sequences")
+
 
 @bp.route('/_assign_papers', methods=['GET', 'POST'])
 @roles_required('admin')
@@ -127,8 +132,10 @@ def secret_assign_papers():
 
     return jsonify(result=result)
 
+
 def biocatdb_init_complete():
     print("SUBSTRATE SPECIFICITY DATABASE INITIALISATION COMLPETE")
+
 
 def task_assign_papers():
     users = User.objects()
@@ -152,6 +159,7 @@ def task_assign_papers():
                             paper.owner = user
                             paper.save()
 
+
 def get_usernames(user):
     usernames = []
     if len(User.objects(last_name=user.last_name)) == 1 and len(user.last_name) > 2:
@@ -168,6 +176,7 @@ def get_usernames(user):
 
     return usernames
 
+
 def does_username_match(usernames, added_by_str):
     added_by_str = str(added_by_str).lower()
     if added_by_str != 'nan':
@@ -176,6 +185,7 @@ def does_username_match(usernames, added_by_str):
                 if name in added_by_str or name == added_by_str:
                     return True
     return False
+
 
 def task_add_sequence_data(df):
     users = User.objects()
@@ -195,8 +205,8 @@ def task_add_sequence_data(df):
 
             seq.save()
 
-def task_get_paper_metadata():
 
+def task_get_paper_metadata():
     papers = Paper.objects()
     for paper in papers:
         papers_functions.tag_paper_with_enzyme_types(paper)
@@ -229,6 +239,7 @@ def orphan_enzymes():
 
     return jsonify(result=result)
 
+
 def task_search_for_orphan_enzymes():
     activity_enzyme_names = list(set(Activity.objects().distinct('enzyme_name')))
     for name in activity_enzyme_names:
@@ -239,18 +250,58 @@ def task_search_for_orphan_enzymes():
             new_seq.save()
             print(f"found orphan enzyme, added sequence entry for {name} - {enzyme_type}")
 
+
 @bp.route('/_find_tags', methods=['GET', 'POST'])
 @roles_required('admin')
 def find_tags():
+    seqs = Sequence.objects()
+    n_tags = Tag.objects(n_term=True).distinct('seq')
+    n_tags = sorted(n_tags, key=len, reverse=True)
+    c_tags = Tag.objects(c_term=True).distinct('seq')
+    c_tags = sorted(c_tags, key=len, reverse=True)
+
+    print(n_tags)
+
+    for seq in seqs:
+        for n_tag in n_tags:
+            if n_tag == seq.sequence[0:len(n_tag)]:
+                seq.n_tag = n_tag
+                seq.sequence = seq.sequence[len(n_tag):]
+                print(f"Found N term: {n_tag}")
+                print(f"Removed from seq: {seq.sequence}")
+
+        for c_tag in c_tags:
+            if c_tag == seq.sequence[-len(c_tag):]:
+                seq.c_tag = c_tag
+                seq.sequence = seq.sequence[:-len(c_tag):]
+                print(f"Found C term: {c_tag}")
+                print(f"Removed from seq: {seq.sequence}")
+
+        seq.save()
 
     result = {'status': 'success',
-              'msg': 'search for orphan enzymes',
+              'msg': 'Searching for tags',
               'issues': []}
 
     return jsonify(result=result)
 
 
+@bp.route('/_convert_to_pdb_schema', methods=['GET', 'POST'])
+@roles_required('admin')
+def convert_to_pdb_schema():
+    seqs = Sequence.objects()
+    for seq in seqs:
+        if seq.structure == True:
+            seq.pdb = seq.accession
+            seq.accession = ''
+            seq.structure = None
+            seq.save()
 
+    result = {'status': 'success',
+              'msg': 'Coverting to pdb schema',
+              'issues': []}
+
+    return jsonify(result=result)
 
 if __name__ == '__main__':
     data_folder = str(Path(__file__).parents[4]) + '/retro/data/buyability'

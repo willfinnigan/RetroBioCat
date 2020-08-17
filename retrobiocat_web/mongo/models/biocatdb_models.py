@@ -48,9 +48,12 @@ class Sequence(db.Document):
     sequence = db.StringField(default='')
     c_tag = db.StringField()
     sequence_unavailable = db.BooleanField(default=False)
+
     accession = db.StringField(max_length=20, default='')
     other_identifiers = db.ListField(db.StringField(max_length=20))
+
     structure = db.BooleanField(default=False)
+    pdb = db.StringField(default='')
     mutant_of = db.StringField(default='')
     notes = db.StringField(default='')
 

@@ -63,8 +63,11 @@ def save_edited_sequence():
     enzyme_type = request.form['enzyme_type']
     sequence = request.form['sequence']
     sequence_unavailable = bool(strtobool(request.form['sequence_unavailable']))
+    n_tag = request.form['n_tag']
+    c_tag = request.form['c_tag']
     accession = request.form['accession']
-    structure = bool(strtobool(request.form['structure']))
+    other_identifiers = request.form['other_identifiers']
+    pdb = request.form['pdb']
     mutant_of = request.form['mutant_of']
     notes = request.form['notes']
     other_names = request.form['other_names']
@@ -85,8 +88,11 @@ def save_edited_sequence():
 
     seq.enzyme_type = enzyme_type
     seq.sequence_unavailable = sequence_unavailable
+    seq.n_tag = n_tag
+    seq.c_tag = c_tag
     seq.accession = accession
-    seq.structure = structure
+    seq.other_identifiers = other_identifiers.split(', ')
+    seq.pdb = pdb
     seq.notes = notes
     seq.mutant_of = mutant_of
     seq.other_names = other_names.split(', ')
@@ -180,6 +186,12 @@ def load_sequence_data():
         if (len(seq.other_names) > 1) and (i < len(seq.other_names)-1):
             other_names += ', '
 
+    other_identifiers = ''
+    for i, ident in enumerate(seq.other_identifiers):
+        other_identifiers += ident
+        if (len(seq.other_identifiers) > 1) and (i < len(seq.other_identifiers)-1):
+            other_identifiers += ', '
+
     enzyme_type_full = EnzymeType.objects(enzyme_type=seq.enzyme_type)[0].full_name
 
 
@@ -187,8 +199,11 @@ def load_sequence_data():
               'enzyme_name': seq.enzyme_name,
               'sequence': seq.sequence,
               'sequence_unavailable': seq.sequence_unavailable,
+              'n_tag': seq.n_tag,
+              'c_tag': seq.c_tag,
               'accession': seq.accession,
-              'structure': seq.structure,
+              'other_identifiers': other_identifiers,
+              'pdb': seq.pdb,
               'mutant_of': seq.mutant_of,
               'sequences': seq_array,
               'notes': seq.notes,
@@ -370,6 +385,7 @@ def process_uploaded_excel(df):
     return data_list
 
 def save_or_add_seqs(data_list, paper):
+    # Used by upload excel
     user = user_datastore.get_user(current_user.id)
     issues = []
     enzyme_types = EnzymeType.objects().distinct('enzyme_type')
@@ -404,9 +420,12 @@ def save_or_add_seqs(data_list, paper):
                                    enzyme_type=seq_dict['enzyme_type'],
                                    other_names=seq_dict.get('other_names', '').split(', '),
                                    sequence=seq_dict.get('sequence', ''),
+                                   n_tag=seq_dict.get('n_tag', ''),
+                                   c_tag=seq_dict.get('c_tag', ''),
                                    sequence_unavailable=strtobool(seq_dict.get('sequence_unavailable','False')),
                                    accession=seq_dict.get('accession', ''),
-                                   structure=strtobool(seq_dict.get('structure','False')),
+                                   other_identifiers=seq_dict.get('other_names', '').split(', '),
+                                   pdb=seq_dict.get('pdb',''),
                                    mutant_of=seq_dict.get('mutant_of', ''),
                                    notes=seq_dict.get('notes', ''),
                                    papers=[paper],
@@ -434,8 +453,8 @@ def save_or_add_seqs(data_list, paper):
                     if (seq.accession is None or seq.accession == ''):
                         seq.accession = seq_dict.get('accession', '')
 
-                    if strtobool(seq_dict.get('structure','False')) == True:
-                        seq.structure = True
+                    if seq_dict.get('pdb', '') != '':
+                        seq.pdb = seq_dict.get('pdb','')
 
                     if (seq.mutant_of is None or seq.mutant_of == ''):
                         seq.mutant_of = seq_dict.get('mutant_of', '')

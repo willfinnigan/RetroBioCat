@@ -16,6 +16,8 @@
                         <button class="btn btn-info" onclick="assign_papers()" id="assign_papers">Assign papers</button>
                         <button class="btn btn-danger" onclick="delete_sequences_no_paper()" id="delete_seqs">Delete sequences with no papers</button>
                         <button class="btn btn-warning" onclick="orphan_enzymes()" id="orphan_enzymes_id">Find orphan enzymes</button>
+                        <button class="btn btn-success" onclick="find_tags()">Find tags</button>
+                        <button class="btn btn-primary" onclick="convert_to_pdb_schema()">convert_to_pdb_schema</button>
 
                     </div>
                 </div>
@@ -46,6 +48,22 @@
                     response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
                 })
             }
+
+        function find_tags() {
+            $.post('/_find_tags', {
+                }).done(function(data) {
+                    response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+                })
+            }
+
+        function convert_to_pdb_schema() {
+            $.post('/_convert_to_pdb_schema', {
+                }).done(function(data) {
+                    response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+                })
+            }
+
+
 
 
     </script>

@@ -12,6 +12,7 @@ from retrobiocat_web.app.biocatdb.functions.activity import check_activity_data,
 import mongoengine as db
 from retrobiocat_web.app.biocatdb.functions.papers import paper_status
 from retrobiocat_web.app.biocatdb.functions import check_permission
+from retrobiocat_web.app.biocatdb.functions import sequence_table
 
 def get_activity_data(paper):
     include = ['id', "reaction", "enzyme_name", "substrate_1_smiles", "substrate_2_smiles",
@@ -58,29 +59,6 @@ def get_paper_data(paper, user):
                   'paper_owner_name': paper_owner_name}
 
     return paper_dict
-
-def get_enzyme_data(paper):
-    seq_fields = ['id', 'enzyme_type', 'enzyme_name', 'sequence', 'sequence_unavailable', 'accession', 'structure', 'mutant_of', 'notes', 'papers', 'owner']
-    enzyme_data = list(Sequence.objects(papers=paper).only(*seq_fields).as_pymongo())
-    owners_dict = {}
-    for i, data in enumerate(enzyme_data):
-        enzyme_data[i]['_id'] = str(enzyme_data[i]['_id'])
-        enzyme_data[i]['sequence_unavailable'] = str(enzyme_data[i]['sequence_unavailable']).replace('False', '')
-        enzyme_data[i]['structure'] = str(enzyme_data[i]['structure']).replace('False', '')
-        enzyme_data[i]['papers'] = len(enzyme_data[i]['papers'])
-
-        if 'owner' in enzyme_data[i]:
-            owner_id = str(enzyme_data[i]['owner'])
-            if owner_id not in owners_dict:
-                owner = User.objects(id=enzyme_data[i]['owner'])[0]
-                owners_dict[owner_id] = f"{owner.first_name} {owner.last_name}"
-            enzyme_data[i]['owner'] = owners_dict[owner_id]
-        else:
-            enzyme_data[i]['owner'] = ''
-
-    return enzyme_data
-
-
 
 def get_status(paper):
     paper_progress_text, paper_progress = paper_status.paper_metadata_status(paper)
@@ -130,7 +108,7 @@ def submission_main_page(paper_id):
     reactions = list(Reaction.objects().distinct('name'))
     enzyme_names = list(Sequence.objects(papers=paper).distinct('enzyme_name'))
     enzyme_types = list(EnzymeType.objects().distinct('enzyme_type'))
-    enzyme_data = get_enzyme_data(paper)
+    enzyme_data = sequence_table.get_enzyme_data(db.Q(papers=paper))
     status_dict = get_status(paper)
 
     return render_template('data_submission/submission_main_page.html',

@@ -46,8 +46,11 @@
                 document.getElementById("enzyme_name").value = data.result.enzyme_name;
                 document.getElementById("sequence").value = data.result.sequence;
                 document.getElementById("sequence_unavailable").checked = data.result.sequence_unavailable;
+                document.getElementById("n_tag").value = data.result.n_tag;
+                document.getElementById("c_tag").value = data.result.c_tag;
                 document.getElementById("accession").value = data.result.accession;
-                document.getElementById("structure").checked = data.result.structure;
+                document.getElementById("other_identifiers").value = data.result.other_identifiers;
+                document.getElementById("pdb").value = data.result.pdb;
                 document.getElementById("mutant_of").value = data.result.mutant_of;
                 document.getElementById("notes").value = data.result.notes;
                 document.getElementById("self_assigned").checked = data.result.self_assigned;
@@ -76,8 +79,11 @@
         document.getElementById("enzyme_name").disabled = true
         document.getElementById("sequence").disabled = true
         document.getElementById("sequence_unavailable").disabled = true
+        document.getElementById("n_tag").disabled = true
+        document.getElementById("c_tag").disabled = true
         document.getElementById("accession").disabled = true
-        document.getElementById("structure").disabled = true
+        document.getElementById("other_identifiers").disabled = true
+        document.getElementById("pdb").disabled = true
         document.getElementById("mutant_of").disabled = true
         document.getElementById("notes").disabled = true
         document.getElementById("self_assigned").disabled = true
@@ -89,8 +95,11 @@
         document.getElementById("enzyme_name").disabled = false
         document.getElementById("sequence").disabled = false
         document.getElementById("sequence_unavailable").disabled = false
+        document.getElementById("n_tag").disabled = false
+        document.getElementById("c_tag").disabled = false
         document.getElementById("accession").disabled = false
-        document.getElementById("structure").disabled = false
+        document.getElementById("other_identifiers").disabled = false
+        document.getElementById("pdb").disabled = false
         document.getElementById("mutant_of").disabled = false
         document.getElementById("notes").disabled = false
         document.getElementById("self_assigned").disabled = false
@@ -104,8 +113,11 @@
             enzyme_type: document.getElementById("enzyme_type").value,
             sequence: document.getElementById("sequence").value,
             sequence_unavailable: document.getElementById("sequence_unavailable").checked,
+            n_tag: document.getElementById("n_tag").value,
+            c_tag: document.getElementById("c_tag").value,
             accession: document.getElementById("accession").value,
-            structure: document.getElementById("structure").checked,
+            other_identifiers: document.getElementById("other_identifiers").value,
+            pdb: document.getElementById("pdb").value,
             mutant_of: document.getElementById("mutant_of").value,
             notes: document.getElementById("notes").value,
             self_assigned: document.getElementById("self_assigned").checked,
