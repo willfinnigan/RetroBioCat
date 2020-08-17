@@ -267,6 +267,8 @@ def find_tags():
             if n_tag == seq.sequence[0:len(n_tag)]:
                 seq.n_tag = n_tag
                 seq.sequence = seq.sequence[len(n_tag):]
+                if seq.sequence[0] != 'M':
+                    seq.sequence = 'M' + seq.sequence
                 print(f"Found N term: {n_tag}")
                 print(f"Removed from seq: {seq.sequence}")
 
