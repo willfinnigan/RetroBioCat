@@ -55,6 +55,7 @@
                 document.getElementById("notes").value = data.result.notes;
                 document.getElementById("self_assigned").checked = data.result.self_assigned;
                 document.getElementById("other_names").value = data.result.other_names;
+                document.getElementById("bioinformatics_ignore").checked = data.result.bioinformatics_ignore;
 
                 if (data.result.can_edit == false) {
                     disable_seq_edit_fields()
@@ -88,6 +89,7 @@
         document.getElementById("notes").disabled = true
         document.getElementById("self_assigned").disabled = true
         document.getElementById("other_names").disabled = true
+        document.getElementById("bioinformatics_ignore").disabled = true
     }
 
     function enable_seq_edit_fields() {
@@ -104,6 +106,7 @@
         document.getElementById("notes").disabled = false
         document.getElementById("self_assigned").disabled = false
         document.getElementById("other_names").disabled = false
+        document.getElementById("bioinformatics_ignore").disabled = false
     }
 
     function save_seq_edit() {
@@ -121,7 +124,9 @@
             mutant_of: document.getElementById("mutant_of").value,
             notes: document.getElementById("notes").value,
             self_assigned: document.getElementById("self_assigned").checked,
-            other_names: document.getElementById("other_names").value
+            other_names: document.getElementById("other_names").value,
+            bioinformatics_ignore: document.getElementById("bioinformatics_ignore").checked
+
 
             }).done(function(data) {
                 response_msg(data.result.msg, data.result.status, data.result.issues, "seq_edit_save_response")

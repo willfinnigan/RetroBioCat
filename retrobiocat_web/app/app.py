@@ -48,6 +48,7 @@ def create_app(config_class=Config, use_talisman=True):
     app.pathway_queue = rq.Queue('pathway', connection=app.redis, default_timeout=600)
     app.retrorules_queue = rq.Queue('retrorules', connection=app.redis, default_timeout=600)
     app.db_queue = rq.Queue('db', connection=app.redis, default_timeout=2400)
+    app.blast_queue = rq.Queue('blast', connection=app.redis, default_timeout=120*60)
 
     print("Init addons...")
     if use_talisman == True:

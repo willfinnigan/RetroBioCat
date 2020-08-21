@@ -71,6 +71,7 @@ def save_edited_sequence():
     mutant_of = request.form['mutant_of']
     notes = request.form['notes']
     other_names = request.form['other_names']
+    bioinformatics_ignore = bool(strtobool(request.form['bioinformatics_ignore']))
 
     status = 'success'
     msg = 'Sequence edited'
@@ -96,6 +97,7 @@ def save_edited_sequence():
     seq.notes = notes
     seq.mutant_of = mutant_of
     seq.other_names = other_names.split(', ')
+    seq.bioinformatics_ignore = bioinformatics_ignore
 
     if seq.added_by is None:
         seq.added_by = user
@@ -213,6 +215,7 @@ def load_sequence_data():
               'mutant_of': seq.mutant_of,
               'sequences': seq_array,
               'notes': seq.notes,
+              'bioinformatics_ignore': seq.bioinformatics_ignore,
               'can_edit': can_edit,
               'self_assigned': self_assigned,
               'owner_is_another_user': other_user,

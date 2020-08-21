@@ -305,6 +305,9 @@ def convert_to_pdb_schema():
 
     return jsonify(result=result)
 
+
+
+
 if __name__ == '__main__':
     data_folder = str(Path(__file__).parents[4]) + '/retro/data/buyability'
     print(data_folder)

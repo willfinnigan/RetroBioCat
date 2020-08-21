@@ -56,11 +56,14 @@ class Sequence(db.Document):
     pdb = db.StringField(default='')
     mutant_of = db.StringField(default='')
     notes = db.StringField(default='')
+    bioinformatics_ignore = db.BooleanField(default=False)
 
     owner = db.ReferenceField(User)
     added_by = db.ReferenceField(User)
     edits_by = db.ListField(db.ReferenceField(User))
     papers = db.ListField(db.ReferenceField(Paper))
+
+    blast = db.DateTimeField()
 
     def __unicode__(self):
         return self.enzyme_name
@@ -133,4 +136,35 @@ class Tag(db.Document):
 
     def __str__(self):
         return self.seq
+
+class UniRef90(db.Document):
+    # These fields are shared with Sequence
+    enzyme_name = db.StringField()
+    sequence = db.StringField()
+
+    enzyme_type = db.ReferenceField(EnzymeType)
+    result_of_blasts_for = db.ListField(db.ReferenceField(Sequence))
+    seq_match = db.ReferenceField(Sequence)
+    blast_round = db.IntField()
+
+    protein_name = db.StringField()
+    tax = db.StringField()
+    tax_id = db.StringField()
+
+    identities = db.DictField()
+    alignment_scores = db.DictField()
+
+class Alignment(db.Document):
+    enzyme_type = db.ReferenceField(EnzymeType)
+    proteins = db.ListField(db.GenericReferenceField(choices=[UniRef90, Sequence]), max_length=2)
+    identity = db.FloatField()
+    coverage = db.FloatField()
+    bitscore = db.FloatField()
+    alignment_score = db.FloatField()
+
+
+
+
+
+
 
