@@ -27,3 +27,5 @@ seaborn
 
 pymed
 crossrefapi
+biopython
+requests
