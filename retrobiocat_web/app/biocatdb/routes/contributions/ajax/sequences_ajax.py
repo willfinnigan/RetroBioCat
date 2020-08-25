@@ -144,7 +144,6 @@ def save_edited_sequence():
 
 
 @bp.route('/_load_sequence_data', methods=['GET', 'POST'])
-@roles_required('contributor')
 def load_sequence_data():
 
     name = request.form['name']
