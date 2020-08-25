@@ -32,11 +32,25 @@
             task_id: window.task_id,
             edge_colours: document.getElementById("edge_colour_select").value,
 
-        }).done(function(response_data) {
-            let new_nodes = response_data.result.nodes
-            let new_edges = response_data.result.edges
-            addNodes(data, new_nodes, new_edges)
-            document.getElementById("please_wait").hidden = true
+        }).done(function(response) {
+            getStatusOptions(response.data.task_id, data)
+        })
+    }
+
+    function getStatusOptions(taskID, data) {
+        $.get('/_check_options_status/' + taskID, {
+        }).done(function(response) {
+            const taskStatus = response.data.task_status;
+            if (taskStatus === 'finished') {
+                let new_nodes = response.result.nodes
+                let new_edges = response.result.edges
+                addNodes(data, new_nodes, new_edges)
+                document.getElementById("please_wait").hidden = true
+            } else if (taskStatus === 'failed') {
+                return false;
+            } else {
+                setTimeout(function() {getStatusOptions(response.data.task_id, data);}, 2000);
+            }
         })
     }
 

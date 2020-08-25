@@ -128,10 +128,64 @@ def reorder_pathways():
 def change_pathway_options():
     reaction_colours = request.form['reaction_colours']
     edge_colours = request.form['edge_colours']
+    pathways_id = request.form['task_id']
     pathway_num = int(request.form['pathway_num'])
     varient_num = int(request.form['varient_num'])
-    pathways_id = request.form['task_id']
 
+    task = current_app.pathway_queue.enqueue(change_options_job, reaction_colours, edge_colours, pathways_id, pathway_num, varient_num)
+    options_task_id = task.get_id()
+
+    if 'pathway_options_task_id' in session:
+        old_task_id = session['pathway_options_task_id']
+        try:
+            old_job = Job.fetch(old_task_id, connection=current_app.redis)
+            old_job.delete()
+        except:
+            pass
+
+    if task:
+        response_object = {
+            "status": "success",
+            "data": {
+                "task_id": options_task_id,
+                "task_status": task.get_status(),
+            },
+        }
+    else:
+        response_object = {"status": "error"}
+
+    return jsonify(response_object), 202
+
+@bp.route("/_check_options_status/<task_id>", methods=["GET"])
+def check_options_status(task_id):
+    task = current_app.pathway_queue.fetch_job(task_id)
+
+    if task:
+        if task.get_status() == 'finished':
+
+            response_object = {
+                "status": "success",
+                "data": {
+                    "task_id": task.get_id(),
+                    "task_status": task.get_status(),
+                },
+                'result': task.result,
+            }
+        else:
+            response_object = {
+                "status": "success",
+                "data": {
+                    "task_id": task.get_id(),
+                    "task_status": task.get_status()
+                }
+            }
+    else:
+        response_object = {"status": "error"}
+
+    return jsonify(response_object), 202
+
+
+def change_options_job(reaction_colours, edge_colours, pathways_id, pathway_num, varient_num):
     network_data = json.loads(current_app.redis.get(pathways_id + '__network'))
     print(network_data)
 
@@ -144,12 +198,8 @@ def change_pathway_options():
 
     package_visjs_pathways(pathways_id, max_vis=100)
 
-    print(f"{pathways_id}__{pathway_num}")
     pathway_data = json.loads(current_app.redis.get(f"{pathways_id}__{pathway_num}"))
     nodes, edges, max_varient = pathway_data[varient_num - 1]
 
-    result = {'nodes': nodes,
-              'edges': edges,
-              }
-
-    return jsonify(result=result)
+    return {'nodes': nodes,
+            'edges': edges}
