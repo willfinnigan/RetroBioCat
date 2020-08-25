@@ -63,7 +63,8 @@ class Visualiser(object):
                           'color': 'blue',
                           'image': url,
                           'label': '',
-                          'title': node})
+                          'title': node,
+                          'type': 'substrate'})
 
         for node in node_analysis.get_reaction_nodes(graph):
             nodes.append({'id': node,
@@ -73,7 +74,8 @@ class Visualiser(object):
                           'color': 'darkgrey',
                           'label': graph.nodes[node]['attributes']['name'],
                           'title': node,
-                          'shape': 'dot'
+                          'shape': 'dot',
+                          'type': 'reaction'
                           })
 
         for e in graph.edges:

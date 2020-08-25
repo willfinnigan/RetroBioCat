@@ -41,8 +41,8 @@ function change_pathway() {
     window.pathway_num = document.getElementById("pathway_number_select").value
     document.getElementById("pathway_varient_select").innerHTML = "" + window.pathway_varient + ' of ' + window.max_varient;
     $.post($SCRIPT_ROOT + '/_next_pathway', {
-        pathway_num: window.pathway_num-1,
-        varient_num: window.pathway_varient-1,
+        pathway_num: window.pathway_num,
+        varient_num: window.pathway_varient,
         task_id: window.task_id
     }).done(function(response_data) {
         let new_nodes = response_data.result.nodes
@@ -51,6 +51,7 @@ function change_pathway() {
         document.getElementById("pathway_varient_select").innerHTML = "" + window.pathway_varient + ' of ' + window.max_varient;
         remove_all_nodes(data)
         addNodes(data, new_nodes, new_edges)
+        network.stabilize()
     })
 }
 

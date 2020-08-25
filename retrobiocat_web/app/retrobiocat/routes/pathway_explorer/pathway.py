@@ -60,18 +60,21 @@ def pathway_explorer_status(task_id):
 
 @bp.route("/pathway_explorer/<task_id>/", methods=["GET"])
 def pathway_explorer(task_id):
-    result = json.loads(current_app.redis.get(task_id))
+    #nodes, edges, max_varient = get_visjs_pathway(task_id, 1, 1)
+    pathway_settings = json.loads(current_app.redis.get(task_id + '__pathway_settings'))
+    pathway_data = json.loads(current_app.redis.get(f"{task_id}__1"))
+    nodes, edges, max_varient = pathway_data[0]
 
     return render_template('pathway_explorer/pathway_explorer.html',
-                           nodes=result['nodes'],
-                           edges=result['edges'],
-                           options=result['options'],
-                           weight_complexity=result['weight_complexity'],
-                           weight_num_enzymes=result['weight_num_enzymes'],
-                           weight_starting=result['weight_starting'],
-                           weight_known_enzymes=result['weight_known_enzymes'],
-                           weight_diversity=result['weight_diversity'],
-                           max_varient=result['max_varient'],
+                           nodes=nodes,
+                           edges=edges,
+                           max_varient=max_varient,
+                           options=pathway_settings['options'],
+                           weight_complexity=pathway_settings['weight_complexity'],
+                           weight_num_enzymes=pathway_settings['weight_num_enzymes'],
+                           weight_starting=pathway_settings['weight_starting'],
+                           weight_known_enzymes=pathway_settings['weight_known_enzymes'],
+                           weight_diversity=pathway_settings['weight_diversity'],
                            task_id=task_id)
 
 #ajax call used by pathway_explorer
@@ -80,29 +83,15 @@ def next_pathway():
     pathway_num = int(request.form['pathway_num'])
     varient_num = int(request.form['varient_num'])
     task_id = request.form['task_id']
-    data = json.loads(current_app.redis.get(task_id))
+    print(pathway_num)
 
-    graph_dict = json.loads(data['graph_dict'])
-    target_smiles = data['target_smiles']
-    network_options = json.loads(data['network_options'])
-    attr_dict = json.loads(data['attr_dict'])
-
-    all_pathways_data = json.loads(data['pathways_data'])
-    pathway_data = all_pathways_data[pathway_num][varient_num]
-    max_varient = len(all_pathways_data[pathway_num])
-
-    graph = nx.from_dict_of_lists(graph_dict, create_using=nx.DiGraph)
-    network = Network(graph=graph, target_smiles=target_smiles, print_log=not current_app.config['PRODUCTION'])
-    network.update_settings(network_options)
-    network.add_attributes(attr_dict)
-
-    pathway = Pathway(pathway_data['nodes'], network, calc_scores=False)
-
-    nodes, edges = pathway.get_visjs_nodes_and_edges()
+    #nodes, edges, max_varient = get_visjs_pathway(task_id, pathway_num, varient_num-1)
+    pathway_data = json.loads(current_app.redis.get(f"{task_id}__{pathway_num}"))
+    nodes, edges, max_varient = pathway_data[varient_num-1]
 
     result = {'nodes': nodes,
               'edges': edges,
-              'max_varient' : max_varient
+              'max_varient': max_varient
               }
 
     return jsonify(result=result)
@@ -139,6 +128,14 @@ def task_get_pathways(form_data):
     job.meta['progress'] = 'network_scored'
     job.save_meta()
 
+    network_data = {'graph_dict': json.dumps(nx.to_dict_of_lists(network.graph)),
+                    'target_smiles': str(network.target_smiles),
+                    'network_options': json.dumps(network.settings),
+                    'attr_dict': json.dumps(network.attributes_dict())}
+
+    current_app.redis.mset({f"{job.id}__network": json.dumps(network_data)})
+    current_app.redis.expire(f"{job.id}__network", 60 * 60)
+
     bfs = BFS(network=network, max_pathways=form_data['max_pathways'], min_weight=float(form_data['min_weight']), print_log=not current_app.config['PRODUCTION'])
     bfs.run()
     pathways = bfs.get_pathways()
@@ -146,63 +143,104 @@ def task_get_pathways(form_data):
     job.meta['progress'] = 'pathways_generated'
     job.save_meta()
 
-    pathways = group_pathways(pathways)
+    package_all_pathways(job.id, pathways)
 
-    pathway_evaluator = PathwayEvaluator(pathways)
-    pathway_evaluator.weights = {'Normalised num enzyme steps': form_data['weight_num_enzymes'],
-                                 'Normalised change in complexity': form_data['weight_complexity'],
-                                 'starting_material': form_data['weight_starting'],
-                                 'postitive_enzyme_steps_score': form_data['weight_known_enzymes'],
-                                 'Normalised Cofactor Stoichiometry': 0}
-    pathway_evaluator.diversity_weight = form_data['weight_diversity']
-    pathway_evaluator.evaluate()
-
-    pathways_data = []
-    for index, row in pathway_evaluator.df.iterrows():
-        varients_data = []
-        pathway_varients = [row['Pathway']]
-        for pathway in row['Pathway'].other_varients:
-            pathway_varients.append(pathway)
-
-        for pathway_var in pathway_varients:
-            varients_data.append({'nodes': pathway_var.list_nodes,
-                                  'scores_dict': pathway_var.scores.scores_dict()
-                                  })
-        pathways_data.append(varients_data)
-
-    pathway = Pathway(pathways_data[0][0]['nodes'], network, calc_scores=False)
+    pathway_evaluator = evaluate_pathways(pathways, [form_data['weight_num_enzymes'],
+                                                     form_data['weight_complexity'],
+                                                     form_data['weight_starting'],
+                                                     form_data['weight_known_enzymes'],
+                                                     form_data['weight_diversity']])
+    package_evaluated_pathways(pathway_evaluator.df, job.id)
+    package_visjs_pathways(job.id)
 
     job.meta['progress'] = 'pathways_scored'
     job.save_meta()
 
-    nodes, edges = pathway.get_visjs_nodes_and_edges()
-
-    #options = {'physics': {'enabled': 1, 'wind': {'x': 3, 'y': 0}}}
     options = {}
 
     if form_data['hierarchical'] == True:
         options.update({'layout': {'hierarchical': {'direction': 'directionInput'}}})
 
-    network.clear_cofactor_data()
+    pathway_settings = {'weight_num_enzymes': form_data['weight_num_enzymes'],
+                        'weight_complexity': form_data['weight_complexity'],
+                        'weight_starting': form_data['weight_starting'],
+                        'weight_known_enzymes': form_data['weight_known_enzymes'],
+                        'weight_diversity': form_data['weight_diversity'],
+                        'options': options}
+    current_app.redis.mset({f"{job.id}__pathway_settings": json.dumps(pathway_settings)})
+    current_app.redis.expire(job.id, 60 * 60)
 
-    result =  {
-                'nodes':nodes,
-                'edges':edges,
-                'options':options,
-                'graph_dict':json.dumps(nx.to_dict_of_lists(network.graph)),
-                'target_smiles':str(network.target_smiles),
-                'network_options':json.dumps(network.settings),
-                'max_pathways':len(pathways_data),
-                'pathways_data':json.dumps(pathways_data),
-                'weight_complexity':form_data['weight_complexity'],
-                'weight_num_enzymes':form_data['weight_num_enzymes'],
-                'weight_starting':form_data['weight_starting'],
-                'weight_known_enzymes':form_data['weight_known_enzymes'],
-                'weight_diversity' : form_data['weight_diversity'],
-                'attr_dict':json.dumps(network.attributes_dict()),
-                'max_varient':len(pathways_data[0]),
-                'substrate_nodes':pathway.substrates}
+def evaluate_pathways(pathways, weights):
+    pathways = group_pathways(pathways)
+    pathway_evaluator = PathwayEvaluator(pathways)
+    pathway_evaluator.weights = {'Normalised num enzyme steps': weights[0],
+                                 'Normalised change in complexity': weights[1],
+                                 'starting_material': weights[2],
+                                 'postitive_enzyme_steps_score': weights[3],
+                                 'Normalised Cofactor Stoichiometry': 0}
+    pathway_evaluator.diversity_weight = weights[4]
+    pathway_evaluator.evaluate()
+    return pathway_evaluator
 
-    current_app.redis.mset({job.id: json.dumps(result)})
-    time_to_expire = 1*24*60*60  # 1 days * 24 hours * 60 mins * 60 seconds
-    current_app.redis.expire(job.id, time_to_expire)
+
+
+def package_evaluated_pathways(pathway_evaluator_df, task_id):
+    evaluated_pathways = []
+    for index, row in pathway_evaluator_df.iterrows():
+        pathway_data = [row['Pathway'].list_nodes]
+        for pathway in row['Pathway'].other_varients:
+            pathway_data.append(pathway.list_nodes)
+        evaluated_pathways.append(pathway_data)
+
+    current_app.redis.mset({f"{task_id}__evaluated_pathways": json.dumps(evaluated_pathways)})
+    current_app.redis.expire(f"{task_id}__evaluated_pathways", 60 * 60)
+
+def package_all_pathways(task_id, pathways):
+    all_pathways = []
+    all_scores = []
+    for pathway in pathways:
+        all_pathways.append(pathway.list_nodes)
+        all_scores.append(pathway.scores.scores_dict())
+
+    current_app.redis.mset({f"{task_id}__all_pathways": json.dumps((all_pathways, all_scores))})
+    current_app.redis.expire(f"{task_id}__all_pathways", 60 * 60)
+
+def package_visjs_pathways(task_id, max_vis=100):
+    network_data = json.loads(current_app.redis.get(task_id + '__network'))
+    graph = nx.from_dict_of_lists(json.loads(network_data['graph_dict']), create_using=nx.DiGraph)
+    network = Network(graph=graph, target_smiles=network_data['target_smiles'],
+                      print_log=not current_app.config['PRODUCTION'])
+    network.update_settings(json.loads(network_data['network_options']))
+    network.add_attributes(json.loads(network_data['attr_dict']))
+
+    evaluated_pathways = json.loads(current_app.redis.get(f"{task_id}__evaluated_pathways"))
+
+    for i, pathway_varients in enumerate(evaluated_pathways):
+        if i > max_vis:
+            break
+        pathway_vis_js_data = []
+        max_var = len(pathway_varients)
+        for nodes in pathway_varients:
+            pathway = Pathway(nodes, network, calc_scores=False)
+            nodes, edges = pathway.get_visjs_nodes_and_edges()
+            pathway_vis_js_data.append((nodes, edges, max_var))
+        current_app.redis.mset({f"{task_id}__{i+1}": json.dumps(pathway_vis_js_data)})
+        current_app.redis.expire(f"{task_id}__{i+1}", 60 * 60)
+
+def get_visjs_pathway(task_id, pathway_id, varient):
+    network_data = json.loads(current_app.redis.get(task_id + '__network'))
+    pathway_data = json.loads(current_app.redis.get(task_id + f'__{pathway_id}'))
+    pathway_nodes = pathway_data[varient-1]
+
+    graph = nx.from_dict_of_lists(json.loads(network_data['graph_dict']), create_using=nx.DiGraph)
+    network = Network(graph=graph, target_smiles=network_data['target_smiles'], print_log=not current_app.config['PRODUCTION'])
+    network.update_settings(json.loads(network_data['network_options']))
+    network.add_attributes(json.loads(network_data['attr_dict']))
+
+    pathway = Pathway(pathway_nodes, network, calc_scores=False)
+
+    nodes, edges = pathway.get_visjs_nodes_and_edges()
+    max_var = len(pathway_data)
+
+    return nodes, edges, max_var
+
