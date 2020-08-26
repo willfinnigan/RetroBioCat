@@ -28,7 +28,6 @@ def seqs_of_type(enzyme_type):
     return result
 
 @bp.route('/_sequences_of_same_type', methods=['GET', 'POST'])
-@roles_required('contributor')
 def get_sequences_of_same_type():
     enzyme_type = Sequence.objects(enzyme_name=request.form['enzyme_name'])[0].enzyme_type
     result = seqs_of_type(enzyme_type)
@@ -36,7 +35,6 @@ def get_sequences_of_same_type():
     return jsonify(result=result)
 
 @bp.route('/_sequences_of_type', methods=['GET', 'POST'])
-@roles_required('contributor')
 def get_sequences_of_type():
     enzyme_type = request.form['enzyme_type']
     result = seqs_of_type(enzyme_type)
@@ -160,20 +158,19 @@ def load_sequence_data():
     for seq_same_type in sequences_same_type:
         seq_array[seq_same_type] = seq_same_type
 
-    user = user_datastore.get_user(current_user.id)
-    other_user = False
+    can_edit = False
     self_assigned = False
+    other_user = False
+    if current_user.is_authenticated:
+        user = user_datastore.get_user(current_user.id)
+        if check_permission.check_seq_permissions(current_user.id, seq):
+            can_edit = True
 
-    if check_permission.check_seq_permissions(current_user.id, seq):
-        can_edit = True
-    else:
-        can_edit = False
-
-    if seq.owner == user:
-        self_assigned = True
-    else:
-        if seq.owner != '' and seq.owner is not None:
-            other_user = True
+        if seq.owner == user:
+            self_assigned = True
+        else:
+            if seq.owner != '' and seq.owner is not None:
+                other_user = True
 
     if seq.owner is None:
         owner = ''
