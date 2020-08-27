@@ -1,0 +1,117 @@
+
+<div class="modal fade" id="reaction_modal" tabindex="-1" role="dialog"
+     aria-labelledby="reaction_modal_modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reaction_node_title"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-break">
+                <h5>Query reaction:</h5>
+                <div id="query_svg" class="no_margin text-center center"></div>
+                <h5>Enzyme type selection:</h5>
+                <div class="form-group text-center center">
+                    <select id="reaction_modal_enzyme_select" class="form-control custom-select w-75">
+                    <option value=""></option>
+                    </select>
+                    <small class="form-text text-muted">Select from possible enzymes for this reaction</small>
+                </div>
+
+                <ul class="nav nav-tabs" id="tab_list" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="top_hits_link"
+                           data-toggle="tab" href="#top_hits"
+                           role="tab" aria-controls="top_hits"
+                           aria-selected="true">
+                            Top hits from BioCatDB
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" id="extended_query_link"
+                           data-toggle="tab" href="#extended_query"
+                           role="tab" aria-controls="extended_query">
+                            Launch extended query
+                        </a>
+                    </li>
+
+                    <li class="nav-item" hidden>
+                        <a class="nav-link" id="activity_data_content_link"
+                           data-toggle="tab" href="#activity_data_content"
+                           role="tab" aria-controls="activity_data_content">
+                            Activity data
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="tab_content">
+                    <div class="tab-pane fade show active" id="top_hits" role="tabpanel" aria-labelledby="top_hits_tab">
+                        {% include 'node_modal/reaction_modal/reaction_modal_content/top_hits.html' %}
+                    </div>
+
+                    <div class="tab-pane fade" id="extended_query" role="tabpanel" aria-labelledby="extended_query_tab">
+                        {% include 'node_modal/reaction_modal/reaction_modal_content/extended_query.html' %}
+                    </div>
+
+                     <div class="tab-pane fade" id="activity_data_content" role="tabpanel" aria-labelledby="activity_data_content">
+                        {% include 'node_modal/reaction_modal/activity_more_info_content.html' %}
+                     </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    window.currently_selected_reaction_node = ''
+
+    function reaction_modal_launched(node) {
+        $('a[href="#top_hits"]').tab('show');
+        clear_old_reaction_modal_data()
+        parent_nodes = network.getConnectedNodes(node, 'from')
+        children_nodes = network.getConnectedNodes(node, 'to')
+        label = data['nodes'].get(node)['label']
+        get_top_hits(node, window.task_id, parent_nodes, children_nodes, label, 'selected_enzyme')
+        window.currently_selected_reaction_node = node
+    }
+
+    function get_top_hits(reaction_node, network_id, parents, children, label, enzyme) {
+        console.log("get top hits for " + reaction_node)
+        $.post('/_get_top_biocatdb_hits', {
+            reaction_node: reaction_node,
+            network_id: network_id,
+            parents: JSON.stringify(parents),
+            children: JSON.stringify(children),
+            label: label,
+            enzyme: enzyme
+        }).done(function (data) {
+            console.log(data)
+            document.getElementById("query_svg").innerHTML = data.result.query_reaction_svg
+            document.getElementById("reaction_node_title").innerHTML = data.result.reaction_name
+            set_hit_title(data.result.reaction_name, data.result.enzyme_name)
+            add_hit_data(data.result.node_info, data.result.product_keys)
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+
+    document.getElementById('reaction_modal_enzyme_select').onchange = function(){pick_new_enzyme()};
+
+    function pick_new_enzyme() {
+        var node = window.currently_selected_reaction_node
+        var enzyme = document.getElementById('reaction_modal_enzyme_select').value
+        document.getElementById('enzyme_select').value = enzyme;
+        clear_old_reaction_modal_data()
+        parent_nodes = network.getConnectedNodes(node, 'from')
+        children_nodes = network.getConnectedNodes(node, 'to')
+        label = data['nodes'].get(node)['label']
+        get_top_hits(node, window.task_id, parent_nodes, children_nodes, label, enzyme)
+        select_enzyme(data)
+    }
+
+</script>

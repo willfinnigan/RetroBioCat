@@ -219,15 +219,17 @@ def change_enzyme():
     network.calculate_scores()
 
     network.graph.nodes[selected_node]['attributes']['selected_enzyme'] = selected_enzyme
+
+    data['attr_dict'] = json.dumps(network.attributes_dict())
+    current_app.redis.mset({task_id: json.dumps(data)})
+    time_to_expire = 15 * 60  # 15 mins * 60 seconds
+    current_app.redis.expire(task_id, time_to_expire)
+
     successors = list(network.graph.successors(selected_node))
     predecessors = list(network.graph.predecessors(selected_node))
 
     subgraph = network.graph.subgraph([selected_node]+successors+predecessors)
     nodes, edges = network.get_visjs_nodes_and_edges(graph=subgraph)
-
-    data['attr_dict'] = json.dumps(network.attributes_dict())
-    data['nodes'] = add_new(data['nodes'], nodes)
-    data['edges'] = add_new(data['edges'], edges)
 
     result = {'nodes': nodes,
               'edges': edges}

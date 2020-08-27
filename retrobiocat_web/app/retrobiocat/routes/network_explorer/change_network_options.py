@@ -8,7 +8,6 @@ from retrobiocat_web.retro.generation.network_generation.network import Network
 
 @bp.route("/_change_network_options", methods=["POST"])
 def change_network_options():
-    substrate_colours = request.form['substrate_colours']
     reaction_colours = request.form['reaction_colours']
     edge_colours = request.form['edge_colours']
     task_id = request.form['task_id']
@@ -24,7 +23,6 @@ def change_network_options():
     network.update_settings(network_options)
     network.add_attributes(attr_dict)
 
-    network.settings['colour_substrates'] = substrate_colours
     network.settings['colour_reactions'] = reaction_colours
     network.settings["colour_arrows"] = edge_colours
 

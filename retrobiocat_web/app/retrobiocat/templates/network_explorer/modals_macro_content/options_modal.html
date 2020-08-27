@@ -1,15 +1,6 @@
 <div class="container">
 
     <div class="form-group">
-        <label >Substrate colours</label>
-        <select id="substrate_colour_select" class="form-control custom-select w-50">
-            <option value="Starting material">Starting material</option>
-            <option value="Relative complexity">Relative complexity</option>
-            <option value="Off">Off</option>
-        </select>
-    </div>
-
-    <div class="form-group">
         <label >Reaction colours</label>
         <select id="reaction_colour_select" class="form-control custom-select w-50">
             <option value="Substrate specificity">Substrate specificity</option>
@@ -41,14 +32,10 @@
     document.getElementById("reaction_colour_select").onchange = function() {
         set_network_options(data)
     }
-    document.getElementById("substrate_colour_select").onchange = function() {
-        set_network_options(data)
-    }
 
     function set_network_options(network_data) {
         $.post('/_change_network_options',
             {
-                substrate_colours: document.getElementById("substrate_colour_select").value,
                 reaction_colours: document.getElementById("reaction_colour_select").value,
                 edge_colours: document.getElementById("edge_colour_select").value,
                 task_id: window.task_id

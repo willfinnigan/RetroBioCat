@@ -121,7 +121,7 @@ class NetworkEvaluator():
                     subOne, subTwo = determine_subOne_subTwo(list(network.graph.successors(node)))
 
                     for enz in possible_enzymes:
-                        score, info = self.specficity_scorer.scoreReaction(reaction_name, enz, product, subOne, subTwo,
+                        score, info, = self.specficity_scorer.scoreReaction(reaction_name, enz, product, subOne, subTwo,
                                                                            sim_cutoff=sim_cuttoff,
                                                                            onlyActive=only_active)
 

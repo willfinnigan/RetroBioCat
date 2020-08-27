@@ -83,9 +83,7 @@ def next_pathway():
     pathway_num = int(request.form['pathway_num'])
     varient_num = int(request.form['varient_num'])
     task_id = request.form['task_id']
-    print(pathway_num)
 
-    #nodes, edges, max_varient = get_visjs_pathway(task_id, pathway_num, varient_num-1)
     pathway_data = json.loads(current_app.redis.get(f"{task_id}__{pathway_num}"))
     nodes, edges, max_varient = pathway_data[varient_num-1]
 
@@ -109,7 +107,6 @@ def task_get_pathways(form_data):
                              "combine_enantiomers": bool(form_data['combine_enantiomers']),
                              'max_nodes': int(form_data['max_nodes']),
                              'similarity_score_threshold': float(form_data['sub_thres']),
-                             'colour_substrates': form_data['colour_substrates'],
                              'colour_reactions': form_data['colour_reactions'],
                              "colour_arrows": form_data['colour_edges'],
                              "show_negative_enzymes": form_data['show_neg_enz'],
@@ -159,7 +156,11 @@ def task_get_pathways(form_data):
     options = {}
 
     if form_data['hierarchical'] == True:
-        options.update({'layout': {'hierarchical': {'direction': 'directionInput'}}})
+        options.update({"layout": {"improvedLayout": 'true',
+                                   'hierarchical': {'direction': 'DU',
+                                                    "sortMethod": "hubsize",
+                                                    "nodeSpacing": 200,
+                                                    "treeSpacing": 400}}})
 
     pathway_settings = {'weight_num_enzymes': form_data['weight_num_enzymes'],
                         'weight_complexity': form_data['weight_complexity'],

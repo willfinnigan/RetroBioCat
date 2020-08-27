@@ -7,6 +7,28 @@ from retrobiocat_web.retro.enzyme_identification.load import make_fingerprints
 from retrobiocat_web.retro.enzyme_identification import query_mongodb
 
 
+def process_activity_data(activity_data):
+    for i, record in enumerate(activity_data):
+        activity_data[i]['paper'] = str(activity_data[i]['paper'])
+        if 'id' in activity_data[i]:
+            activity_data[i]['_id'] = str(activity_data[i]['id'])
+        else:
+            activity_data[i]['_id'] = str(activity_data[i]['_id'])
+
+        if 'added_by' in activity_data[i]:
+            activity_data[i]['added_by'] = str(activity_data[i]['added_by'])
+
+        for key in activity_data[i]:
+            if activity_data[i][key] == True:
+                activity_data[i][key] = "True"
+            if activity_data[i][key] == False:
+                activity_data[i][key] = "False"
+            if activity_data[i][key] == np.nan:
+                activity_data[i][key] = ""
+            if type(activity_data[i][key]) == float:
+                activity_data[i][key] = round(activity_data[i][key], 2)
+
+    return activity_data
 
 class SpecificityColumns():
 
@@ -26,9 +48,13 @@ class SpecificityColumns():
         self.auto_generated = 'auto_generated'
         self.enzymeName = 'enzyme_name'
         self.dataSource = 'short_citation'
+        self.doi = 'html_doi'
         self.categorical = 'categorical'
         self.conversion = 'conversion'
         self.sa = 'specific_activity'
+        self.selectivity = 'selectivity'
+        self.id_col = '_id'
+        self.paper_id = 'paper'
 
 class SubstrateSpecificityScorer():
 
@@ -51,7 +77,13 @@ class SubstrateSpecificityScorer():
         self.print_log = print_log
         self.log_times = log_times
 
-    def scoreReaction(self, reaction, enzyme, p1, s1, s2, sim_cutoff=0.7, onlyActive=True):
+    def scoreReaction(self, reaction, enzyme, p1, s1, s2, sim_cutoff=0.7, onlyActive=True, maxEnzymes=1, maxHits=4):
+        """
+        scoreReaction is called when generating a network, to score whether a similar reaction is in the database.
+        It returns a score, and a dict (info), containing some information on the best hit
+
+        We need to edit this dict so it contains more information from the query, so that this can be displayed.
+        """
 
         spec_df = query_mongodb.query_specificity_data([reaction], [enzyme])
         if len(spec_df.index) != 0:
@@ -61,7 +93,7 @@ class SubstrateSpecificityScorer():
             if len(spec_df_f.index) != 0:
                 sim_df = self.calculate_similarity(spec_df_f, p1, s1, s2)
                 top_df = self.get_top_similarity_df(sim_df, sim_cutoff, onlyActive)
-                bestEnzDf = self.get_best_enzymes(top_df, 1, 1)
+                bestEnzDf = self.get_best_enzymes(top_df, maxEnzymes, maxHits)
 
                 if len(bestEnzDf) != 0:
                     score = bestEnzDf.iloc[0][self.cols.simScoreCol]
@@ -212,14 +244,27 @@ class SubstrateSpecificityScorer():
         return top_enzymes
 
     def info_from_top_df(self, top_df):
-        info = {'Score' : top_df.iloc[0][self.cols.simScoreCol]}
+        def make_smiles_reaction(product, sub1, sub2):
+            reaction = f"{sub1}"
+            if sub2 != np.nan and sub2 != '':
+                reaction += f".{sub2}"
+            reaction += f">>{product}"
+            return reaction
+
+        info = {}
         for index, row in top_df.iterrows():
-            smiles_dict = {}
             smiles = row[self.cols.prodOneSmiCol]
+            smiles_dict = {}
+            smiles_dict['smiles_reaction'] = make_smiles_reaction(row[self.cols.prodOneSmiCol], row[self.cols.subOneSmiCol], row[self.cols.subTwoSmiCol])
             smiles_dict['Similarity'] = round(row[self.cols.simScoreCol],2)
-            smiles_dict['Active (1 or 0)'] = row[self.cols.binaryCol]
+            smiles_dict['Active'] = row[self.cols.binaryCol]
+            smiles_dict['Enzyme type'] = row[self.cols.enzCol]
             smiles_dict['Enzyme name'] = row[self.cols.enzymeName]
             smiles_dict['Data source'] = row[self.cols.dataSource]
+            smiles_dict['DOI'] = row[self.cols.doi]
+            #smiles_dict['Selectivity'] = f'```{row[self.cols.selectivity]}```'
+            smiles_dict['paper_id'] = str(row[self.cols.paper_id])
+            smiles_dict['activity_id'] = str(row[self.cols.id_col])
 
             if type(row[self.cols.categorical]) == str:
                 smiles_dict['Activity Level'] = row[self.cols.categorical]
@@ -231,6 +276,8 @@ class SubstrateSpecificityScorer():
             info[smiles] = smiles_dict
 
         return info
+
+
 
     def filter_df_by_data_level(self, df, data_level):
         if data_level != 'All':
@@ -312,8 +359,8 @@ if __name__ == '__main__':
     enzyme = 'CAR'
     product = 'CCc1ccc(C=O)cc1'
 
-    score, info = scorer.scoreReaction(reactionName, enzyme, product, None, None,
-                                       sim_cutoff=0.5, onlyActive=True)
+    score, info, top_hits_json = scorer.scoreReaction(reactionName, enzyme, product, None, None,
+                                                      sim_cutoff=0.5, onlyActive=True)
     t2 = time.time()
     print(f"Time to score = {round(t2 - t1, 3)}")
     print(score)

@@ -10,11 +10,9 @@
 
     <script type="text/javascript">
         // initialize global variables.
-        var edges = new vis.DataSet({{edges|tojson}});
-        var nodes = new vis.DataSet({{nodes|tojson}});
         var container = document.getElementById('mynetwork');
         var options = {{options|safe}};
-        var data = {'nodes': nodes, 'edges': edges};
+        var data = {'nodes': new vis.DataSet({{nodes|tojson}}), 'edges': new vis.DataSet({{edges|tojson}})};
         var network = new vis.Network(container, data, options);
         var enzyme_options = {}
 
@@ -26,11 +24,43 @@
             }
         });
 
+        network.on("hold", function(params) {
+            if (params['nodes'].length === 1) {
+                if (data['nodes'].get(params['nodes'])[0]['type'] === 'reaction') {
+                    reaction_modal_launched(params['nodes'][0])
+                    $("#reaction_modal").modal('show');
+                } else if (data['nodes']['_data'][params['nodes'][0]]['type'] === 'substrate') {}
+            }
+        });
+
         network.on("selectNode", function(params) {
             window.selected_node = params.nodes[0]
             document.getElementById("custom_product_smiles").value = params.nodes[0]
-            get_reaction_node_info()
+
+            if (params['nodes'].length === 1) {
+                if (data['nodes'].get(params['nodes'])[0]['type'] === 'reaction') {
+                    get_possible_enzymes(params['nodes'][0])
+                }
+            }
         })
+
+        function get_possible_enzymes(reaction_node) {
+            $.post('/_get_possible_enzymes', {
+                reaction_node: reaction_node,
+                network_id: window.task_id,
+            }).done(function (data) {
+                set_enzyme_select(data.result.possible_enzymes, data.result.selected_enzyme, 'enzyme_select')
+                set_enzyme_select(data.result.possible_enzymes, data.result.selected_enzyme, 'reaction_modal_enzyme_select')
+            })
+        }
+
+        function set_enzyme_select(choices, selected, id_selector) {
+            document.getElementById(id_selector).innerHTML = '';
+                for (option of choices) {
+                    document.getElementById(id_selector).innerHTML += "<option value=" + option[0] + ">" + option[1] + "</option>";
+                }
+                document.getElementById(id_selector).value = selected
+        }
 
     </script>
 
@@ -101,20 +131,19 @@
                     if (taskStatus === 'started') {
                         document.getElementById("rr_que").innerHTML = "started";
                     }
-                    setTimeout(function() {
-                        get_retrorules_Status(response.data.task_id);
-                        }, 1000);
+                    setTimeout(function() {get_retrorules_Status(response.data.task_id);}, 1000);
                 }
             })
         }
 
         function renew_session() {
+                setTimeout(function() {renew_session()}, 30000)
 
                 $.post(Flask.url_for("retrobiocat.keep_session_open"), {
                     task_id: window.task_id
                 })}
 
-        setInterval(renew_session(), 30000);
+        setTimeout(function() {renew_session()}, 30000)
 
     </script>
 
@@ -126,5 +155,8 @@
     {{ modal('reaction_options_macro', 'Reaction options', "network_explorer/modals_macro_content/reaction_options_modal.html") }}
     {{ modal('node_info_macro', 'Node info', "node_info_templates/node_info_modal.html", size='') }}
     {{ modal('save_modal', 'Save', "network_explorer/modals_macro_content/save_modal.html") }}
+
+
+    {% include 'node_modal/reaction_modal/reaction_modal.html' %}
 
 {% endblock %}

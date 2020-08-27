@@ -3,6 +3,7 @@ import os
 from rdkit import Chem
 from rdkit.Chem import Draw, AllChem
 from rdkit.Chem.Draw import rdMolDraw2D
+from rdkit.Chem import rdChemReactions
 
 
 def apply_smiles_to_filename_check(smile):
@@ -54,3 +55,11 @@ def rxntosvg(list_rxns, rxnSize=(900,300)):
         list_svgs.append(svg)
 
     return list_svgs
+
+def smiles_rxn_to_svg(smiles_rxn, rxnSize=(900,300)):
+    rxn = rdChemReactions.ReactionFromSmarts(smiles_rxn, useSmiles=True)
+    d = Draw.MolDraw2DSVG(rxnSize[0], rxnSize[1])
+    d.DrawReaction(rxn)
+    d.FinishDrawing()
+    svg = d.GetDrawingText()
+    return svg

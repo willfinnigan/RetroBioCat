@@ -1,0 +1,68 @@
+<h6 class="mt-3">Similar literature precedents for
+    <span id="reaction_name" style="color:#700000"></span> by
+    <span id="enzyme_name" style="color:#700000"></span>
+</h6>
+
+<div class="row">
+    <div class="col"></div>
+    <div class="col">
+        <div id="test_top_hits"></div>
+    </div>
+    <div class="col"></div>
+</div>
+
+<script>
+    function clear_old_reaction_modal_data() {
+        document.getElementById("reaction_name").innerHTML = ''
+        document.getElementById("enzyme_name").innerHTML = ''
+        document.getElementById("test_top_hits").innerHTML = ''
+    }
+
+    function set_hit_title(reaction_name, enzyme_name) {
+        document.getElementById("reaction_name").innerHTML = reaction_name
+        document.getElementById("enzyme_name").innerHTML = enzyme_name
+    }
+
+    function launch_activity_more_info(enzyme_name, activity_id, paper_id) {
+        $('[href="#activity_data_content"]').tab('show')
+        load_sequence_data(enzyme_name)
+        load_single_activity_data(activity_id)
+        load_paper_data(paper_id)
+    }
+
+    function add_hit_data(node_info, product_keys) {
+        var main_div = document.getElementById("test_top_hits")
+        if (product_keys.length === 0) {
+            main_div.innerHTML = 'None identified'
+        } else {
+            main_div.innerHTML = ''
+        }
+
+        for (const product_smi of product_keys) {
+            var new_div = document.createElement('div')
+            main_div.appendChild(new_div)
+            new_div.className = 'my-auto py-2';
+
+            var img_div = document.createElement('div')
+            new_div.appendChild(img_div)
+            img_div.innerHTML = node_info[product_smi]['reaction_svg']
+            new_div.innerHTML += node_info[product_smi]['formatted_info']
+
+            var more_info_div = document.createElement('div')
+            new_div.appendChild(more_info_div)
+            var new_btn =  document.createElement('button')
+            new_btn.className = 'btn btn-sm btn-outline-danger';
+            new_btn.innerHTML = 'More info'
+            new_btn.onclick  = function() {launch_activity_more_info(node_info[product_smi]['Enzyme name'],
+                                                                     node_info[product_smi]['activity_id'],
+                                                                     node_info[product_smi]['paper_id'])
+                                            }
+
+            more_info_div.appendChild(new_btn)
+        }
+    }
+
+
+
+
+</script>

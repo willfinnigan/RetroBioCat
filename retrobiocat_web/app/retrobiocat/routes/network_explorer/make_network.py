@@ -50,7 +50,6 @@ def task_make_network(form_data):
                              "calculate_complexities": bool(form_data['calc_complexity']),
                              "calculate_substrate_specificity": bool(form_data['sub_sim']),
                              "max_nodes": int(form_data['max_initial_nodes'],),
-                             "colour_substrates" : form_data['colour_substrates'],
                              "colour_reactions" : form_data['colour_reactions'],
                              "colour_arrows": form_data['colour_edges'],
                              "show_negative_enzymes" : form_data['show_neg_enz'],
