@@ -4,14 +4,68 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="substrate_node_title"></h5>
+                <h5 class="modal-title" id="substrate_node_title">Substrate information</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body text-break">
-                <div id="substrate_info"></div>
+                <div class="row">
+                    <div class="col text-center">
+                        <div id="substrate_info">
+                            <p><strong>SMILES: </strong><span id="substrate_smiles"></span></p>
+                            <p><strong>Name: </strong><span id="substrate_name"></span></p>
+                            <p><strong>Pubchem: </strong>
+                                <span id="pubchem_loading"></span>
+                                <a href="#" target="_blank" id="pubchem_cid"></a>
+                            </p>
+                            <div id="substrate_image"></div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    function substrate_modal_launched(node) {
+        document.getElementById("substrate_smiles").innerHTML = node
+        clear_substrate_info()
+        get_substrate_img(node)
+        get_pubchem_cid(node)
+    }
+
+    function get_substrate_img(substrate) {
+        $.post('/_get_substrate_img', {
+            substrate: substrate,
+        }).done(function (data) {
+            console.log(data.result.substrate_image)
+            document.getElementById("substrate_image").innerHTML = "<img src='" + data.result.substrate_image +"' alt=''>"
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+
+    function get_pubchem_cid(substrate) {
+        $.post('/_get_pubchem_cid', {
+            substrate: substrate,
+        }).done(function (data) {
+            document.getElementById("pubchem_loading").innerHTML = ''
+            document.getElementById("pubchem_cid").innerHTML = data.result.pubchem_cid
+            document.getElementById("substrate_name").innerHTML = data.result.substrate_name
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+
+    function clear_substrate_info() {
+
+        document.getElementById("substrate_name").innerHTML = '..loading'
+        document.getElementById("pubchem_cid").innerHTML = ''
+        document.getElementById("pubchem_loading").innerHTML = '..loading'
+        document.getElementById("substrate_image").innerHTML = ''
+        document.getElementById("pubchem_cid").href = '#'
+    }
+</script>

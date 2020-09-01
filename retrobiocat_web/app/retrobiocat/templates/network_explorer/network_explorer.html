@@ -30,16 +30,6 @@
             }
         });
 
-        network.on("hold", function(params) {
-            if (params['nodes'].length === 1) {
-                if (data['nodes'].get(params['nodes'])[0]['type'] === 'reaction') {
-                    reaction_modal_launched(params['nodes'][0], window.task_id)
-                    $("#reaction_modal").modal('show');
-                } else if (data['nodes'].get(params['nodes'])[0]['type'] === 'substrate') {
-                    $("#substrate_modal").modal('show');
-                }
-            }
-        });
 
         network.on("selectNode", function(params) {
             window.selected_node = params.nodes[0]
@@ -51,6 +41,23 @@
                 }
             }
         })
+
+        network.on("hold", function(params) {
+            if (params['nodes'].length === 1) {
+                window.selected_node = params.nodes[0]
+                launch_node_modal()
+            }
+        });
+
+        function launch_node_modal() {
+            if (data['nodes'].get([window.selected_node])[0]['type'] === 'reaction') {
+                reaction_modal_launched(window.selected_node, window.task_id)
+                $("#reaction_modal").modal('show');
+            } else if (data['nodes'].get([window.selected_node])[0]['type'] === 'substrate') {
+                substrate_modal_launched(window.selected_node)
+                $("#substrate_modal").modal('show');
+            }
+        }
 
         function get_possible_enzymes(reaction_node) {
             $.post('/_get_possible_enzymes', {

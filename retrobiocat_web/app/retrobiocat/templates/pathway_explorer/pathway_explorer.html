@@ -30,12 +30,20 @@
 
         network.on("hold", function(params) {
             if (params['nodes'].length === 1) {
-                if (data['nodes'].get(params['nodes'])[0]['type'] === 'reaction') {
-                    reaction_modal_launched(params['nodes'][0], window.network_id)
-                    $("#reaction_modal").modal('show');
-                } else if (data['nodes']['_data'][params['nodes'][0]]['type'] === 'substrate') {}
+                window.selected_node = params.nodes[0]
+                launch_node_modal()
             }
         });
+
+        function launch_node_modal() {
+            if (data['nodes'].get([window.selected_node])[0]['type'] === 'reaction') {
+                reaction_modal_launched(window.selected_node, window.network_id)
+                $("#reaction_modal").modal('show');
+            } else if (data['nodes'].get([window.selected_node])[0]['type'] === 'substrate') {
+                substrate_modal_launched(window.selected_node)
+                $("#substrate_modal").modal('show');
+            }
+        }
 
         network.on("selectNode", function(params) {
             window.selected_node = params.nodes[0]
@@ -98,5 +106,6 @@
     {{ modal('reorder_macro', 'Reorder pathways', "pathway_explorer/modal_macro_content/reorder_modal_content.html") }}
 
     {% include 'node_modal/reaction_modal/reaction_modal.html' %}
+    {% include 'node_modal/substrate_modal/substrate_modal.html' %}
 
 {% endblock %}

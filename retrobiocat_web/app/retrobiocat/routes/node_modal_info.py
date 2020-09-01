@@ -6,6 +6,9 @@ import json
 from flask import current_app
 from retrobiocat_web.retro.generation.network_generation.network import Network
 from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType
+from rdkit import Chem
+from retrobiocat_web.app.biocatdb.functions.substrate_specificity import images
+from retrobiocat_web.retro.evaluation import pubchem_funcs
 
 
 def format_enzyme_info(info_dict):
@@ -105,4 +108,30 @@ def get_possible_enzymes():
     print(result)
 
     return jsonify(result=result)
+
+@bp.route('/_get_substrate_img', methods=['GET', 'POST'])
+def get_substrate_img():
+    substrate = request.form['substrate']
+    img = images.smitosvg_url(substrate)
+    result = {'substrate_image': img}
+
+    return jsonify(result=result)
+
+@bp.route('/_get_pubchem_cid', methods=['GET', 'POST'])
+def get_pubchem_cid():
+    substrate = request.form['substrate']
+
+    compound = pubchem_funcs.get_pubchem_compound_from_smiles(substrate)
+    if compound != None:
+        name = compound.iupac_name
+        cid = compound.cid
+    else:
+        name = 'Not found'
+        cid = ''
+
+    result = {'pubchem_cid': cid,
+              'substrate_name': name}
+
+    return jsonify(result=result)
+
 
