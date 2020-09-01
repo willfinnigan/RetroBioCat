@@ -70,13 +70,13 @@
 <script>
     window.currently_selected_reaction_node = ''
 
-    function reaction_modal_launched(node) {
+    function reaction_modal_launched(node, network_id) {
         $('a[href="#top_hits"]').tab('show');
         clear_old_reaction_modal_data()
         parent_nodes = network.getConnectedNodes(node, 'from')
         children_nodes = network.getConnectedNodes(node, 'to')
         label = data['nodes'].get(node)['label']
-        get_top_hits(node, window.task_id, parent_nodes, children_nodes, label, 'selected_enzyme')
+        get_top_hits(node, network_id, parent_nodes, children_nodes, label, 'selected_enzyme')
         window.currently_selected_reaction_node = node
     }
 
@@ -110,7 +110,7 @@
         parent_nodes = network.getConnectedNodes(node, 'from')
         children_nodes = network.getConnectedNodes(node, 'to')
         label = data['nodes'].get(node)['label']
-        get_top_hits(node, window.task_id, parent_nodes, children_nodes, label, enzyme)
+        get_top_hits(node, window.network_id, parent_nodes, children_nodes, label, enzyme)
         select_enzyme(data)
     }
 

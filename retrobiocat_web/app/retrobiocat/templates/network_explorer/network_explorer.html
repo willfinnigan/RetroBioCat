@@ -17,6 +17,7 @@
         var enzyme_options = {}
 
         window.task_id = '{{task_id}}'
+        window.network_id = '{{task_id}}'
 
         network.on("doubleClick", function(params) {
             if (params['nodes'].length !== 0) {
@@ -27,7 +28,7 @@
         network.on("hold", function(params) {
             if (params['nodes'].length === 1) {
                 if (data['nodes'].get(params['nodes'])[0]['type'] === 'reaction') {
-                    reaction_modal_launched(params['nodes'][0])
+                    reaction_modal_launched(params['nodes'][0], window.task_id)
                     $("#reaction_modal").modal('show');
                 } else if (data['nodes']['_data'][params['nodes'][0]]['type'] === 'substrate') {}
             }

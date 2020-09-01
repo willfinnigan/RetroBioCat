@@ -7,13 +7,13 @@
     <div id="mynetwork"></div>
 
     <script src="{{url_for('.static', filename='js/network.js')}}" type="text/javascript"></script>
-    <script src="{{url_for('.static', filename='js/node_info.js')}}" type="text/javascript"></script>
 
     <script type="text/javascript">
         window.pathway_num = 1;
         window.max_varient = {{max_varient}}
         window.pathway_varient = 1
         window.task_id = "{{task_id}}"
+        window.network_id = "{{task_id}}" + "__network"
 
         var nodes = new vis.DataSet({{nodes|tojson}});
         var edges = new vis.DataSet({{edges|tojson}});
@@ -21,10 +21,65 @@
         var container = document.getElementById('mynetwork');
         var network = new vis.Network(container, data, {{options|safe}});
 
+        network.on("hold", function(params) {
+            if (params['nodes'].length === 1) {
+                if (data['nodes'].get(params['nodes'])[0]['type'] === 'reaction') {
+                    reaction_modal_launched(params['nodes'][0], window.network_id)
+                    $("#reaction_modal").modal('show');
+                } else if (data['nodes']['_data'][params['nodes'][0]]['type'] === 'substrate') {}
+            }
+        });
+
         network.on("selectNode", function(params) {
             window.selected_node = params.nodes[0]
-            get_node_info();
+
+            if (params['nodes'].length === 1) {
+                if (data['nodes'].get(params['nodes'])[0]['type'] === 'reaction') {
+                    get_possible_enzymes(params['nodes'][0])
+                }
+            }
         })
+
+        function get_possible_enzymes(reaction_node) {
+            $.post('/_get_possible_enzymes', {
+                reaction_node: reaction_node,
+                network_id: window.network_id,
+            }).done(function (data) {
+                set_enzyme_select(data.result.possible_enzymes, data.result.selected_enzyme, 'enzyme_select')
+                set_enzyme_select(data.result.possible_enzymes, data.result.selected_enzyme, 'reaction_modal_enzyme_select')
+            })
+        }
+
+        function set_enzyme_select(choices, selected, id_selector) {
+            document.getElementById(id_selector).innerHTML = '';
+                for (option of choices) {
+                    document.getElementById(id_selector).innerHTML += "<option value=" + option[0] + ">" + option[1] + "</option>";
+                }
+                document.getElementById(id_selector).value = selected
+        }
+
+        function select_enzyme(network_data) {
+            console.log('Select enzyme')
+            $.post($SCRIPT_ROOT + '/_change_enzyme', {
+                selected_node: window.selected_node,
+                selected_enzyme:  document.getElementById("enzyme_select").value,
+                task_id: window.network_id
+
+            }).done(function(data) {
+                let new_nodes = data.result.nodes
+                let new_edges = data.result.edges
+                addNodes(network_data, new_nodes, new_edges)
+            })
+        }
+
+        if (document.getElementById("enzyme_select") !== null) {
+            document.getElementById("enzyme_select").addEventListener("change", function () {
+                console.log("Enzyme selected")
+                select_enzyme(data);
+            });
+        }
+
+
     </script>
 
     <script src="{{url_for('.static', filename='js/pathway_explorer/browse_pathways.js')}}?v={{v}}" type="text/javascript"></script>
@@ -34,5 +89,7 @@
     {{ modal('node_info_macro', 'Nofe info', "node_info_templates/node_info_modal.html", size='') }}
     {{ modal('options_macro', 'Options', "pathway_explorer/modal_macro_content/options_modal_content.html") }}
     {{ modal('reorder_macro', 'Reorder pathways', "pathway_explorer/modal_macro_content/reorder_modal_content.html") }}
+
+    {% include 'node_modal/reaction_modal/reaction_modal.html' %}
 
 {% endblock %}

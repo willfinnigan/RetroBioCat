@@ -37,6 +37,8 @@ def get_top_biocatdb_hits():
     label = request.form['label']
     enzyme = request.form['enzyme']
 
+    print(network_id)
+
     reaction_smiles = f"{substrates[0]}"
     if len(substrates) > 1:
         reaction_smiles += f".{substrates[1]}"
