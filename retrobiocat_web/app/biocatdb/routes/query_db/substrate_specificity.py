@@ -17,8 +17,7 @@ from retrobiocat_web.app.biocatdb.forms import SubstrateScopeForm
 def substrate_specificity_form():
     print('Spec form')
     form = SubstrateForm()
-    enzymes = query_mongodb.get_enzymes_in_db() + ['All']
-    reactions = query_mongodb.get_reactions_in_db()
+    form.set_choices()
     task_id = ''
 
     if 'specificity_task_id' in session:
@@ -39,9 +38,8 @@ def substrate_specificity_form():
 
         task_id = task.get_id()
         session['specificity_task_id'] = task_id
-        print(task_id)
 
-    return render_template('substrate_specificity/substrate_specificity_form.html', form=form, enzymes=enzymes, reactions=reactions, task_id=task_id)
+    return render_template('substrate_specificity/substrate_specificity_form_page.html', form=form, substrate_specificity_task_id=task_id)
 
 
 @bp.route("/substrate_specificity_form_status/<task_id>", methods=["GET"])

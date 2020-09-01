@@ -1,5 +1,11 @@
 <div class="container">
-    <h6 class="text-center py-3">More information on selected similar reaction</h6>
+    <div class="modal-header">
+        <h6 class="modal-title">More information on selected similar reaction</h6>
+        <button type="button" class="close" onclick=$('a[href="#top_hits"]').tab('show')>
+          <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
     <ul class="nav nav-tabs" id="tab_list" role="tablist">
         <li class="nav-item">
             <a class="nav-link active" id="activity_info_link"

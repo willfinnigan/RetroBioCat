@@ -3,7 +3,7 @@ from wtforms import StringField, BooleanField, SubmitField, IntegerField, Decima
 from wtforms.validators import DataRequired, NumberRange, ValidationError
 from retrobiocat_web.retro.generation import node_analysis
 from retrobiocat_web.retro.enzyme_identification import query_mongodb
-from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType, Sequence
+from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType, Sequence, Activity
 from retrobiocat_web.mongo.models.reaction_models import Reaction
 
 def is_accepted_by_rdkit(form, field):
@@ -42,8 +42,8 @@ specificity_data_choices = [('All', 'All'),
                             ('Conversion', 'Conversion')]
 
 class SubstrateForm(FlaskForm):
-    enzymes = StringField('Enzymes', validators=[DataRequired(), is_enzyme])
-    reactions = StringField('Reactions', validators=[is_reaction])
+    enzymes = SelectField('Enzyme type', validators=[DataRequired(), is_enzyme])
+    reactions = SelectField('Reaction', validators=[is_reaction])
     data_level = SelectField('Data level', choices=specificity_data_choices)
     num_choices = IntegerField('Max enzymes per substrate', default=4, validators=[NumberRange(min=1, max=100)])
     max_hits = IntegerField('Max similar substrates', default=10, validators=[NumberRange(min=1, max=100)])
@@ -51,6 +51,25 @@ class SubstrateForm(FlaskForm):
     similarity = DecimalField('Similarity cutoff', default=0.6, validators=[NumberRange(min=0.1, max=1)])
     auto_data = BooleanField('Include automatically generated data', default=False)
     submit = SubmitField('Submit')
+
+    def set_choices(self):
+        self.enzymes.choices = [(c, c) for c in ['All'] + (list(Activity.objects().distinct('enzyme_type')))]
+        self.reactions.choices = [(c, c) for c in ['All'] + (list(Activity.objects().distinct('reaction')))]
+
+    def validate(self):
+        if not FlaskForm.validate(self):
+            return False
+        result = True
+        seen = set()
+
+        if self.enzymes.data == 'All' and self.reactions.data == 'All':
+            self.enzymes.errors.append("Can't both be All")
+            self.reactions.errors.append("Can't both be All")
+            result = False
+        else:
+            seen.add(self.enzymes.data)
+            seen.add(self.reactions.data)
+        return result
 
 class Network_Vis_Options(FlaskForm):
     colour_substrates = SelectField('Colour substrate nodes', choices=substrate_node_choices)

@@ -20,21 +20,13 @@
                     <small class="form-text text-muted">Select from possible enzymes for this reaction</small>
                 </div>
 
-                <ul class="nav nav-tabs" id="tab_list" role="tablist">
+                <ul class="nav nav-tabs" id="tab_list" role="tablist" hidden>
                     <li class="nav-item">
                         <a class="nav-link active" id="top_hits_link"
                            data-toggle="tab" href="#top_hits"
                            role="tab" aria-controls="top_hits"
                            aria-selected="true">
                             Top hits from BioCatDB
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" id="extended_query_link"
-                           data-toggle="tab" href="#extended_query"
-                           role="tab" aria-controls="extended_query">
-                            Launch extended query
                         </a>
                     </li>
 
@@ -49,11 +41,7 @@
 
                 <div class="tab-content" id="tab_content">
                     <div class="tab-pane fade show active" id="top_hits" role="tabpanel" aria-labelledby="top_hits_tab">
-                        {% include 'node_modal/reaction_modal/reaction_modal_content/top_hits.html' %}
-                    </div>
-
-                    <div class="tab-pane fade" id="extended_query" role="tabpanel" aria-labelledby="extended_query_tab">
-                        {% include 'node_modal/reaction_modal/reaction_modal_content/extended_query.html' %}
+                        {% include 'node_modal/reaction_modal/top_hits.html' %}
                     </div>
 
                      <div class="tab-pane fade" id="activity_data_content" role="tabpanel" aria-labelledby="activity_data_content">

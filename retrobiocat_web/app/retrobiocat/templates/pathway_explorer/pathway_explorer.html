@@ -25,7 +25,7 @@
                        stabilizationIterations: 1000,}
 
         var options = $.extend(true, default_options, {{options|safe}});
-        
+
         var network = new vis.Network(container, data, options);
 
         network.on("hold", function(params) {

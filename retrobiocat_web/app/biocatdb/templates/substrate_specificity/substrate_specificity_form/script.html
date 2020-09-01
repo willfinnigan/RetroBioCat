@@ -1,0 +1,48 @@
+<script>
+    function getStatus(substrate_specificity_task_id) {
+        $.get('substrate_specificity_form_status/' + substrate_specificity_task_id, {
+        }).done(function(response) {
+            const taskStatus = response.data.task_status;
+            const taskProgress = response.data.task_progress;
+            if (taskProgress === 'started') {
+                document.getElementById("progressbar").style = "width: 50%"
+                document.getElementById("progressbar").innerText = "Gathering data"
+            } else if (taskProgress === 'network_generated') {
+                document.getElementById("progressbar").style = "width: 75%"
+                document.getElementById("progressbar").innerText = "Gathering data"
+            } else if (taskProgress === 'scores_calculated') {
+                document.getElementById("progressbar").style = "width: 90%"
+                document.getElementById("progressbar").innerText = "Gathering data"
+            }
+            if (taskStatus === 'finished') {
+                document.getElementById("progressbar").style = "width: 100%"
+                document.getElementById("progressbar").innerText = "Done"
+                let url = '/substrate_specificity/' + substrate_specificity_task_id + '/'
+
+                if (substrate_specificity_new_window === true) {
+                    window.open(url, '_blank')
+                } else {
+                    location.assign(url);
+                }
+                document.getElementById("progressbar").style = "width: 0%"
+                document.getElementById("progressbar").innerText = ""
+                return false;
+            } else if (taskStatus === 'failed') {
+                return false;
+            } else {
+                setTimeout(function() {
+                    getStatus(response.data.task_id);
+                    }, 1000);
+            }
+        })
+    }
+
+    var substrate_specificity_task_id = '{{substrate_specificity_task_id}}'
+    var substrate_specificity_new_window = false
+
+    if (substrate_specificity_task_id !== '') {
+        getStatus(substrate_specificity_task_id);
+        document.getElementById("progressbar").style = "width: 33%"
+        document.getElementById("progressbar").innerText = "Queuing"
+    }
+</script>

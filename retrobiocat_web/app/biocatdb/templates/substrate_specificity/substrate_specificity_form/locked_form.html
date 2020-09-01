@@ -1,0 +1,69 @@
+<form method="POST" id="main_form" action="" novalidate>
+    {{ form.hidden_tag() }}
+
+    <div class="form-group">
+        {{ form.target_smiles.label() }}
+        <div class="input-group w-75">
+            {{ form.target_smiles(type="text", form="main_form", class="form-control disabled", disabled=True)}}
+        </div>
+        {% for error in form.target_smiles.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </div>
+
+    <div class="form-group">
+        <label for="enzymes">Enzyme type</label>
+        {{ form.enzymes(type='select', class="form-control custom-select w-50 disabled", disabled=True) }}
+        {% for error in form.enzymes.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </div>
+
+    <div class="form-group">
+        <label for="reactions">Reaction</label>
+        {{ form.reactions(type='select', class="form-control custom-select w-50 disabled", disabled=True) }}
+        {% for error in form.reactions.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </div>
+
+    <div class="form-group">
+        {{ form.data_level.label() }}
+        {{ form.data_level(type='select', form="main_form", class="form-control custom-select w-50") }}
+    </div>
+
+    <div class="custom-control custom-checkbox">
+        {{ form.auto_data(type='checkbox', form="main_form", class="custom-control-input") }}
+        {{ form.auto_data.label(class="custom-control-label") }}
+    </div>
+
+    <div class="form-inline">
+        {{ form.num_choices.label(class="mx-2 my-1") }}
+        {{ form.num_choices(type='number', form="main_form", class="form-control form-control-sm w-25 my-1") }}
+        <small>The best enzyme(s) for each product will be shown, up to max number</small>
+        {% for error in form.num_choices.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </div>
+
+    <div class="form-inline">
+        {{ form.max_hits.label(class="mx-2 my-1") }}
+        {{ form.max_hits(type='number', form="main_form", class="form-control form-control-sm w-25 my-1") }}
+        {% for error in form.max_hits.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </div>
+
+    <div class="form-inline">
+        {{ form.similarity.label(class="mx-2 my-1") }}
+        {{ form.similarity(type='number', form="main_form", class="form-control form-control-sm w-25 my-1") }}
+        {% for error in form.similarity.errors %}
+            <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+    </div>
+
+    <div class="form-group my-2">
+        {{ form.submit(class="btn-lg btn-block btn-success", form="main_form") }}
+    </div>
+
+</form>
