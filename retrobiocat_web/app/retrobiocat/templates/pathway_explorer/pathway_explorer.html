@@ -19,7 +19,14 @@
         var edges = new vis.DataSet({{edges|tojson}});
         var data =  {nodes: nodes, edges: edges}
         var container = document.getElementById('mynetwork');
-        var network = new vis.Network(container, data, {{options|safe}});
+        var default_options = {smoothCurves: {dynamic:false},
+                       hideEdgesOnDrag: true,
+                       stabilize: true,
+                       stabilizationIterations: 1000,}
+
+        var options = $.extend(true, default_options, {{options|safe}});
+        
+        var network = new vis.Network(container, data, options);
 
         network.on("hold", function(params) {
             if (params['nodes'].length === 1) {

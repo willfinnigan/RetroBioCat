@@ -11,7 +11,12 @@
     <script type="text/javascript">
         // initialize global variables.
         var container = document.getElementById('mynetwork');
-        var options = {{options|safe}};
+        var default_options = {smoothCurves: {dynamic:false},
+                               hideEdgesOnDrag: true,
+                               stabilize: true,
+                               stabilizationIterations: 1000,}
+
+        var options = $.extend(true, default_options, {{options|safe}});
         var data = {'nodes': new vis.DataSet({{nodes|tojson}}), 'edges': new vis.DataSet({{edges|tojson}})};
         var network = new vis.Network(container, data, options);
         var enzyme_options = {}
@@ -30,7 +35,9 @@
                 if (data['nodes'].get(params['nodes'])[0]['type'] === 'reaction') {
                     reaction_modal_launched(params['nodes'][0], window.task_id)
                     $("#reaction_modal").modal('show');
-                } else if (data['nodes']['_data'][params['nodes'][0]]['type'] === 'substrate') {}
+                } else if (data['nodes'].get(params['nodes'])[0]['type'] === 'substrate') {
+                    $("#substrate_modal").modal('show');
+                }
             }
         });
 
@@ -159,5 +166,6 @@
 
 
     {% include 'node_modal/reaction_modal/reaction_modal.html' %}
+    {% include 'node_modal/substrate_modal/substrate_modal.html' %}
 
 {% endblock %}
