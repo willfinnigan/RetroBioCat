@@ -1,20 +1,20 @@
 
-    <div class="btn-group" role="group">
+    <div class="btn-group my-auto text-center" role="group">
         <button type="button" data-toggle="modal" data-target="#help_macro" class="btn btn-primary btn-sm">Help</button>
         <button type="button" data-toggle="modal" onclick="launch_node_modal()" class="btn btn-danger btn-sm">Node info</button>
         <button type="button" data-toggle="modal" data-target="#options_macro" class="btn btn-info btn-sm">Options</button>
         <button type="button" data-toggle="modal" data-target="#reorder_macro" class="btn btn-success btn-sm">Reorder pathways</button>
-        <label class="">Pathway num:</label>
-        <button type="button" id="left" class="btn btn-primary btn-sm"><--</button>
-        <input type="number" id="pathway_number_select" class="" value="1">
-        <button type="button" id="right" class="btn btn-primary btn-sm">--></button>
+        <label class="my-auto text-center pl-2 pr-1"><strong>Pathway:</strong></label>
+        <button type="button" id="left" class="btn btn-primary btn-sm"><-</button>
+        <input type="number" id="pathway_number_select" class="" value="1" style="width:75px">
+        <button type="button" id="right" class="btn btn-primary btn-sm">-></button>
 
-        <label class="">Pathway variant:</label>
-        <button type="button" id="left_varient" class="btn btn-warning btn-sm"><--</button>
-        <label class="" id="pathway_varient_select">1 out of {{max_varient}}</label>
-        <button type="button" id="right_varient" class="btn btn-warning btn-sm">--></button>
+        <label class="my-auto text-center pl-2 pr-1"><strong>Variant:</strong></label>
+        <button type="button" id="left_varient" class="btn btn-warning btn-sm"><-</button>
+        <label class="my-auto text-center" id="pathway_varient_select">1 of {{max_varient}}</label>
+        <button type="button" id="right_varient" class="btn btn-warning btn-sm">-></button>
 
-        <label class="">Enzyme:</label>
+        <label class="my-auto text-center pl-2 pr-1"><strong>Enzyme</strong></label>
         <select class="" id="enzyme_select"></select>
 
     </div>

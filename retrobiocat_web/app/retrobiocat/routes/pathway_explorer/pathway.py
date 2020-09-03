@@ -86,6 +86,7 @@ def next_pathway():
 
     pathway_data = json.loads(current_app.redis.get(f"{task_id}__{pathway_num}"))
     nodes, edges, max_varient = pathway_data[varient_num-1]
+    current_app.redis.expire(f"{task_id}__network", 60 * 60)
 
     result = {'nodes': nodes,
               'edges': edges,
