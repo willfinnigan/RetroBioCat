@@ -1,0 +1,99 @@
+<div class="modal fade" id="reaction_issue_modal" tabindex="-1" role="dialog"
+     aria-labelledby="reaction_issue_modal_modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reaction_issue_title">Report reaction</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                {% if current_user.is_anonymous %}
+                    <p>Please login to report reactions</p>
+                {% else %}
+                    <div id="report_response"></div>
+                    <div class="container">
+                        <div class="row">
+                            <div class="col">
+                                <h5 id="reaction_title"></h5>
+                                <div id="reaction_svg" class="text-center"></div>
+                                <div class="input-group">
+                                    <textarea class="form-control" id="issue_comment"
+                                              placeholder="Please describe why you feel this reaction suggestion is wrong"
+                                              rows="6"></textarea>
+                                </div>
+                                <div class="mt-3"></div>
+
+                                <div class="custom-control custom-checkbox">
+                                    <input class="custom-control-input" type="checkbox" id="public_issue" checked>
+                                    <label class="custom-control-label" for="public_issue">Public issue</label>
+                                    <small>
+                                        <br/>Non-public issues will only be visible to RetroBioCat admins <br/>
+                                        Public issues are shown on the issues page, and can be commented on by other users
+                                    </small>
+                                </div>
+
+                                <button class="btn btn-primary mt-2" id="submit_issue" onclick="submit_issue()">Submit</button>
+                                <small><br/>Your user information will be associated with this issue.  This will be shown if the issue is public</small>
+                            </div>
+                        </div>
+                    </div>
+
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function report_modal_launched() {
+        clear_response_modal()
+        if (data['nodes'].get([window.selected_node])[0]['type'] === 'reaction') {
+            window.currently_selected_reaction_node = window.selected_node
+        }
+        var node = window.currently_selected_reaction_node
+        var parents_nodes = network.getConnectedNodes(node, 'from')
+        var children_nodes = network.getConnectedNodes(node, 'to')
+        document.getElementById("reaction_title").innerHTML = data['nodes'].get(node)['label']
+
+        $.post('/_load_reaction_issue_info', {
+            parents: JSON.stringify(parents_nodes),
+            children: JSON.stringify(children_nodes),
+        }).done(function (data) {
+            document.getElementById("reaction_svg").innerHTML = data.result.query_reaction_svg
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+
+    function clear_response_modal() {
+        document.getElementById("reaction_svg").innerHTML = ''
+        document.getElementById("reaction_title").innerHTML = ''
+        document.getElementById("issue_comment").innerHTML = ''
+        document.getElementById("public_issue").checked = true
+    }
+
+    function submit_issue() {
+        var node = window.currently_selected_reaction_node
+        var parents_nodes = network.getConnectedNodes(node, 'from')
+        var children_nodes = network.getConnectedNodes(node, 'to')
+        var reaction_name =  data['nodes'].get(node)['label']
+        $.post('/_submit_reaction_issue', {
+            parents: JSON.stringify(parents_nodes),
+            children: JSON.stringify(children_nodes),
+            reaction: reaction_name,
+            comment: document.getElementById("issue_comment").value,
+            public: document.getElementById("public_issue").checked,
+        }).done(function (data) {
+            response_msg(data.result.msg, data.result.status, data.result.issues, "report_response")
+            if (data.result.status === 'success') {
+                clear_response_modal()
+                response_msg(data.result.msg, data.result.status, data.result.issues, "response_div")
+                $('#reaction_issue_modal').modal('hide');
+            }
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+</script>

@@ -29,6 +29,7 @@ from retrobiocat_web.mongo.models.user_models import User, Role
 from retrobiocat_web.app.user_model_forms import ExtendedConfirmRegisterForm, ExtendedRegisterForm
 
 from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType, Sequence, Paper, Molecule, Activity, Tag
+from retrobiocat_web.mongo.models.reaction_models import Reaction, Issue
 from retrobiocat_web.app.admin import MyAdminIndexView, MyModelView
 
 user_datastore = MongoEngineUserDatastore(db, User, Role)
@@ -75,6 +76,8 @@ def create_app(config_class=Config, use_talisman=True):
     admin_ext.add_view(MyModelView(Paper))
     admin_ext.add_view(MyModelView(Molecule))
     admin_ext.add_view(MyModelView(Activity))
+    admin_ext.add_view(MyModelView(Reaction))
+    admin_ext.add_view(MyModelView(Issue))
 
     # Create a user to test with
     @app.before_first_request

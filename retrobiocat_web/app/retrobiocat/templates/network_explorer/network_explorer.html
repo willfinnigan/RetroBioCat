@@ -3,6 +3,7 @@
 
 {% block content %}
     {% include 'network_explorer/network_top_bar.html' %}
+    <div id="response_div"></div>
     <div id = "mynetwork"></div>
 
     <script src="{{url_for('.static', filename='js/network.js')}}?v={{v}}" type="text/javascript"></script>
@@ -163,6 +164,7 @@
     </script>
 
     {% include 'network_explorer/modals/custom_reaction_modal.html' %}
+    {% include 'node_modal/report_modal/report_modal.html' %}
 
     {% from 'global/macros/modal_macro.html' import modal with context %}
     {{ modal('help_macro', 'Help', "network_explorer/modals_macro_content/help_modal.html") }}

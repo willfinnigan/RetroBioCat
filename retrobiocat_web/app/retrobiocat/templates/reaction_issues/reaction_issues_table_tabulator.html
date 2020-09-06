@@ -1,0 +1,65 @@
+<div class="">
+    <div class="custom-control custom-checkbox">
+        <input class="custom-control-input" type="checkbox" id="filter_by_status" onclick="filter_closed_open()">
+        <label class="custom-control-label" for="filter_by_status">Show closed issues</label>
+    </div>
+</div>
+
+<p class="text-info no_margin"><small>Click on a row for link to issue</small></p>
+<div id="reaction_issues_table"></div>
+
+<script>
+    var columns = [
+
+        {'title': "_id", 'field': "_id", visible:false},
+
+        {title:"Date", field:"date", formatter:"datetime", 'minWidth':100, formatterParams:{
+                outputFormat:"DD/MM/YYYY",
+                invalidPlaceholder:"(invalid date)"}},
+
+        {'title': "Reaction name", 'field': "reaction", 'minWidth':100, formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
+
+        {'title': "Reaction", 'field': "issue_reaction_svg", 'minWidth':325, formatter:"html"},
+
+        {'title': "Status", 'field': "status", 'minWidth':100, formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
+
+        {'title': "Raised by", 'field': "raised_by", 'minWidth':100, formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
+
+        {'title': "Comment", 'field': "first_comment", 'minWidth':100, formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
+
+        {'title': "Public", 'field': "public", 'minWidth':100, visible:{{display_public}}, formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
+
+        ]
+
+    var tabledata = {{reaction_issues_data|safe}}
+
+    var table = new Tabulator("#reaction_issues_table", {
+        data:tabledata, //assign data to table
+        maxHeight:"75vh",
+        layout:"fitColumns",
+        addRowPos:"bottom",
+        columns:columns,
+        cellHozAlign:"center",
+        cellVertAlign:"middle",
+        rowClick:function(e, row){
+            var rowData = row.getData();
+            var issue_id = rowData['_id']
+            location.href = Flask.url_for("retrobiocat.reaction_issue", {"issue_id": issue_id})
+            },
+    });
+
+    table.setFilter("status", "=", 'Open');
+
+    function filter_closed_open() {
+        console.log('Checkbox clicked')
+        if (document.getElementById("filter_by_status").checked === false){
+            table.setFilter("status", "=", 'Open');
+        } else {
+            table.clearFilter();
+        }
+    }
+
+
+
+</script>
+

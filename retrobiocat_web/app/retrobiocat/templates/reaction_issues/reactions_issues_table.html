@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% set active_page = "" %}
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-form">
+                    <div class="card-body">
+                        <h3 class="text-center">Reaction issues</h3>
+                        {% include 'reaction_issues/reaction_issues_table_tabulator.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
