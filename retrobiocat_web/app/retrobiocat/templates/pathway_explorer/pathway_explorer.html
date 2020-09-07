@@ -99,6 +99,8 @@
 
     <script src="{{url_for('.static', filename='js/pathway_explorer/browse_pathways.js')}}?v={{v}}" type="text/javascript"></script>
 
+    {% include 'node_modal/report_modal/report_modal.html' %}
+
     {% from 'global/macros/modal_macro.html' import modal with context %}
     {{ modal('help_macro', 'Help', "pathway_explorer/modal_macro_content/help_modal_content.html") }}
     {{ modal('node_info_macro', 'Nofe info', "node_info_templates/node_info_modal.html", size='') }}
