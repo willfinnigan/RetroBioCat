@@ -3,6 +3,7 @@ from retrobiocat_web.mongo.models.user_models import User
 from datetime import datetime
 import uuid
 from bson import ObjectId
+from retrobiocat_web.mongo.models.comments import Comment
 
 class Reaction(db.Document):
     name = db.StringField(unique=True)
@@ -15,20 +16,12 @@ class Reaction(db.Document):
     experimental = db.BooleanField(default=False)
     two_step = db.BooleanField(default=False)
 
-class Comment(db.EmbeddedDocument):
-    owner = db.ReferenceField(User)
-    text = db.StringField()
-    date = db.DateTimeField(default=datetime.utcnow)
-    comment_id = db.ObjectIdField(default=ObjectId)
-
 class Issue(db.Document):
     reaction = db.ReferenceField(Reaction)
     issue_reaction_smiles = db.StringField()
     issue_reaction_svg = db.StringField()
     raised_by = db.ReferenceField(User, reverse_delete_rule=2)
     status = db.StringField(default='Open')
-    comments = db.ListField(db.EmbeddedDocumentField(Comment))
+    comments = db.ListField(db.ReferenceField(Comment, reverse_delete_rule=4))
     public = db.BooleanField(default=False)
     date = db.DateTimeField(default=datetime.utcnow)
-
-

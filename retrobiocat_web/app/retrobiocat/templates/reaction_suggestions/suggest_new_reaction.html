@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% set active_page = "" %}
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div id="report_response"></div>
+        <div class="row">
+            <div class="col"></div>
+            <div class="col">
+                <div class="card card-form my-5" style="width: 64rem;">
+                    <div class="card-body" align="center">
+
+                        <h3>{{page_title}}</h3>
+
+                        <div class="form-group">
+                            <label for='rxn_name'>Reaction name</label>
+                            <input type="text" class="form-control w-75" id="rxn_name" placeholder="" value="{{reaction_name}}">
+                            <small class="form-text text-muted">The name of the reaction, eg 'Carboxylic acid reduction'</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="why_this_reaction">Why this reaction?</label>
+                            <div class="input-group">
+                                <textarea class="form-control" id="why_this_reaction"
+                                          placeholder=""
+                                          rows="4">{{why_this_reaction}}</textarea>
+                            </div>
+                            <small class="form-text text-muted">Enter details of why you think this reaction should be included</small>
+                            <small class="form-text text-muted">Links to literature examples of your reaction are especially helpful</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="rxn_smarts">SMARTS</label>
+                            <div class="input-group">
+                                <textarea class="form-control" id="rxn_smarts"
+                                          placeholder="- '[C:1]=[O:2]>>[C:1]-[OH:2]'
+- '[C:1]([C:3])=[O:2]>>[C:1]([C:3])-[OH:2]'"
+                                          rows="6">{{reaction_smarts}}</textarea>
+                            </div>
+                            <small class="form-text text-danger">
+                                Whilst a suggestion for the reaction SMARTS would be really useful,
+                                if you don't feel confident writing a reaction SMARTS this can be left blank</small>
+                            <small class="form-text text-muted">
+                                Reaction SMARTS eg '[C:1]>>[C:1][O]'. Use
+                                <a href="https://marvinjs-demo.chemaxon.com/latest/" target="_blank">Marvin JS </a>
+                                to help construct these.
+                            </small>
+                            <small class="form-text text-muted">Enter smarts as a yaml list.  Each SMARTS should start with a ' - ' and be in speechmarks (" or ')</small>
+                            <small class="form-text text-muted">For example: - '[C:1]=[O:2]>>[C:1]-[OH:2]'</small>
+                            <small class="form-text text-muted">Multiple SMARTS can be entered for a single rule</small>
+                        </div>
+
+                        <button type="button" class="btn btn-info" id="visualise_smarts">Visualise SMARTS</button>
+                        <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#test_modal">Test</button>
+                        <div class='my-5' id="reaction_images"></div>
+
+                        <button type="button" class="btn btn-success" id="save_suggestion">Save reaction suggestion</button>
+
+                        <h4 class="mt-4">Comments</h4>
+                        {% for comment in comments %}
+                            <div class="card my-2">
+                            <div class="card-header text-left">
+
+                                <p class="no_margin">
+                                    {{comment['user']}}
+                                    <small class="no_margin">{{comment['date']}}</small>
+                                    <span class="float-right">
+                                        {% if comment['can_edit'] == True %}
+                                            <button id="{{comment['comment_id']}}_edit"
+                                                    class="btn btn-sm btn-outline-warning"
+                                                    onclick="load_comment_info('{{comment['comment_id']}}')"
+                                                    data-toggle="modal" data-target="#reaction_issue_edit_comment_modal">
+                                                Edit
+                                            </button>
+                                        {% endif %}
+                                        {% if comment['can_delete'] == True %}
+                                            <button class="btn btn-sm btn-outline-danger"
+                                                    id="{{comment['comment_id']}}_delete"
+                                                    onclick=toggle_delete_confirm("{{comment['comment_id']}}")>
+                                                Delete
+                                            </button>
+                                            <button id="{{comment['comment_id']}}_def_delete"
+                                                    class="btn btn-sm btn-danger"
+                                                    style="display: none"
+                                                    onclick="delete_comment('{{comment['comment_id']}}')">
+                                                Definitely Delete?
+                                            </button>
+                                        {% endif %}
+                                    </span>
+                                </p>
+                            </div>
+                                <div class="card-body text-left">
+                                    <p class="card-text">{{comment['comment']}}</p>
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                        <div class="my-4 text-right">
+                            {% if current_user.has_role('rxn_rules_admin') %}
+                                <button class="btn btn-outline-danger"
+                                        id="{{issue_id}}_delete"
+                                        onclick=toggle_delete_confirm("{{issue_id}}")>
+                                    Delete issue
+                                </button>
+                                <button id="{{issue_id}}_def_delete"
+                                        class="btn btn-danger"
+                                        style="display: none"
+                                        onclick="delete_issue()">
+                                    Definitely delete issue?
+                                </button>
+
+                                {% if status == 'Open' %}
+                                    <button class="btn btn-warning px-5" onclick="open_close_issue('Close')">Close issue</button>
+                                {% else %}
+                                    <button class="btn btn-success px-5" onclick="open_close_issue('Open')">Open issue</button>
+                                {% endif %}
+                            {% endif %}
+
+                            {% if current_user.is_anonymous %}
+                            <button class="btn btn-primary disabled" disabled>Please login to reply</button>
+                            {% else %}
+                            <button class="btn btn-primary px-5" data-toggle="modal" data-target="#reaction_suggestion_comment_modal">Reply</button>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="col"></div>
+
+        </div>
+    </div>
+
+    {% include 'rxn_rule_editor/modals/enzyme_modal.html' %}
+    {% include 'rxn_rule_editor/modals/test_modal.html' %}
+    {% include 'reaction_suggestions/edit_comment_modal.html' %}
+
+    <script>
+        function display_rxn_imgs(list_rxn_imgs) {
+            var rxn_img;
+            var imgDiv = document.getElementById("reaction_images");
+            imgDiv.innerHTML = ''
+
+            for (rxn_img of list_rxn_imgs) {
+                var newDiv = document.createElement("div");
+                newDiv.innerHTML = rxn_img
+                imgDiv.appendChild(newDiv);
+            }
+        }
+
+        function visualise_smarts() {
+            $.post('/_visualise_smarts', {
+                smarts_yaml: document.getElementById("rxn_smarts").value
+
+                }).done(function(data) {
+                    if (data.result.status === 'success') {
+                        display_rxn_imgs(data.result.list_imgs)
+                    }
+                })
+            }
+
+        document.getElementById("visualise_smarts").onclick = function() {
+            visualise_smarts()
+        }
+
+        function toggle_delete_confirm(button_id) {
+        document.getElementById(button_id + '_delete').style.display = "none"
+        document.getElementById(button_id + '_def_delete').style.display = "block"
+    }
+
+    function delete_comment(comment_id) {
+        $.post('/_delete_reaction_suggestion_comment', {
+            suggestion_id: "{{suggestion_id}}",
+            comment_id: comment_id
+        }).done(function (data) {
+            response_msg(data.result.msg, data.result.status, data.result.issues, "report_response")
+            location.reload()
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+
+        function delete_suggestion() {
+        $.post('/_delete_reaction_suggestion', {
+            suggestion_id: "{{suggestion_id}}"
+        }).done(function (data) {
+            if (data.result.status === 'success') {
+                location.href = Flask.url_for("retrobiocat.reaction_issues_table")
+            }
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+
+    </script>
+
+{% endblock %}

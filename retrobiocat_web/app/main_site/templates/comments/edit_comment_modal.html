@@ -1,0 +1,64 @@
+<div class="modal fade" id="edit_comment_modal" tabindex="-1" role="dialog"
+     aria-labelledby="edit_comment_modal_modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit comment</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                    <div id="edit_report_response"></div>
+                    <div class="container">
+                        <div class="row">
+                            <div class="col">
+                                <div class="input-group">
+                                    <textarea class="form-control" id="edit_issue_comment"
+                                              placeholder="Add your comment here"
+                                              rows="6"></textarea>
+                                </div>
+                                <div class="mt-3"></div>
+
+                                <button class="btn btn-primary mt-2" id="submit_edit_comment" onclick="submit_edit_comment()">Submit edit</button>
+                                <small><br/>Your user information will be associated with this comment. </small>
+                            </div>
+                        </div>
+                    </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.comment_id = ''
+
+    function load_comment_info(comment_id) {
+        window.comment_id = comment_id
+        $.post('/_load_comment_info', {
+            comment_id: window.comment_id,
+        }).done(function (data) {
+            document.getElementById("edit_issue_comment").innerHTML = data.result.comment_text
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+
+    function submit_edit_comment() {
+        $.post('/_submit_comment', {
+            parent_type: window.parent_type,
+            parent_id: window.parent_id,
+            comment: document.getElementById("edit_issue_comment").value,
+            comment_id: window.comment_id
+        }).done(function (data) {
+            response_msg(data.result.msg, data.result.status, data.result.issues, "edit_report_response")
+            if (data.result.status === 'success') {
+                location.reload()
+            }
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+
+</script>

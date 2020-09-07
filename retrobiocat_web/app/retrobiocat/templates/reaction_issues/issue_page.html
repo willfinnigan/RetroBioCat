@@ -33,7 +33,7 @@
                                                 <button id="{{comment['comment_id']}}_edit"
                                                         class="btn btn-sm btn-outline-warning"
                                                         onclick="load_comment_info('{{comment['comment_id']}}')"
-                                                        data-toggle="modal" data-target="#reaction_issue_edit_comment_modal">
+                                                        data-toggle="modal" data-target="#edit_comment_modal">
                                                     Edit
                                                 </button>
                                             {% endif %}
@@ -82,7 +82,7 @@
                                 {% if current_user.is_anonymous %}
                                 <button class="btn btn-primary disabled" disabled>Please login to reply</button>
                                 {% else %}
-                                <button class="btn btn-primary px-5" data-toggle="modal" data-target="#reaction_issue_comment_modal">Reply</button>
+                                <button class="btn btn-primary px-5" data-toggle="modal" data-target="#comment_modal">Reply</button>
                                 {% endif %}
                             </div>
 
@@ -95,10 +95,13 @@
         </div>
     </div>
 
-    {% include 'reaction_issues/comment_modal.html' %}
-    {% include 'reaction_issues/edit_comment_modal.html' %}
+    {% include 'comments/comment_modal.html' %}
+    {% include 'comments/edit_comment_modal.html' %}
 
     <script>
+    window.parent_type = 'issue'
+    window.parent_id = "{{issue_id}}"
+
     function open_close_issue(open_close) {
         $.post('/_open_close_reaction_issue', {
             issue_id: "{{issue_id}}",
@@ -117,8 +120,7 @@
     }
 
     function delete_comment(comment_id) {
-        $.post('/_delete_reaction_issue_comment', {
-            issue_id: "{{issue_id}}",
+        $.post('/_delete_comment', {
             comment_id: comment_id
         }).done(function (data) {
             response_msg(data.result.msg, data.result.status, data.result.issues, "report_response")

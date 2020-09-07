@@ -7,4 +7,4 @@ bp = Blueprint('main_site',
                static_url_path='/main_site/static'
                )
 
-from retrobiocat_web.app.main_site.routes import static_pages, user_profile
+from retrobiocat_web.app.main_site.routes import static_pages, user_profile, comments
