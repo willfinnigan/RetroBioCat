@@ -88,7 +88,6 @@ def load_rule():
     return jsonify(result=result)
 
 @bp.route("/_visualise_smarts", methods=["POST"])
-@roles_required('rxn_rules_admin')
 def visualise_smarts():
     smarts_yaml = request.form['smarts_yaml']
     try:
@@ -191,7 +190,6 @@ def test_reaction():
     return jsonify(result=result)
 
 @bp.route("/_test_product_against_rules", methods=["POST"])
-@roles_required('rxn_rules_admin')
 def test_product_against_rules():
     target_smiles = request.form['target_smiles']
     smarts = request.form['smarts']

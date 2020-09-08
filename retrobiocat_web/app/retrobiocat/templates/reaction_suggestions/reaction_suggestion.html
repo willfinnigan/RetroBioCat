@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+{% set active_page = "" %}
+
+{% block content %}
+
+    {% if owner != '' and can_save == False %}
+        {% set lock_fields = 'disabled' %}
+    {% else %}
+        {% set lock_fields = '' %}
+    {% endif %}
+
+    <div class="container-fluid">
+        <div id="report_response"></div>
+        <div class="row">
+            <div class="col"></div>
+            <div class="col">
+                <div class="card card-form my-5" style="width: 64rem;">
+                    <div class="card-body" align="center">
+                        <div class="container">
+                            <h3>{{page_title}}</h3>
+
+                            {% if owner != '' %}
+                                <p><strong>Suggestion by: </strong>{{owner}}</p>
+                            {% endif %}
+
+                            {% if status == 'Closed' %}
+                                <p>This suggestion is marked closed</p>
+                            {% endif %}
+
+                            <div class="form-group">
+                                <label for='rxn_name'>Reaction name</label>
+                                <input type="text" class="form-control w-75" id="rxn_name" placeholder="" value="{{reaction_name}}" {{lock_fields}}>
+                                <small class="form-text text-muted">The name of the reaction, eg 'Carboxylic acid reduction'</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="reaction_details">Reaction details</label>
+                                <div class="input-group">
+                                    <textarea class="form-control" id="reaction_details"
+                                              placeholder=""
+                                              rows="4" {{lock_fields}}>{{reaction_details}}</textarea>
+                                </div>
+                                <small class="form-text text-muted">Enter details that are relevant to the suggested reaction</small>
+                                <small class="form-text text-muted">Links to literature examples of your reaction are especially helpful</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="rxn_smarts">SMARTS</label>
+                                <div class="input-group">
+                                    <textarea class="form-control" id="rxn_smarts"
+                                              placeholder="- '[C:1]=[O:2]>>[C:1]-[OH:2]'
+- '[C:1]([C:3])=[O:2]>>[C:1]([C:3])-[OH:2]'"
+                                              rows="6">{{reaction_smarts}}</textarea>
+                                </div>
+                                <small class="form-text text-muted">
+                                    Whilst a suggestion for the reaction SMARTS would be really useful,
+                                    if you don't feel confident writing a reaction SMARTS this can be left blank</small>
+                                <small class="form-text text-muted">Enter smarts as a yaml list.  Each SMARTS should start with a ' - ' and be in speechmarks (" or ')</small>
+                                <small class="form-text text-muted">For example: - '[C:1]=[O:2]>>[C:1]-[OH:2]'</small>
+                                <small class="form-text text-muted">Multiple SMARTS can be entered for a single rule</small>
+                                <small class="form-text text-muted">
+                                    <a href="https://marvinjs-demo.chemaxon.com/latest/" target="_blank">Marvin JS </a>
+                                    can be useful in constructing these.
+                                </small>
+                            </div>
+
+                            <button type="button" class="btn btn-outline-info" id="visualise_smarts">Visualise SMARTS</button>
+                            <button type="button" class="btn btn-outline-warning" data-toggle="modal" data-target="#test_modal">Test</button>
+                            <div class='my-5' id="reaction_images"></div>
+
+                            {% if current_user.is_anonymous %}
+                                <p>Please log in to submit reaction suggestions</p>
+                            {% else %}
+
+                                {% if can_save == True %}
+                                    <button type="button" class="btn btn-success" onclick="save_reaction_suggestion()">Save suggestion</button>
+                                    <br/>
+                                    <small>Reaction suggestions are displayed publicly.  Your name and affiliation will be displayed with the suggestion</small>
+                                    <br/>
+                                {% endif %}
+
+                                {% if can_delete == True %}
+                                    <button class="btn btn-outline-danger mt-3"
+                                            id="{{issue_id}}_delete"
+                                            onclick=toggle_delete_confirm("{{issue_id}}")>
+                                        Delete suggestion
+                                    </button>
+
+                                    <button id="{{issue_id}}_def_delete"
+                                            class="btn btn-danger mt-3"
+                                            style="display: none"
+                                            onclick="delete_suggestion()">
+                                        Definitely delete issue?
+                                    </button>
+
+                                    {% if status == 'Open' %}
+                                        <button class="btn btn-warning mt-3" onclick="open_close_suggestion('Close')">Close issue</button>
+                                    {% else %}
+                                        <button class="btn btn-success mt-3" onclick="open_close_suggestion('Open')">Open issue</button>
+                                    {% endif %}
+                                {% endif %}
+
+                            {% endif %}
+                            <div id="report_response2"></div>
+
+
+
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    {% if enable_comments == True %}
+                        <div class="container text-center">
+                        <h4 class="mt-4">Comments</h4>
+                        {% for comment in comments %}
+                            <div class="card my-2">
+                            <div class="card-header text-left">
+
+                                <p class="no_margin">
+                                    {{comment['user']}}
+                                    <small class="no_margin">{{comment['date']}}</small>
+                                    <span class="float-right">
+                                        {% if comment['can_edit'] == True %}
+                                            <button id="{{comment['comment_id']}}_edit"
+                                                    class="btn btn-sm btn-outline-warning"
+                                                    onclick="load_comment_info('{{comment['comment_id']}}')"
+                                                    data-toggle="modal" data-target="#edit_comment_modal">
+                                                Edit
+                                            </button>
+
+                                        {% endif %}
+                                        {% if comment['can_delete'] == True %}
+                                            <button class="btn btn-sm btn-outline-danger"
+                                                    id="{{comment['comment_id']}}_delete"
+                                                    onclick=toggle_delete_confirm("{{comment['comment_id']}}")>
+                                                Delete
+                                            </button>
+                                            <button id="{{comment['comment_id']}}_def_delete"
+                                                    class="btn btn-sm btn-danger"
+                                                    style="display: none"
+                                                    onclick="delete_comment('{{comment['comment_id']}}')">
+                                                Definitely Delete?
+                                            </button>
+                                        {% endif %}
+                                    </span>
+                                </p>
+                            </div>
+                                <div class="card-body text-left">
+                                    <p class="card-text">{{comment['comment']}}</p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                        <div class="container text-center mb-5">
+                        {% if current_user.is_anonymous %}
+                        <button class="btn btn-primary disabled" disabled>Please login to reply</button>
+                        {% else %}
+                        <button class="btn btn-primary px-5" data-toggle="modal" data-target="#comment_modal">Reply</button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+            <div class="col"></div>
+
+        </div>
+    </div>
+
+    {% include 'rxn_rule_editor/modals/enzyme_modal.html' %}
+    {% include 'rxn_rule_editor/modals/test_modal.html' %}
+
+    {% include 'comments/comment_modal.html' %}
+    {% include 'comments/edit_comment_modal.html' %}
+
+    <script>
+        window.parent_type = 'reaction_suggestion'
+        window.parent_id = "{{suggestion_id}}"
+
+        function open_close_suggestion(open_close) {
+            $.post('/_open_close_reaction_suggestion', {
+                suggestion_id: "{{suggestion_id}}",
+                open_close: open_close
+            }).done(function (data) {
+                response_msg(data.result.msg, data.result.status, data.result.issues, "report_response")
+                response_msg(data.result.msg, data.result.status, data.result.issues, "report_response2")
+                location.reload()
+            }).fail(function(xhr, status, error) {
+                console.log(error)
+            });
+        }
+
+
+        function save_reaction_suggestion() {
+            $.post('/_save_reaction_suggestion', {
+                suggestion_id: "{{suggestion_id }}",
+                reaction_name: document.getElementById("rxn_name").value,
+                reaction_smarts: document.getElementById("rxn_smarts").value,
+                details: document.getElementById("reaction_details").value,
+
+            }).done(function (data) {
+                response_msg(data.result.msg, data.result.status, data.result.issues, "report_response")
+                response_msg(data.result.msg, data.result.status, data.result.issues, "report_response2")
+                if (data.result.status === 'success') {
+                    location.href = Flask.url_for("retrobiocat.reaction_suggestion", {"suggestion_id": data.result.suggestion_id})
+                }
+
+
+            }).fail(function(xhr, status, error) {
+                console.log(error)
+            });
+        }
+
+
+        function display_rxn_imgs(list_rxn_imgs) {
+            var rxn_img;
+            var imgDiv = document.getElementById("reaction_images");
+            imgDiv.innerHTML = ''
+
+            for (rxn_img of list_rxn_imgs) {
+                var newDiv = document.createElement("div");
+                newDiv.innerHTML = rxn_img
+                imgDiv.appendChild(newDiv);
+            }
+        }
+
+        function visualise_smarts() {
+            $.post('/_visualise_smarts', {
+                smarts_yaml: document.getElementById("rxn_smarts").value
+
+                }).done(function(data) {
+                    if (data.result.status === 'success') {
+                        display_rxn_imgs(data.result.list_imgs)
+                    }
+                })
+            }
+
+        document.getElementById("visualise_smarts").onclick = function() {
+            visualise_smarts()
+        }
+
+        function toggle_delete_confirm(button_id) {
+        document.getElementById(button_id + '_delete').style.display = "none"
+        document.getElementById(button_id + '_def_delete').style.display = "block"
+    }
+
+    function delete_comment(comment_id) {
+        $.post('/_delete_comment', {
+            comment_id: comment_id
+        }).done(function (data) {
+            response_msg(data.result.msg, data.result.status, data.result.issues, "report_response")
+            location.reload()
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+
+        function delete_suggestion() {
+        $.post('/_delete_reaction_suggestion', {
+            suggestion_id: "{{suggestion_id}}"
+        }).done(function (data) {
+            if (data.result.status === 'success') {
+                location.href = Flask.url_for("retrobiocat.reaction_suggestions_table")
+            }
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+
+    </script>
+
+{% endblock %}

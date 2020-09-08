@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% set active_page = "" %}
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-form">
+                    <div class="card-body">
+                        <h3 class="text-center">Reaction suggestions</h3>
+                        {% include 'reaction_suggestions/reaction_suggestions_table_tabulator.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

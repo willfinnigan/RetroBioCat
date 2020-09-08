@@ -25,3 +25,12 @@ class Issue(db.Document):
     comments = db.ListField(db.ReferenceField(Comment, reverse_delete_rule=4))
     public = db.BooleanField(default=False)
     date = db.DateTimeField(default=datetime.utcnow)
+
+class ReactionSuggestion(db.Document):
+    name = db.StringField()
+    smarts = db.ListField(db.StringField())
+    details = db.StringField()
+    owner = db.ReferenceField(User)
+    status = db.StringField(default='Open')
+    comments = db.ListField(db.ReferenceField(Comment, reverse_delete_rule=4))
+    date = db.DateTimeField(default=datetime.utcnow)

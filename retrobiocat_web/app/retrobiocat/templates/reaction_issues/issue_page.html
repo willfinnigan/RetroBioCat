@@ -58,7 +58,9 @@
                                     </div>
                                 </div>
                             {% endfor %}
-                            <div class="my-4 text-right">
+
+
+                            <div class="container my-4 text-center">
                                 {% if current_user.has_role('rxn_rules_admin') %}
                                     <button class="btn btn-outline-danger"
                                             id="{{issue_id}}_delete"

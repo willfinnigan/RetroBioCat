@@ -7,7 +7,7 @@ from flask_security import roles_required, current_user, auth_required
 from retrobiocat_web.app.app import user_datastore
 import json
 from distutils.util import strtobool
-from retrobiocat_web.mongo.models.reaction_models import Issue, Reaction
+from retrobiocat_web.mongo.models.reaction_models import Issue, Reaction, ReactionSuggestion
 from retrobiocat_web.mongo.models.comments import Comment
 
 @bp.route('/_submit_comment', methods=['GET', 'POST'])
@@ -45,6 +45,10 @@ def submit_comment():
             issue = Issue.objects(id=parent_id)[0]
             issue.comments.append(comment_obj)
             issue.save()
+        elif parent_type == 'reaction_suggestion':
+            r_sug = ReactionSuggestion.objects(id=parent_id)[0]
+            r_sug.comments.append(comment_obj)
+            r_sug.save()
 
 
     result = {'status': 'success',
