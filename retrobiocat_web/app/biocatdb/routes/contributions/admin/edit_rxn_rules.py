@@ -10,6 +10,8 @@ from retrobiocat_web.app.biocatdb.functions.reaction_rules import yaml_conversio
 from retrobiocat_web.app.biocatdb.functions.reaction_rules.reaction_tests import ReactionTester
 from retrobiocat_web.retro.generation.network_generation.network import Network
 
+from retrobiocat_web.mongo.models.biocatdb_models import Activity
+
 def get_reactions():
     reactions = list(Reaction.objects().distinct('name'))
     reactions.sort()
@@ -161,10 +163,20 @@ def save_reaction():
     reaction.two_step = two_step
 
     reaction.save()
+
+    refresh = 'False'
+    if rxn_selection != reaction.name:
+        refresh = 'True'
+        activities = Activity.objects(reaction=rxn_selection)
+        for act in activities:
+            act.reaction = reaction.name
+            act.save()
+
     print("reaction saved")
     result = {'status': 'info',
               'msg': "Reaction saved",
-              'issues': []}
+              'issues': [],
+              'refresh': refresh}
     return jsonify(result=result)
 
 @bp.route("/_test_reaction", methods=["POST"])

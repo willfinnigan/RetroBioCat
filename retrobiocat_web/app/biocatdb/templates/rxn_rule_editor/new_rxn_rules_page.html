@@ -183,6 +183,7 @@
             }
 
         function save() {
+            document.getElementById("save_response").innerHTML = "<p> Saving please wait </p>"
             $.post('/_save_reaction', {
                 rxn_selection: document.getElementById("reaction_select").value,
                 rxn_name: document.getElementById("rxn_name").value,
@@ -194,7 +195,11 @@
                 experimental: document.getElementById("experimental").checked,
                 two_step: document.getElementById("two_step").checked
                 }).done(function(data) {
+                    document.getElementById("save_response").innerHTML = ''
                     save_or_test_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+                    if (data.result.refresh === 'True') {
+                        location.reload()
+                    }
                 })
             }
 
