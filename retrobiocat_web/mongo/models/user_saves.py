@@ -10,3 +10,9 @@ class Network(db.Document):
     owner = db.ReferenceField(User, reverse_delete_rule=db.CASCADE)
     data = db.DictField()
     time = db.DateTimeField()
+
+class MyMolecule(db.Document):
+    owner = db.ReferenceField(User, reverse_delete_rule=db.CASCADE)
+    smiles = db.StringField()
+    name = db.StringField()
+    svg = db.StringField()

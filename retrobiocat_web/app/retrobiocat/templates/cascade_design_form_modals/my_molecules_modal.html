@@ -1,0 +1,81 @@
+<div class="modal fade" id="my_molecules_modal" tabindex="-1" role="dialog" aria-labelledby="my_molecules_modalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="my_molecules_modalLabel">My molecules</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body" align="center">
+                {% if current_user.is_anonymous %}
+                    <p><strong>Please log in to save and view molecules</strong></p>
+                {% endif %}
+
+                <div id="my_molecules"></div>
+
+                <div class="custom-control custom-checkbox">
+                    <input class="custom-control-input" type="checkbox" id="delete_mode">
+                    <label class="custom-control-label" for="delete_mode">Delete mode</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $('#my_molecules_modal').on('show.bs.modal', function () {
+        load_my_molecules()
+    })
+
+    function load_my_molecules() {
+        $.post('/_load_my_molecules', {
+        }).done(function (data) {
+            make_buttons(data.result.mol_dict)
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+
+    function make_buttons(mol_dict) {
+        var btn_div = document.getElementById('my_molecules')
+        btn_div.innerHTML = ''
+
+        for (const [key, value] of Object.entries(mol_dict)) {
+            var btn = document.createElement("BUTTON");
+            btn.style = "width: 175px; height: 175px"
+            btn.id = "button_" + key
+            btn.onclick =  function(){molecule_clicked(key)}
+            btn.className = 'btn btn-outline-secondary'
+            btn.innerHTML += "<p class='no_margin'><small>" + value[0] + "</small></p>"
+            btn.innerHTML += value[1]
+            btn_div.appendChild(btn);
+        }
+    }
+
+    function delete_mol(smiles) {
+        $.post('/_delete_my_molecule', {
+            smiles: smiles
+        }).done(function (data) {
+            if (data.result.status === 'success') {
+                document.getElementById("button_" + smiles).remove();
+            }
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+
+    function molecule_clicked(smiles) {
+        if (document.getElementById('delete_mode').checked === true) {
+            delete_mol(smiles)
+        } else {
+            document.getElementById('target_smiles').value = smiles
+            $('#my_molecules_modal').modal('hide');
+        }
+
+    }
+
+
+</script>

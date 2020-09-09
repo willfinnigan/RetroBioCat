@@ -20,6 +20,25 @@
                                 {{ form.hidden_tag() }}
 
                                 {{ target_smiles(form.target_smiles) }}
+
+                                <div class="btn-group mb-4 mt-1" role="group">
+                                    <button type="button" class="btn btn-outline-warning" data-toggle="modal" data-target="#example_molecules">
+                                        Examples
+                                    </button>
+
+                                    <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#my_molecules_modal">
+                                        My Molecules
+                                    </button>
+
+                                    <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#save_molecule_modal">
+                                        Save
+                                    </button>
+
+                                    <button type="button" class="btn btn-outline-info" data-toggle="modal" data-target="#fragment_modal">
+                                        Fragment
+                                    </button>
+                                </div>
+
                                 {{ number_field(form.number_steps) }}
                                 {{ number_field(form.max_initial_nodes) }}
 
@@ -31,9 +50,6 @@
                                 Other options
                             </button>
 
-                            <button type="button" class="btn btn-outline-warning" data-toggle="modal" data-target="#example_molecules">
-                                Example molecules
-                            </button>
 
                             <div class="progress">
                                 <div class="progress-bar" id='progressbar'></div>
@@ -51,6 +67,10 @@
     {% include 'network_explorer_form/modal_form_options.html' %}
     {% include 'global/modals/modal_drawer.html' %}
     {% include 'global/modals/modal_example_molecules.html' %}
+
+    {% include 'cascade_design_form_modals/save_molecule_modal.html' %}
+    {% include 'cascade_design_form_modals/my_molecules_modal.html' %}
+    {% include 'cascade_design_form_modals/fragment_modal.html' %}
 
     <script>
         function getStatus(taskID) {
