@@ -11,11 +11,48 @@
 
             <div class="modal-body">
 
+                <div id="fragments"></div>
+
+
             </div>
         </div>
     </div>
 </div>
 
 <script>
+    $('#fragment_modal').on('show.bs.modal', function () {
+        fragment_molecule()
+    })
+
+    function fragment_molecule() {
+        $.post('/_fragment_molecule', {
+            smiles: document.getElementById('target_smiles').value
+        }).done(function (data) {
+            make_fragment_buttons(data.result.mol_dict)
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+
+    function make_fragment_buttons(mol_dict) {
+        var btn_div = document.getElementById('fragments')
+        btn_div.innerHTML = ''
+
+        for (const [key, value] of Object.entries(mol_dict)) {
+            var btn = document.createElement("BUTTON");
+            btn.style = "width: 220px; height: 220px"
+            btn.id = "button_" + key
+            btn.onclick =  function(){fragment_clicked(key)}
+            btn.className = 'btn btn-outline-danger'
+            btn.innerHTML = value
+            btn_div.appendChild(btn);
+        }
+    }
+
+    function fragment_clicked(smiles) {
+        document.getElementById('target_smiles').value = smiles
+        $('#fragment_modal').modal('hide');
+
+    }
 
 </script>
