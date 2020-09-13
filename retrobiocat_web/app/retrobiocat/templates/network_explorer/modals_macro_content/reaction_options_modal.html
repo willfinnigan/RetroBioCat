@@ -5,69 +5,26 @@
         <input type="number" id="max_reactions" class="form-control w-25" value="{{max_reactions}}">
     </div>
 
-    <div class="form-inline">
-        <label id="Retrorules_label" for="Retrorules">Use Retrorules:</label>
-        <input type="checkbox" class='form-control' data-toggle="collapse" data-target="#rr_collapse" id="Retrorules">
+    <div class="form-check">
+        <input class="form-check-input" type="radio" name="reaction_mode_radio" id="default_reaction_select" value="default" checked>
+        <label class="form-check-label" for="default">
+            Biocatalysis - Default RetroBioCat ruleset
+        </label>
     </div>
-
-    <div class="collapse" id="rr_collapse">
-        <div class="card card-body">
-            <div class="form-inline">
-                <label for="retrorules_min_diameter">Retrorules min diameter</label>
-                <select id="retrorules_min_diameter" class="form-control w-25">
-                    {% for d in retrorules_diameters %}
-                        <option value="{{d}}">{{d}}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="form-inline">
-                <label for="retrorules_min_products">Retrorules min products</label>
-                <input type="number" id="retrorules_min_products" class="form-control w-25" value="25">
-            </div>
-
-            <div class="form-inline">
-                <label for="retrorules_max_reactions">Retrorules max reactions</label>
-                <input type="number" id="retrorules_max_reactions" class="form-control w-25" value="1">
-            </div>
-         </div>
+    <div class="form-check">
+        <input class="form-check-input" type="radio" name="reaction_mode_radio" id="aizynth_reaction_select" value="aizynth">
+        <label class="form-check-label" for="aizynth">
+            Chemistry - AIZynthfinder templates + policy
+        </label>
     </div>
-
-    <button type="button" id="reaction_options_submit" class="btn btn-primary">Submit</button>
-
-
-
-
+    <div class="form-check disabled">
+        <input class="form-check-input" type="radio" name="reaction_mode_radio" id="retrorules_reaction_select" value="retrorules" disabled>
+        <label class="form-check-label" for="retrorules">
+            Metabolism - RetroRules
+        </label>
+    </div>
 
 </div>
 
-<script>
 
-    document.getElementById("reaction_options_submit").onclick = function() {
-        set_reaction_options(data)
-    }
-
-    function set_reaction_options(network_data) {
-        $.post('/_change_reaction_options',
-            {
-                max_reactions: document.getElementById("max_reactions").value,
-                rr_min_diameter: document.getElementById("retrorules_min_diameter").value,
-                rr_min_products: document.getElementById("retrorules_min_products").value,
-                rr_max_reactions: document.getElementById("retrorules_max_reactions").value,
-                task_id: window.task_id
-            }
-            ).done(function(response_data) {
-                let new_nodes = response_data.result.nodes
-                let new_edges = response_data.result.edges
-                addNodes(network_data, new_nodes, new_edges)
-            })
-        }
-
-
-    var list_diameters = {{ retrorules_diameters }}
-    if (list_diameters.length === 0) {
-        document.getElementById("Retrorules").disabled = true;
-    }
-
-</script>
 

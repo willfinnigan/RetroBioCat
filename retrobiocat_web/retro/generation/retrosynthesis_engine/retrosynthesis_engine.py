@@ -6,6 +6,9 @@ import uuid
 import networkx as nx
 from retrobiocat_web.retro.rdchiral.main import rdchiralReactants, rdchiralRun
 from retrobiocat_web.retro.rdchiral.clean import combine_enantiomers_into_racemic
+from retrobiocat_web.retro.generation.retrosynthesis_engine import aizynthfinder_actions
+from retrobiocat_web.retro.rdchiral.main import rdchiralReaction
+
 
 class BracketCleaner():
 
@@ -107,7 +110,7 @@ class RuleApplicator():
 
     def __init__(self, network):
         self.network = network
-        self.small_precursors = ['C=O', 'N', 'CN', 'CO', 'CC(=O)O', 'CC(N)=O', 'O', 'O=O', 'H+', '[H+]']
+        self.small_precursors = ['N', 'O', 'O=O', 'H+', '[H+]']
         self.bracket_cleaner = BracketCleaner()
 
     def run(self, smile, rxns, graph, explicit_hydrogens=False):
@@ -429,6 +432,35 @@ class GraphPruner():
         if self.print_log == True:
             print(msg)
 
+class AIZynthfinder_RuleApplicator(RuleApplicator):
+
+    def __init__(self, network):
+        super().__init__(network)
+        self.action_applier = aizynthfinder_actions.aizynth_action_applier
+
+    def run(self, smile, graph):
+        rxns = self.get_rxns(smile)
+
+        precursor_dict = self.apply_rules(smile, rxns)
+        precursor_dict = self._remove_precursors_already_in_graph(graph, smile, precursor_dict)
+
+        if self.network.settings['remove_simple'] == True:
+            for name in precursor_dict:
+                precursor_dict[name] = self._remove_simple_precursors(precursor_dict[name])
+
+        return precursor_dict
+
+    def get_rxns(self, smile):
+        reactions = self.action_applier.get_actions(smile)
+        rxns = {}
+        for reaction in reactions:
+            name = f"Chem_{reaction['metadata']['classification']}"
+            if name not in rxns:
+                rxns[name] = []
+            rxns[name].append(rdchiralReaction(reaction['smarts']))
+        return rxns
+
+
 class RetrosynthesisEngine():
 
     def __init__(self, network):
@@ -437,6 +469,7 @@ class RetrosynthesisEngine():
         self.graphManipulator = GraphManipulator(network)
         self.reactionSelector = ReactionSelector(network, GraphPruner())
         self.graphPruner = GraphPruner()
+        self.aizynth_rule_application = AIZynthfinder_RuleApplicator(network)
 
     def single_step(self, smile, rxns, graph, disallowedProducts=None):
         if self._should_rules_be_applied(smile, graph) == False:
@@ -446,7 +479,16 @@ class RetrosynthesisEngine():
         listProducts, listReactions = self.graphManipulator.add_nodes_to_graph(rxnsSubstratesDict, smile, graph)
         listProducts, listReactions = self.reactionSelector.remove_disallowed_products(disallowedProducts, listProducts,listReactions)
         listProducts, listReactions = self.reactionSelector.select_best_by_complexity(listProducts, listReactions, self.network.settings['max_reactions'])
+        return listProducts, listReactions
 
+    def single_aizynth_step(self, smile, graph, disallowedProducts=None):
+        if self._should_rules_be_applied(smile, graph) == False:
+            return [],[]
+
+        rxnsSubstratesDict = self.aizynth_rule_application.run(smile, graph)
+        listProducts, listReactions = self.graphManipulator.add_nodes_to_graph(rxnsSubstratesDict, smile, graph)
+        listProducts, listReactions = self.reactionSelector.remove_disallowed_products(disallowedProducts, listProducts, listReactions)
+        listProducts, listReactions = self.reactionSelector.select_best_by_complexity(listProducts, listReactions, self.network.settings['max_reactions'])
         return listProducts, listReactions
 
     def generate_network(self, target_smile, number_steps, rxns, graph, disallowedProducts=None):

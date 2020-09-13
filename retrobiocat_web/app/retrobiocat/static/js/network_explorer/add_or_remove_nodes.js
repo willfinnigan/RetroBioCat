@@ -17,7 +17,7 @@ document.getElementById("reset").addEventListener("click", function () {
 
 
 
-function step(params, network_data) {
+function default_step(params, network_data) {
     if (window.pause_add_nodes === false) {
         pause_on()
         $.post(Flask.url_for("retrobiocat.step"), {
@@ -25,7 +25,6 @@ function step(params, network_data) {
             x: params.pointer.canvas.x,
             y: params.pointer.canvas.y,
             max_reactions: document.getElementById("max_pathways").value,
-            mode: document.getElementById("Retrorules").checked
 
         }).done(function(response_data) {
             if (response_data.result.mode === 'default') {
@@ -35,42 +34,29 @@ function step(params, network_data) {
                 removeNodes(network_data, nodesToRemove)
                 addNodes(network_data, new_nodes, new_edges)
                 pause_off()
-            } else {
-                get_retrorules_Status(response_data.result.response.data.task_id)
             }
         });
     }
 }
 
+function aizynth_step(params, network_data) {
+    if (window.pause_add_nodes === false) {
+        pause_on()
+        $.post(Flask.url_for("retrobiocat.aizynth_step"), {
+            smiles: params.nodes[0],
+            x: params.pointer.canvas.x,
+            y: params.pointer.canvas.y,
+            max_reactions: document.getElementById("max_reactions").value,
 
-function get_retrorules_Status(taskID) {
-    var network_data = data
-    $.get('_retrorules_step_status/' + taskID, {
-    }).done(function(response) {
-        const taskStatus = response.data.task_status;
-        const taskProgress = response.data.task_progress;
-
-        document.getElementById("rr_que").innerHTML = "queuing";
-
-        if (taskStatus === 'finished') {
-            document.getElementById("rr_que").innerHTML = "done";
-            let new_nodes = response.data.task_result.nodes
-            let new_edges = response.data.task_result.edges
-            window.graph_dict = response.data.task_result.graph_dict
-            window.attr_dict = response.data.task_result.attr_dict
-            addNodes(network_data, new_nodes, new_edges)
-        } else if (taskStatus === 'failed') {
-            document.getElementById("rr_que").innerHTML = "error";
-            window.pause_add_nodes = false;
-            document.getElementById("interaction").innerHTML = "";
-            return false;
-        } else {
-            if (taskStatus === 'started') {
-                document.getElementById("rr_que").innerHTML = "started";
+        }).done(function(response_data) {
+            if (response_data.result.mode === 'default') {
+                let new_nodes = response_data.result.nodes
+                let new_edges = response_data.result.edges
+                let nodesToRemove = response_data.result.to_delete
+                removeNodes(network_data, nodesToRemove)
+                addNodes(network_data, new_nodes, new_edges)
+                pause_off()
             }
-            setTimeout(function() {
-                get_retrorules_Status(response.data.task_id);
-                }, 1000);
-        }
-    })
+        });
+    }
 }

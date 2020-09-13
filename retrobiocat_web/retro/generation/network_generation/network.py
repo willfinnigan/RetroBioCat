@@ -116,6 +116,15 @@ class Network(object):
             self.evaluator.calculate_scores(self)
 
         return listSmiles, listReactions
+    
+    def add_chemical_step(self, smiles, calculate_scores=True):
+        listSmiles, listReactions = self.retrosynthesisEngine.single_aizynth_step(smiles, self.graph)
+        self.get_node_types()
+
+        if calculate_scores == True:
+            self.evaluator.calculate_scores(self)
+
+        return listSmiles, listReactions
 
     def custom_reaction(self, product_smiles, substrate_smiles, reaction_name):
         """ Add a custom reaction to self.graph"""

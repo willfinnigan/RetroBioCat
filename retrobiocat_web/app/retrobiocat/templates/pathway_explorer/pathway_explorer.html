@@ -19,10 +19,10 @@
         var edges = new vis.DataSet({{edges|tojson}});
         var data =  {nodes: nodes, edges: edges}
         var container = document.getElementById('mynetwork');
-        var default_options = {smoothCurves: {dynamic:false},
-                       hideEdgesOnDrag: true,
-                       stabilize: true,
-                       stabilizationIterations: 1000,}
+                var default_options = {physics: {stabilize: true,
+                                         stabilizationIterations: 1000,},
+                                        interaction: {zoomSpeed: 0.7}
+                                    }
 
         var options = $.extend(true, default_options, {{options|safe}});
 

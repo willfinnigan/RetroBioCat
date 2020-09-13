@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-PLEVEL = 10
+PLEVEL = 0
 def vprint(level, txt, *args):
     if PLEVEL >= level:
         print(txt.format(*args))

@@ -27,7 +27,7 @@ def fragment_molecule():
         return jsonify(result=result)
 
     mol = Chem.MolFromSmiles(smiles)
-    list_smi = list(BRICSDecompose(mol, minFragmentSize=5))
+    list_smi = list(BRICSDecompose(mol, minFragmentSize=5, keepNonLeafNodes=True))
 
     list_processed = []
     for smi in list_smi:
