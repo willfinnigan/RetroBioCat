@@ -29,3 +29,6 @@ pymed
 crossrefapi
 biopython
 requests
+
+tensorflow
+Keras>=2.2.4,<3.0.0
