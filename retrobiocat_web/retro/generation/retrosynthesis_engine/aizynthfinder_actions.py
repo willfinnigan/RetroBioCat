@@ -45,13 +45,19 @@ class LocalKerasModel:
 class ActionApplier():
 
     def __init__(self):
-        policy_path = data_folder + '/uspto_model.hdf5'
-        self.policy_model = LocalKerasModel(policy_path)
-        templates_path = data_folder + '/uspto_templates.hdf5'
-        self.templates = pd.read_hdf(templates_path, "table")
+        self.policy_model = None
+        self.templates = None
         self.cutoff_cumulative = 0.995
         self.cutoff_number = 50
         self.template_column = 'retro_template'
+
+    def load_model(self):
+        if self.policy_model == None:
+            policy_path = data_folder + '/uspto_model.hdf5'
+            self.policy_model = LocalKerasModel(policy_path)
+        if self.templates == None:
+            templates_path = data_folder + '/uspto_templates.hdf5'
+            self.templates = pd.read_hdf(templates_path, "table")
 
     def get_actions(self, smi):
         reactions = []

@@ -451,6 +451,9 @@ class AIZynthfinder_RuleApplicator(RuleApplicator):
         return precursor_dict
 
     def get_rxns(self, smile):
+        if self.action_applier.policy_model == None:
+            self.action_applier.load_model()
+
         reactions = self.action_applier.get_actions(smile)
         rxns = {}
         for reaction in reactions:

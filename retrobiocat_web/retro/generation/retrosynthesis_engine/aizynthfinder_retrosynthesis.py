@@ -29,7 +29,9 @@ class AIZynth_RuleApplicator(RuleApplicator):
         return precursor_dict
 
     def get_rxns(self, smi):
-        reactions = self.action_applier.get_actions('CCCCCO')
+        if self.action_applier.policy_model == None:
+            self.action_applier.load_model()
+        reactions = self.action_applier.get_actions(smi)
 
 class AIZynth_ReactionSelector(ReactionSelector):
 
