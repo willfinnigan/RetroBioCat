@@ -39,6 +39,8 @@ def moltosvg(mol,molSize=(150,150),kekulize=True):
     if not mc.GetNumConformers():
         rdDepictor.Compute2DCoords(mc)
     drawer = rdMolDraw2D.MolDraw2DSVG(molSize[0],molSize[1])
+    opts = drawer.drawOptions()
+    opts.addStereoAnnotation = True
     drawer.DrawMolecule(mc)
     drawer.FinishDrawing()
     svg = drawer.GetDrawingText()
@@ -49,6 +51,8 @@ def rxntosvg(list_rxns, rxnSize=(900,300)):
     for i, rxn in enumerate(list_rxns):
         rdkit_reaction = rxn.rxn
         d = Draw.MolDraw2DSVG(rxnSize[0], rxnSize[1])
+        opts = d.drawOptions()
+        opts.addStereoAnnotation = True
         d.DrawReaction(rdkit_reaction)
         d.FinishDrawing()
         svg = d.GetDrawingText()
@@ -59,6 +63,8 @@ def rxntosvg(list_rxns, rxnSize=(900,300)):
 def smiles_rxn_to_svg(smiles_rxn, rxnSize=(900,300)):
     rxn = rdChemReactions.ReactionFromSmarts(smiles_rxn, useSmiles=True)
     d = Draw.MolDraw2DSVG(rxnSize[0], rxnSize[1])
+    opts = d.drawOptions()
+    opts.addStereoAnnotation = True
     d.DrawReaction(rxn)
     d.FinishDrawing()
     svg = d.GetDrawingText()

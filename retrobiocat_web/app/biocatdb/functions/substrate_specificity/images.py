@@ -22,6 +22,8 @@ def moltosvg_url(mol,molSize=(150,150),kekulize=True):
     if not mc.GetNumConformers():
         rdDepictor.Compute2DCoords(mc)
     drawer = rdMolDraw2D.MolDraw2DSVG(molSize[0],molSize[1])
+    opts = drawer.drawOptions()
+    opts.addStereoAnnotation = True
     drawer.DrawMolecule(mc)
     drawer.FinishDrawing()
     svg = drawer.GetDrawingText()

@@ -26,7 +26,6 @@ def moltosvg(mol,molSize=(300,300)):
     drawer = rdMolDraw2D.MolDraw2DSVG(molSize[0],molSize[1])
     opts = drawer.drawOptions()
     opts.padding = 0.1
-    opts.addStereoAnnotation = True
     drawer.SetFontSize(1.0)
     drawer.DrawMolecule(mol)
     drawer.FinishDrawing()
