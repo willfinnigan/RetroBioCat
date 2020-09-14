@@ -1,10 +1,9 @@
 
-def mark_node(list_nodes, target_node, colour, borderWidth=2):
+def mark_node(list_nodes, target_node, colour):
     for i, node in enumerate(list_nodes):
         if list_nodes[i]['id'] == target_node:
             if colour != '':
                 list_nodes[i]['color'] = colour
-            list_nodes[i]['borderWidth'] = borderWidth
 
     return list_nodes
 
@@ -20,7 +19,7 @@ def colour_substrate_nodes_by_building_block(nodes, graph):
 
     return nodes
 
-def colour_substrates_by_relative_complexity(nodes, graph, substrate_nodes, reaction_nodes, borderwidth=2):
+def colour_substrates_by_relative_complexity(nodes, graph, substrate_nodes, reaction_nodes):
     def min_max_relative_complexity(graph):
         min_complexity = 0
         max_complexity = 0

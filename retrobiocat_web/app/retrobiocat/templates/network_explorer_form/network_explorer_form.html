@@ -27,7 +27,7 @@
                                     </button>
 
                                     <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#my_molecules_modal">
-                                        My Molecules
+                                        My Mols
                                     </button>
 
                                     <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#save_molecule_modal">
@@ -37,6 +37,12 @@
                                     <button type="button" class="btn btn-outline-info" data-toggle="modal" data-target="#fragment_modal">
                                         Fragment
                                     </button>
+
+                                    <!--
+                                    <button type="button" class="btn btn-outline-danger" data-toggle="modal" data-target="#chemistry_modal">
+                                        Chemistry
+                                    </button>
+                                    -->
                                 </div>
 
                                 {{ number_field(form.number_steps) }}
@@ -71,6 +77,7 @@
     {% include 'cascade_design_form_modals/save_molecule_modal.html' %}
     {% include 'cascade_design_form_modals/my_molecules_modal.html' %}
     {% include 'cascade_design_form_modals/fragment_modal.html' %}
+    {% include 'cascade_design_form_modals/chemistry_modal.html' %}
 
     <script>
         function getStatus(taskID) {

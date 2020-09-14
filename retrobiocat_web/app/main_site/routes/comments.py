@@ -23,7 +23,6 @@ def submit_comment():
     comment_text = request.form['comment']
     comment_id = request.form['comment_id']
 
-    print(comment_id)
 
     if comment_id != '':
         comment_obj = Comment.objects(id=comment_id)[0]

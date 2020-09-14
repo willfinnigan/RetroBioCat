@@ -11,6 +11,7 @@ import tensorflow
 import logging
 import os
 from pathlib import Path
+from retrobiocat_web.retro.rdchiral.main import rdchiralReaction
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
@@ -86,6 +87,19 @@ class ActionApplier():
             reactions.append(reaction)
 
         return reactions
+
+    def get_rxns(self, smile):
+        if self.policy_model == None:
+            self.load_model()
+
+        reactions = self.get_actions(smile)
+        rxns = {}
+        for reaction in reactions:
+            name = f"Chem_{reaction['metadata']['classification']}"
+            if name not in rxns:
+                rxns[name] = []
+            rxns[name].append(rdchiralReaction(reaction['smarts']))
+        return rxns
 
     def _predict(self, mol):
         fingerprint = self._get_fingerprint(mol, 2, nbits=len(self.policy_model))

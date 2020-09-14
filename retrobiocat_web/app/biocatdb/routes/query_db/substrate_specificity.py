@@ -195,5 +195,4 @@ if __name__ == '__main__':
 
         activity_data = activity_df.to_dict(orient='records')
 
-        print(activity_data)
 

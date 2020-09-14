@@ -6,58 +6,65 @@
     {% from 'global/macros/form_macros.html' import target_smiles with context %}
     {% from 'global/macros/form_macros.html' import number_inline with context %}
 
-    <div class="container">
-        <form id="main_form" method="POST" action="" novalidate>
-            <div class="row">
-                <div class="col-sm-7 mx-auto">
-                    <div class="card card-form my-5">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col"></div>
+            <div class="col">
+                <form id="main_form" method="POST" action="" novalidate>
+                    <div class="card card-form my-5" style="width: 36rem;">
                         <div class="card-body" align="center">
                             <h3 class="card-title">Pathway explorer</h3>
                             <p> A short tutorial is available
                                 <a href="{{url_for('.static', filename='tutorial_pdfs/pathway_explorer_tutorial.pdf') }}" target="_blank"> here</a>
                             </p>
 
-                                    {{ form.hidden_tag() }}
+                            {{ form.hidden_tag() }}
 
-                                    {{ target_smiles(form.target_smiles) }}
+                            {{ target_smiles(form.target_smiles) }}
 
-                                    <div class="btn-group mb-4 mt-1" role="group">
-                                        <button type="button" class="btn btn-outline-warning" data-toggle="modal" data-target="#example_molecules">
-                                            Examples
-                                        </button>
+                            <div class="btn-group mb-4 mt-1" role="group">
+                                <button type="button" class="btn btn-outline-warning" data-toggle="modal" data-target="#example_molecules">
+                                    Examples
+                                </button>
 
-                                        <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#my_molecules_modal">
-                                            My Molecules
-                                        </button>
+                                <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#my_molecules_modal">
+                                    My Mols
+                                </button>
 
-                                        <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#save_molecule_modal">
-                                            Save
-                                        </button>
+                                <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#save_molecule_modal">
+                                    Save
+                                </button>
 
-                                        <button type="button" class="btn btn-outline-info" data-toggle="modal" data-target="#fragment_modal">
-                                            Fragment
-                                        </button>
-                                    </div>
+                                <button type="button" class="btn btn-outline-info" data-toggle="modal" data-target="#fragment_modal">
+                                    Fragment
+                                </button>
+
+                                <!--
+                                <button type="button" class="btn btn-outline-danger" data-toggle="modal" data-target="#chemistry_modal">
+                                    Chemistry
+                                </button>
+                                 -->
+                            </div>
 
 
-                                    {{ number_field(form.number_steps) }}
-                                    <div class="row my-2">
-                                        <div class="col-sm-2"></div>
-                                        <div class="col-sm-8">
-                                            {{ number_inline(form.weight_complexity) }}
-                                            {{ number_inline(form.weight_num_enzymes) }}
-                                            {{ number_inline(form.weight_starting) }}
-                                            {{ number_inline(form.weight_known_enzymes) }}
-                                            {{ number_inline(form.weight_diversity) }}
-                                        </div>
-                                        <div class="col-sm-2"></div>
-                                    </div>
+                            {{ number_field(form.number_steps) }}
+                            <div class="row my-2">
+                                <div class="col-sm-2"></div>
+                                <div class="col-sm-8">
+                                    {{ number_inline(form.weight_complexity) }}
+                                    {{ number_inline(form.weight_num_enzymes) }}
+                                    {{ number_inline(form.weight_starting) }}
+                                    {{ number_inline(form.weight_known_enzymes) }}
+                                    {{ number_inline(form.weight_diversity) }}
+                                </div>
+                                <div class="col-sm-2"></div>
+                            </div>
 
-                                    <div class="row my-2"></div>
+                            <div class="row my-2"></div>
 
-                                    <div class="form-group">
-                                    {{ form.submit(class="btn-lg btn-block btn-success") }}
-                                    </div>
+                            <div class="form-group">
+                            {{ form.submit(class="btn-lg btn-block btn-success") }}
+                            </div>
 
                             <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#formOptions">
                                 Other options
@@ -69,9 +76,10 @@
 
                         </div>
                     </div>
-                </div>
+                </form>
             </div>
-        </form>
+            <div class="col"></div>
+        </div>
     </div>
 
     {% include 'pathway_explorer_form/modal_form_options.html' %}
@@ -81,6 +89,7 @@
     {% include 'cascade_design_form_modals/save_molecule_modal.html' %}
     {% include 'cascade_design_form_modals/my_molecules_modal.html' %}
     {% include 'cascade_design_form_modals/fragment_modal.html' %}
+    {% include 'cascade_design_form_modals/chemistry_modal.html' %}
 
     <script>
         function getStatus(taskID) {

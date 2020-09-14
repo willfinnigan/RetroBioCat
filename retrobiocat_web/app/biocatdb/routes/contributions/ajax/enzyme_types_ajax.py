@@ -89,8 +89,6 @@ def merge_enzyme_types():
                   'msg': "Can't merge with self",
                   'issues': []}
 
-    print(result)
-
     return jsonify(result=result)
 
 @bp.route('/_delete_enzyme_type', methods=['GET', 'POST'])

@@ -80,7 +80,6 @@ def submit_reaction_issue():
     reaction_name = request.form['reaction']
     comment = request.form['comment']
     public = bool(strtobool(request.form['public']))
-    print(public)
 
     reaction_smiles = f"{substrates[0]}"
     if len(substrates) > 1:
@@ -181,7 +180,6 @@ def open_close_reaction_issue():
 @roles_required('rxn_rules_admin')
 def delete_reaction_issue():
     issue_id = request.form['issue_id']
-    print(issue_id)
 
     issue = Issue.objects(id=issue_id)[0]
 

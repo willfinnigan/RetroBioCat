@@ -15,7 +15,6 @@ def sequence_search():
     if form.validate_on_submit() == True:
         form_data = form.data
         enzyme_type = form_data['enzyme_type']
-        print(enzyme_type)
         if enzyme_type == 'All':
             return redirect(url_for("biocatdb.show_sequences"))
         else:

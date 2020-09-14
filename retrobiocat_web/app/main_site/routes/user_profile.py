@@ -33,7 +33,6 @@ def user_profile():
 @login_required
 def delete_account():
     delete_check = request.form['delete']
-    print(delete_check)
     if delete_check == 'DELETE':
         user = user_datastore.get_user(current_user.id)
         user.delete()

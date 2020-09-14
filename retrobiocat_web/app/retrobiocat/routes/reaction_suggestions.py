@@ -79,7 +79,6 @@ def reaction_suggestion(suggestion_id):
                        }
         comments.append(new_comment)
 
-    print(comments)
 
     return render_template('reaction_suggestions/reaction_suggestion.html',
                            page_title=page_title,
@@ -104,9 +103,6 @@ def save_reaction_suggestion():
     reaction_name = request.form['reaction_name']
     reaction_smarts = str(request.form['reaction_smarts'])
     details = request.form['details']
-
-    print(f"reaction smarts = [{reaction_smarts}]")
-    print(f"len reaction smarts = {len(reaction_smarts)}")
 
     smarts_list = []
     if len(reaction_smarts) != 0:

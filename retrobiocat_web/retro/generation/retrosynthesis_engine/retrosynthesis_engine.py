@@ -7,7 +7,7 @@ import networkx as nx
 from retrobiocat_web.retro.rdchiral.main import rdchiralReactants, rdchiralRun
 from retrobiocat_web.retro.rdchiral.clean import combine_enantiomers_into_racemic
 from retrobiocat_web.retro.generation.retrosynthesis_engine import aizynthfinder_actions
-from retrobiocat_web.retro.rdchiral.main import rdchiralReaction
+
 
 
 class BracketCleaner():
@@ -439,7 +439,7 @@ class AIZynthfinder_RuleApplicator(RuleApplicator):
         self.action_applier = aizynthfinder_actions.aizynth_action_applier
 
     def run(self, smile, graph):
-        rxns = self.get_rxns(smile)
+        rxns = self.action_applier.get_rxns(smile)
 
         precursor_dict = self.apply_rules(smile, rxns)
         precursor_dict = self._remove_precursors_already_in_graph(graph, smile, precursor_dict)
@@ -450,18 +450,7 @@ class AIZynthfinder_RuleApplicator(RuleApplicator):
 
         return precursor_dict
 
-    def get_rxns(self, smile):
-        if self.action_applier.policy_model == None:
-            self.action_applier.load_model()
 
-        reactions = self.action_applier.get_actions(smile)
-        rxns = {}
-        for reaction in reactions:
-            name = f"Chem_{reaction['metadata']['classification']}"
-            if name not in rxns:
-                rxns[name] = []
-            rxns[name].append(rdchiralReaction(reaction['smarts']))
-        return rxns
 
 
 class RetrosynthesisEngine():

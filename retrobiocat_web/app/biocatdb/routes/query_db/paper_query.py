@@ -31,7 +31,6 @@ def papers_search():
         enzyme_type = form_data['enzyme_type']
         enzyme_name = form_data['enzyme_name']
         reaction = form_data['reaction']
-        print(enzyme_type)
         if enzyme_type == 'All':
             enzyme_type = None
         if enzyme_name == 'All':
@@ -98,8 +97,6 @@ if __name__ == '__main__':
     enzyme_name = 'NiCAR'
 
     filtered_papers = filter_papers_by_enzyme_name(papers, enzyme_name)
-    print(filtered_papers)
 
     reaction = 'Carboxylic acid reduction'
     filtered_papers_2 = filter_papers_by_reaction(papers, reaction)
-    print(filtered_papers_2)

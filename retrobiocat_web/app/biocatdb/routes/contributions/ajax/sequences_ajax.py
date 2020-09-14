@@ -437,8 +437,6 @@ def save_or_add_seqs(data_list, paper):
                                    owner=user)
                     seq.save()
 
-                    print(seq)
-
             else:
                 seq = Sequence.objects(enzyme_name=seq_dict['enzyme_name'])[0]
                 if paper not in seq.papers:

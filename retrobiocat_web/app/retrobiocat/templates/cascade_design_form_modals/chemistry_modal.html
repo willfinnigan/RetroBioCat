@@ -1,0 +1,65 @@
+<div class="modal fade" id="chemistry_modal" tabindex="-1" role="dialog" aria-labelledby="chemistry_modalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Molecules which are one chemical step away from the target</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <p>
+                    These molecules have been generated using the templates and policy model for
+                    <a href="https://github.com/MolecularAI/aizynthfinder">AIZynthfinder</a>
+                </p>
+
+                <div id="chemical_mols">
+                    <p>Loading, please wait..</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $('#chemistry_modal').on('show.bs.modal', function () {
+        var btn_div = document.getElementById('chemical_mols')
+        btn_div.innerHTML = '<p>Loading, please wait..</p>'
+        apply_chemical_steps_molecule()
+    })
+
+    function apply_chemical_steps_molecule() {
+
+        $.post('/_apply_chemical_steps_molecule', {
+            smiles: document.getElementById('target_smiles').value
+        }).done(function (data) {
+            make_chemical_buttons(data.result.mol_dict)
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+
+    function make_chemical_buttons(mol_dict) {
+        var btn_div = document.getElementById('chemical_mols')
+        btn_div.innerHTML = ''
+
+        for (const [key, value] of Object.entries(mol_dict)) {
+            var btn = document.createElement("BUTTON");
+            btn.style = "width: 220px; height: 220px"
+            btn.id = "button_" + key
+            btn.onclick =  function(){chem_mol_clicked(key)}
+            btn.className = 'btn btn-outline-info'
+            btn.innerHTML = value
+            btn_div.appendChild(btn);
+        }
+    }
+
+    function chem_mol_clicked(smiles) {
+        document.getElementById('target_smiles').value = smiles
+        $('#chemistry_modal').modal('hide');
+    }
+
+</script>

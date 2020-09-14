@@ -98,8 +98,6 @@ def save_paper():
 
     elif request.form['self_assign'] == 'true':
         paper.owner = user
-
-    print(paper.to_json())
     paper.save()
     papers_functions.tag_paper_with_enzyme_types(paper)
     result = {'status': 'success',
