@@ -25,10 +25,14 @@ def delete_step():
     network.add_attributes(attr_dict)
 
     to_delete = network.delete_reaction_node(reaction)
+    nodes = []
+    edges = []
 
     data['graph_dict'] = json.dumps(nx.to_dict_of_lists(network.graph))
     data['attr_dict'] = json.dumps(network.attributes_dict())
-    nodes, edges = delete_nodes_and_edges(to_delete, [], [])
+    nodes = add_new(data['nodes'], nodes)
+    edges = add_new(data['edges'], edges)
+    nodes, edges = delete_nodes_and_edges(to_delete, nodes, edges)
     data['nodes'] = nodes
     data['edges'] = edges
 

@@ -19,10 +19,9 @@
         var edges = new vis.DataSet({{edges|tojson}});
         var data =  {nodes: nodes, edges: edges}
         var container = document.getElementById('mynetwork');
-                var default_options = {physics: {stabilize: true,
-                                         stabilizationIterations: 1000,},
-                                        interaction: {zoomSpeed: 0.5}
-                                    }
+        var default_options = {physics: {stabilization: {enabled: true, iterations: 1000, updateInterval: 100}},
+                               interaction: {zoomSpeed: 0.5}
+                               }
 
         var options = $.extend(true, default_options, {{options|safe}});
 
