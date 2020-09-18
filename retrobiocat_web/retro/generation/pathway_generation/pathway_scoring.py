@@ -28,11 +28,11 @@ class PathwayScores():
                        'starting_material' : self.starting_material,
                        'num_intermediates' : self.num_intermediates,
                        'num_enzyme_steps' : self.num_enzyme_steps,
-                       'complexity_per_enzyme' : self.complexity_per_enzyme,
-                       'complexity_per_intermediate' : self.complexity_per_intermediate,
-                       'postitive_enzyme_steps_score' : self.positive_enzyme_steps_score,
-                       'cofactor_score' : self.cofactor_score,
-                       'simple_score' : self.simple_score}
+                       'complexity_per_enzyme': self.complexity_per_enzyme,
+                       'complexity_per_intermediate': self.complexity_per_intermediate,
+                       'postitive_enzyme_steps_score': self.positive_enzyme_steps_score,
+                       'cofactor_score': self.cofactor_score,
+                       'simple_score': self.simple_score}
 
         return scores_dict
 
@@ -164,11 +164,11 @@ class PathwayEvaluator():
     def __init__(self, list_pathways):
         self.df = None
         self.pathways = list_pathways
-        self.weights = {'Normalised num enzyme steps' : 1,
-                        'Normalised change in complexity' : 1,
-                        'starting_material' : 0,
-                        'postitive_enzyme_steps_score' : 0,
-                        'Normalised Cofactor Stoichiometry' : 0}
+        self.weights = {'Normalised num enzyme steps': 1,
+                        'Normalised change in complexity': 1,
+                        'starting_material': 0,
+                        'postitive_enzyme_steps_score': 0,
+                        'Normalised Cofactor Stoichiometry': 0}
 
         self.diversity_weight = 0
 

@@ -54,7 +54,9 @@ class TestSetEvaluator(object):
                                  "prune_steps": 1,
                                  "only_postitive_enzyme_data": self.only_positive_specificity,
                                  'prune_on_substrates': False,
-                                 'max_reactions': False})
+                                 'max_reactions': False,
+                                 'include_experimental': False,
+                                 'include_two_step': False})
 
         network.generate(target_product, self.num_steps)
 

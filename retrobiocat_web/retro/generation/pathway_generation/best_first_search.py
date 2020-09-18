@@ -11,7 +11,7 @@ import random
 class BFS():
 
     def __init__(self, network=None, target=None,  max_pathways=50000, max_pathway_length=5, min_weight=1, use_random=False,
-                 print_log=False, score_pathways=True):
+                 print_log=False, score_pathways=True, allow_longer_pathways=False):
         """
         Best First Search object, for generating pathways from a network
 
@@ -29,6 +29,7 @@ class BFS():
         self.choices = {}
         self.max_pathways = max_pathways
         self.max_pathway_length = max_pathway_length
+        self.allow_longer_pathways = allow_longer_pathways
         self.pathways = []
         self.use_random = use_random
         self.network = network
@@ -192,17 +193,25 @@ class BFS():
         while (len(self.pathways) < self.max_pathways) and (len(self.choices[start_context]) > 0):
             nodes = [self.network.target_smiles]
             context = self._get_context(nodes)
+            steps = 0
 
             while len(self.choices[context]) > 0:
-                best_choice = self._pick_choice(context)
+                if steps > self.max_pathway_length:
+                    self.choices[context] = []
+                    if self._check_pathway_has_end(nodes) == True:
+                        self.pathways.append(nodes)
+                    break
 
+                best_choice = self._pick_choice(context)
                 if best_choice == 'Stop':
                     if self._check_pathway_has_end(nodes) == True:
                         self.pathways.append(nodes)
                     self.choices[context].pop('Stop')
+                    steps = 0
                     break
 
                 else:
+                    steps += 1
                     added_nodes, new_end_nodes = self._add_reaction(best_choice)
 
                     if self._is_node_already_in_pathway(nodes, added_nodes) == True:
@@ -220,12 +229,18 @@ class BFS():
                             nodes = nodes+added_nodes
                             context = new_context
         self.log('BFS complete')
+        if len(self.pathways) >= self.max_pathways:
+            self.log('Max pathways reached')
         return self.pathways
 
     def get_pathways(self):
         pathway_objects = []
         for list_nodes in self.pathways:
-            pathway_objects.append(self._make_pathway(list_nodes))
+            pathway = self._make_pathway(list_nodes)
+            if self.allow_longer_pathways == True:
+                pathway_objects.append(pathway)
+            elif len(pathway.reactions) <= self.max_pathway_length:
+                pathway_objects.append(pathway)
         return pathway_objects
 
 

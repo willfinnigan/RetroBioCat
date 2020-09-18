@@ -134,7 +134,11 @@ def task_get_pathways(form_data):
     current_app.redis.mset({f"{job.id}__network": json.dumps(network_data)})
     current_app.redis.expire(f"{job.id}__network", 60 * 60)
 
-    bfs = BFS(network=network, max_pathways=form_data['max_pathways'], min_weight=float(form_data['min_weight']), print_log=not current_app.config['PRODUCTION'])
+    bfs = BFS(network=network,
+              max_pathways=form_data['max_pathways'],
+              max_pathway_length=form_data['number_steps'],
+              min_weight=float(form_data['min_weight']),
+              print_log=not current_app.config['PRODUCTION'])
     bfs.run()
     pathways = bfs.get_pathways()
 

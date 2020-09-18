@@ -11,7 +11,6 @@ class ReactionExpander():
         self.network = network
         self.maxLength = maxLength
         self.buyable_stop_score = 1
-
         self.min_weight = 1
 
     def expand_network(self, endNodes):
