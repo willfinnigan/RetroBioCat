@@ -34,6 +34,9 @@ def load_into_mongo(yaml_dict):
             if 'experimental' in yaml_dict[rxn_name]:
                 reaction.experimental = bool(yaml_dict[rxn_name]['experimental'])
 
+            if 'two_step' in yaml_dict[rxn_name]:
+                reaction.two_step = bool(yaml_dict[rxn_name]['two_step'])
+
             reaction.save()
 
 def load_reaction_rules_into_mongo(yaml_file=YAML_PATH):

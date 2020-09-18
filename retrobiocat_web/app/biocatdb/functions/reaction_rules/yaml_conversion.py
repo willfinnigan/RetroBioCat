@@ -21,6 +21,9 @@ def reaction_to_yaml_dict(yaml_dict, reaction):
     if reaction.experimental == True:
         yaml_dict[name]['experimental'] = True
 
+    if reaction.two_step == True:
+        yaml_dict[name]['two_step'] = True
+
     yaml_json = json.dumps(yaml_dict)
     yaml_dict = json.loads(yaml_json)
 

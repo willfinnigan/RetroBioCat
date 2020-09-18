@@ -218,12 +218,15 @@ class TestSetEvaluator(object):
 
 
 if __name__ == '__main__':
+    from retrobiocat_web.mongo.default_connection import make_default_connection
+    make_default_connection()
+
     disable_rdkit_logging()
 
     path_to_excel = 'test_pathways.xlsx'
     test_set_eval = TestSetEvaluator(excel=path_to_excel,
                                      num_steps=4, max_nodes=400, max_pathways=40000,
                                      min_weight=1, only_pos=False, spec_threshold=0.6,
-                                     log=True)
-    test_set_eval.run(id='default')
+                                     log=True, weights=[1,1,1,1,1])
+    test_set_eval.run(id='default_2')
     test_set_eval.save()
