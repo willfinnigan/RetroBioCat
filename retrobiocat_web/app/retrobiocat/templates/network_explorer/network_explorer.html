@@ -1,10 +1,13 @@
 {% extends "base.html" %}
 {% set active_page = "network_explorer" %}
+{% set retrosynthesis_type = "network_explorer" %}
 
 {% block content %}
-    {% include 'network_explorer/network_top_bar.html' %}
-    <div id="response_div"></div>
-    <div id = "mynetwork"></div>
+    <div style="overflow-y: hidden; height:90vh">
+        {% include 'network_explorer/network_top_bar.html' %}
+        <div id="mynetwork"></div>
+    </div>
+
 
     <script src="{{url_for('.static', filename='js/network.js')}}?v={{v}}" type="text/javascript"></script>
     <script src="{{url_for('.static', filename='js/node_info.js')}}?v={{v}}" type="text/javascript"></script>
@@ -24,13 +27,27 @@
         window.task_id = '{{task_id}}'
         window.network_id = '{{task_id}}'
 
+        window.reaction_mode = 'biocatalysis'
+
+        function toggle_reaction_mode() {
+            if (window.reaction_mode === 'biocatalysis') {
+                document.getElementById("rxn_mode_btn").className = "btn btn-danger btn-sm ml-2"
+                document.getElementById("rxn_mode_btn").innerHTML = "<strong>Reaction mode: </strong>Chemistry <small>(Aizynthfinder rules)</small"
+                window.reaction_mode = 'chemistry'
+            } else if (window.reaction_mode === 'chemistry') {
+                window.reaction_mode = 'biocatalysis'
+                document.getElementById("rxn_mode_btn").className = "btn btn-success btn-sm ml-2"
+                document.getElementById("rxn_mode_btn").innerHTML = "<strong>Reaction mode: </strong>Biocatalysis <small>(RetroBioCat rules)</small"
+            }
+        }
+
         network.on("doubleClick", function(params) {
             if (params['nodes'].length !== 0) {
                 if (data['nodes'].get(params['nodes'])[0]['type'] === 'substrate') {
-                    if (document.getElementById("default_reaction_select").checked === true) {
+                    if (window.reaction_mode === 'biocatalysis') {
                         default_step(params, data)
                     }
-                    else if (document.getElementById("aizynth_reaction_select").checked === true) {
+                    else if (window.reaction_mode === 'chemistry') {
                         aizynth_step(params, data)
                     }
                 } else {

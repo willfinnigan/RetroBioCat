@@ -14,17 +14,18 @@ import mongoengine as db
 @roles_required('experimental')
 def paper_progress():
 
-    enzyme_types = sorted(list(EnzymeType.objects().distinct('enzyme_type')))
+    enzyme_types = EnzymeType.objects().order_by('enzyme_type')
     enzyme_type_progress_dict = {}
 
-    for enz_type in enzyme_types:
+    for enz_type_obj in enzyme_types:
+        enz_type = enz_type_obj.enzyme_type
         num_papers = len(Paper.objects(tags=enz_type))
         num_complete_papers = len(Paper.objects(db.Q(tags=enz_type) & (db.Q(status='Complete') | db.Q(status='Complete - Awaiting review'))))
 
         if num_papers == 0:
             pass
         elif num_complete_papers == 0:
-            enzyme_type_progress_dict[enz_type] = ["0%", f"{num_complete_papers} out of {num_papers}", 'bg-danger']
+            enzyme_type_progress_dict[enz_type] = ["0%", f"{num_complete_papers} out of {num_papers}", 'bg-danger', enz_type_obj.full_name]
         else:
             pc_complete = round((num_complete_papers / num_papers)*100,1)
 
@@ -37,8 +38,10 @@ def paper_progress():
 
             enzyme_type_progress_dict[enz_type] = [f"{pc_complete}%",
                                                    f"{num_complete_papers} out of {num_papers}",
-                                                   colour]
+                                                   colour,
+                                                   enz_type_obj.full_name]
 
+            print(enzyme_type_progress_dict[enz_type])
 
 
     return render_template('paper_progress/paper_progress.html', enzyme_types_dict=enzyme_type_progress_dict)

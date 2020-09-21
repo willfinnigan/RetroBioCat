@@ -11,38 +11,11 @@
 
     <div class="navbar-collapse collapse" id="main_navbar" style="">
         <ul class="navbar-nav mr-auto">
-            <li id='more_info' class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-haspopup="true"
-                   aria-expanded="false">Retro-synthesis</a>
-                <div class="dropdown-menu" aria-labelledby="dropdown01">
-                    <a class="dropdown-item" href="{{ url_for('retrobiocat.network_explorer_form') }}">Network explorer</a>
-                    <a class="dropdown-item" href="{{ url_for('retrobiocat.pathway_explorer_form') }}">Pathway explorer</a>
-                </div>
+            <li id='network_explorer' class="nav-item">
+                <a class="nav-link" href="{{ url_for('retrobiocat.network_explorer_form') }}">Network explorer</a>
             </li>
-
-            <li id='biocatdb' class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#"data-toggle="dropdown" aria-haspopup="true"
-                   aria-expanded="false">Enzyme database</a>
-                <div class="dropdown-menu" aria-labelledby="dropdown01">
-                    <a class="dropdown-item" href="{{ url_for('biocatdb.substrate_specificity_form') }}">Substrate specificity</a>
-                    <a class="dropdown-item" href="{{ url_for('biocatdb.substrate_scope_search') }}">Substrate scope</a>
-                    <a class="dropdown-item" href="{{ url_for('biocatdb.sequence_search') }}">Enzymes</a>
-                    <a class="dropdown-item" href="{{ url_for('biocatdb.papers_search') }}">Papers</a>
-                    <a class="dropdown-item" href="{{url_for('biocatdb.paper_progress')}}">Database completion</a>
-                </div>
-            </li>
-
-            <li id='more_info' class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true"
-                   aria-expanded="false">Community-driven</a>
-                <div class="dropdown-menu" aria-labelledby="dropdown01">
-                    <a class="dropdown-item" href="{{ url_for('retrobiocat.suggest_new_reaction') }}">Suggest a new reaction</a>
-                    <a class="dropdown-item" href="{{ url_for('retrobiocat.reaction_suggestions_table') }}">Reaction suggestions</a>
-                    <a class="dropdown-item" href="{{ url_for('retrobiocat.reaction_issues_table') }}">Reaction issues</a>
-                    <a class="dropdown-item" href="https://github.com/willfinnigan/RetroBioCat/issues" target="_blank">Report a bug</a>
-                    <a class="dropdown-item" href="https://groups.google.com/g/retrobiocat" target="_blank">Forum</a>
-                    <a class="dropdown-item text-danger" href="{{url_for('biocatdb.leaderboard')}}">Contributors</a>
-                </div>
+            <li id='pathway_explorer' class="nav-item">
+                <a class="nav-link" href="{{ url_for('retrobiocat.pathway_explorer_form') }}">Pathway explorer</a>
             </li>
 
             <li id='more_info' class="nav-item dropdown">
@@ -50,7 +23,25 @@
                    aria-expanded="false">More info</a>
                 <div class="dropdown-menu" aria-labelledby="dropdown01">
                     <a class="dropdown-item" href="{{ url_for('retrobiocat.reaction_rules') }}">Reaction rules</a>
+                    <a class="dropdown-item" href="{{ url_for('retrobiocat.reaction_issues_table') }}">Reaction issues</a>
+                    <a class="dropdown-item" href="{{ url_for('retrobiocat.suggest_new_reaction') }}">Suggest a new reaction</a>
+                    <a class="dropdown-item" href="{{ url_for('retrobiocat.reaction_suggestions_table') }}">Reaction suggestions</a>
                     <a class="dropdown-item" href="{{ url_for('main_site.automated_cascade_design') }}">Automated Cascade Design</a>
+                    <a class="dropdown-item" href="https://github.com/willfinnigan/RetroBioCat/issues" target="_blank">Report a bug</a>
+                    <a class="dropdown-item" href="https://groups.google.com/g/retrobiocat" target="_blank">Forum</a>
+                </div>
+            </li>
+
+            <li id='biocatdb' class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true"
+                   aria-expanded="false">BioCatDB</a>
+                <div class="dropdown-menu" aria-labelledby="dropdown01">
+                    <a class="dropdown-item" href="{{ url_for('biocatdb.substrate_specificity_form') }}">Substrate specificity</a>
+                    <a class="dropdown-item" href="{{ url_for('biocatdb.substrate_scope_search') }}">Substrate scope</a>
+                    <a class="dropdown-item" href="{{ url_for('biocatdb.sequence_search') }}">Enzymes</a>
+                    <a class="dropdown-item" href="{{ url_for('biocatdb.papers_search') }}">Papers</a>
+                    <a class="dropdown-item" href="{{url_for('biocatdb.paper_progress')}}">Database completion</a>
+                    <a class="dropdown-item text-danger" href="{{url_for('biocatdb.leaderboard')}}">Contributors</a>
                 </div>
             </li>
         </ul>

@@ -1,19 +1,27 @@
 
-    <div class="btn-group" role="group">
-        <button type="button" data-toggle="modal" data-target="#help_macro" class="btn btn-primary btn-sm">Help</button>
-        <button type="button" data-toggle="modal" onclick="launch_node_modal()" class="btn btn-danger btn-sm">Node info</button>
-        <button type="button" data-toggle="modal" data-target="#options_macro" class="btn btn-info btn-sm">Options</button>
-        <button type="button" data-toggle="modal" data-target="#reaction_options_macro" class="btn btn-success btn-sm">Reaction settings</button>
-        <button type="button" data-toggle="modal" data-target="#add_custom_reaction" class="btn btn-warning btn-sm">Custom reaction</button>
-        <button type="button" id="reset" class="btn btn-secondary btn-sm">Reset</button>
-        <button type="button" onclick="report_modal_launched()" data-toggle="modal" data-target="#reaction_issue_modal" class="btn btn-danger btn-sm">Reaction issue</button>
-        <button type="button" data-toggle="modal" data-target="#save_modal" class="btn btn-primary btn-sm">Save</button>
-
-        <label class="">Enzyme:</label>
-        <select class="" id="enzyme_select"></select>
-
-        <label id='rr_que' class=""></label>
-        <label id='interaction' class=""></label>
+<div role="group" class="btn-group">
+    <div class="dropdown">
+      <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Menu
+      </button>
+      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <a class="dropdown-item" data-toggle="modal" data-target="#help_macro" class="btn btn-primary btn-sm">Help</a>
+        <a class="dropdown-item" data-toggle="modal" onclick="launch_node_modal()" class="btn btn-danger btn-sm">Node info</a>
+        <a class="dropdown-item" data-toggle="modal" data-target="#options_macro" class="btn btn-info btn-sm">Options</a>
+        <a class="dropdown-item" data-toggle="modal" data-target="#add_custom_reaction" class="btn btn-warning btn-sm">Custom reaction</a>
+        <a class="dropdown-item" id="reset" class="btn btn-secondary btn-sm">Reset</a>
+        <a class="dropdown-item" data-toggle="modal" data-target="#reaction_issue_modal" class="btn btn-danger btn-sm">Reaction issue</a>
+        <a class="dropdown-item" data-toggle="modal" data-target="#save_modal" class="btn btn-primary btn-sm">Save</a>
+      </div>
     </div>
 
+    <button type="button" onclick="toggle_reaction_mode()" id="rxn_mode_btn" class="btn btn-success btn-sm ml-2"><strong>Reaction mode: </strong>Biocatalysis <small>(RetroBioCat rules)</small></button>
 
+    <label for="max_pathways" class="my-auto text-info text-center pl-2 pr-1"><strong>Max reactions:</strong></label>
+    <input type="number" id="max_reactions" class="form-control" value="{{max_reactions}}" style="width: 75px">
+
+    <label class="my-auto text-warning text-center pl-2 pr-1"><strong>Enzyme:</strong></label>
+    <select class="" id="enzyme_select"></select>
+
+    <label id='interaction' class="my-auto text-center text-danger pl-2"></label>
+</div>

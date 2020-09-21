@@ -44,10 +44,8 @@ class TestSetEvaluator(object):
     def create_pathways_for_test(self, target_product):
         network = Network()
 
-        network.settings.update({"allow_backwards_steps": False,
-                                 "add_if_precursor": True,
-                                 "combine_enantiomers": True,
-                                 "remove_simple": False,
+        network.settings.update({"combine_enantiomers": True,
+                                 "remove_simple": True,
                                  "similarity_score_threshold": self.specificity_threshold,
                                  "num_enzymes": 1,
                                  "max_nodes": self.max_nodes,
@@ -229,6 +227,6 @@ if __name__ == '__main__':
     test_set_eval = TestSetEvaluator(excel=path_to_excel,
                                      num_steps=4, max_nodes=400, max_pathways=40000,
                                      min_weight=1, only_pos=False, spec_threshold=0.6,
-                                     log=True, weights=[1,1,1,1,1])
-    test_set_eval.run(id='default_2')
+                                     log=True, weights=[1,1,1,0,1])
+    test_set_eval.run(id='venv_no_lit')
     test_set_eval.save()

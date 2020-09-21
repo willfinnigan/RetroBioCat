@@ -22,6 +22,12 @@
                             <div id="substrate_image"></div>
                         </div>
                     </div>
+                </div>
+                    {% if retrosynthesis_type == 'network_explorer' %}
+                            <button class="btn btn-sm btn-outline-danger" data-toggle="modal" data-target="#add_custom_reaction" onclick="close_substrate_modal()">
+                                Add a custom reaction to this node
+                            </button>
+                    {% endif %}
 
                 </div>
             </div>
@@ -67,5 +73,9 @@
         document.getElementById("pubchem_loading").innerHTML = '..loading'
         document.getElementById("substrate_image").innerHTML = ''
         document.getElementById("pubchem_cid").href = '#'
+    }
+
+    function close_substrate_modal() {
+        $('#substrate_modal').modal('hide');
     }
 </script>

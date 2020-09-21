@@ -81,8 +81,6 @@ def get_top_biocatdb_hits():
                   'reaction_name': label,
                   'enzyme_name': enzyme}
 
-        print(result)
-
         return jsonify(result=result)
 
 @bp.route('/_get_possible_enzymes', methods=['GET', 'POST'])
@@ -103,8 +101,6 @@ def get_possible_enzymes():
 
     result = {'possible_enzymes': choices,
               'selected_enzyme': enzyme}
-
-    print(result)
 
     return jsonify(result=result)
 

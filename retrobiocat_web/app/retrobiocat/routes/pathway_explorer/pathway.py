@@ -152,6 +152,7 @@ def task_get_pathways(form_data):
                                                      form_data['weight_starting'],
                                                      form_data['weight_known_enzymes'],
                                                      form_data['weight_diversity']])
+
     package_evaluated_pathways(pathway_evaluator.df, job.id)
     package_visjs_pathways(job.id)
 

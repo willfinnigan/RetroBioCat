@@ -13,6 +13,8 @@ import os
 from pathlib import Path
 from retrobiocat_web.retro.rdchiral.main import rdchiralReaction
 
+import warnings
+
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 top10_acc = functools.partial(top_k_categorical_accuracy, k=10)

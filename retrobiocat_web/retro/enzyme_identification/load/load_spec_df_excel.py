@@ -69,8 +69,10 @@ def load_biocatdb(excel_path):
         print('Could not load file')
         return None
 
-    df = set_columns(df)
-    df = set_categorical_data_type(df)
+    print(df)
+
+    #df = set_columns(df)
+    #df = set_categorical_data_type(df)
 
     return df
 
@@ -92,4 +94,6 @@ def get_reactions_with_data(df):
     return reactions
 
 if __name__ == '__main__':
-    pass
+    test_path = "/Users/Will/Desktop/biocatdb_2.xlsx"
+    df = load_biocatdb(test_path)
+    print(df)
