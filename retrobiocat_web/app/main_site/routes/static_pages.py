@@ -21,3 +21,7 @@ def cookie_policy():
 @bp.route('/terms', methods=['GET'])
 def terms():
     return render_template('terms.html')
+
+@bp.route('/retrosynthesis_help', methods=['GET'])
+def retrosynthesis_help():
+    return render_template('retrosynthesis_help.html')
