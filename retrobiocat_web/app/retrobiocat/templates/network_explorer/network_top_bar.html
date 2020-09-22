@@ -15,12 +15,13 @@
       </div>
     </div>
 
-    <button type="button" onclick="toggle_reaction_mode()" id="rxn_mode_btn" class="btn btn-success btn-sm ml-2"><strong>Reaction mode: </strong>Biocatalysis <small>(RetroBioCat rules)</small></button>
+    <button type="button" onclick="toggle_reaction_mode()" id="rxn_mode_btn" class="btn btn-success btn-sm ml-1"><strong>Reaction mode: </strong>Biocatalysis <small>(RetroBioCat rules)</small></button>
+    <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#reaction_options">Reaction options</button>
 
-    <label for="max_pathways" class="my-auto text-info text-center pl-2 pr-1"><strong>Max reactions:</strong></label>
+    <label for="max_pathways" class="my-auto text-dark text-center pl-2 pr-1"><strong>Max reactions:</strong></label>
     <input type="number" id="max_reactions" class="form-control" value="{{max_reactions}}" style="width: 75px">
 
-    <label class="my-auto text-warning text-center pl-2 pr-1"><strong>Enzyme:</strong></label>
+    <label class="my-auto text-dark text-center pl-2 pr-1"><strong>Enzyme:</strong></label>
     <select class="" id="enzyme_select"></select>
 
     <label id='interaction' class="my-auto text-center text-danger pl-2"></label>

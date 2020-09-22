@@ -52,6 +52,7 @@ def step():
     y = request.form['y']
     task_id = request.form['task_id']
     max_reactions = request.form['max_reactions']
+    rbc_reaction_mode = request.form['rbc_reaction_mode']
 
     data = json.loads(current_app.redis.get(task_id))
     graph_dict = json.loads(data['graph_dict'])
@@ -63,7 +64,8 @@ def step():
     network = Network(graph=graph, target_smiles=target_smiles, print_log=not current_app.config['PRODUCTION'])
     network.update_settings(network_options)
     network.add_attributes(attr_dict)
-    network.update_settings({'max_reactions': int(max_reactions)})
+    network.update_settings({'max_reactions': int(max_reactions),
+                             'retrobiocat_reaction_mode': rbc_reaction_mode})
 
     new_substrate_nodes, new_reaction_nodes = network.add_step(clicked_node)
 
@@ -101,6 +103,7 @@ def aizynth_step():
     y = request.form['y']
     task_id = request.form['task_id']
     max_reactions = request.form['max_reactions']
+    aizynth_reaction_mode = request.form['aizynth_reaction_mode']
 
     data = json.loads(current_app.redis.get(task_id))
     graph_dict = json.loads(data['graph_dict'])
@@ -112,7 +115,8 @@ def aizynth_step():
     network = Network(graph=graph, target_smiles=target_smiles, print_log=not current_app.config['PRODUCTION'])
     network.update_settings(network_options)
     network.add_attributes(attr_dict)
-    network.update_settings({'max_reactions': int(max_reactions)})
+    network.update_settings({'max_reactions': int(max_reactions),
+                             'aizynth_reaction_mode': aizynth_reaction_mode})
 
     new_substrate_nodes, new_reaction_nodes = network.add_chemical_step(clicked_node)
 

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% set active_page = "network_explorer" %}
+{% set active_page = "retrosynthesis" %}
 {% set retrosynthesis_type = "network_explorer" %}
 
 {% block content %}
@@ -144,7 +144,8 @@
                     x: params.pointer.canvas.x,
                     y: params.pointer.canvas.y,
                     max_reactions: document.getElementById("max_reactions").value,
-                    task_id: window.network_id
+                    task_id: window.network_id,
+                    rbc_reaction_mode: $("input[name=retrobiocat_mode]:checked").val()
 
                 }).done(function(response_data) {
                     let new_nodes = response_data.result.nodes
@@ -163,7 +164,8 @@
                     x: params.pointer.canvas.x,
                     y: params.pointer.canvas.y,
                     max_reactions: document.getElementById("max_reactions").value,
-                    task_id: window.network_id
+                    task_id: window.network_id,
+                    aizynth_reaction_mode: $("input[name=aizynth_mode]:checked").val()
 
                 }).done(function(response_data) {
                     let new_nodes = response_data.result.nodes
@@ -191,7 +193,7 @@
     {% from 'global/macros/modal_macro.html' import modal with context %}
     {{ modal('help_macro', 'Help', "network_explorer/modals_macro_content/help_modal.html") }}
     {{ modal('options_macro', 'Options', "network_explorer/modals_macro_content/options_modal.html") }}
-    {{ modal('reaction_options_macro', 'Reaction options', "network_explorer/modals_macro_content/reaction_options_modal.html") }}
+    {{ modal('reaction_options', 'Reaction options', "network_explorer/modals_macro_content/reaction_options_modal.html") }}
     {{ modal('node_info_macro', 'Node info', "node_info_templates/node_info_modal.html", size='') }}
     {{ modal('save_modal', 'Save', "network_explorer/modals_macro_content/save_modal.html") }}
 

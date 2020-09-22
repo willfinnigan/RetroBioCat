@@ -57,7 +57,9 @@ class Network(object):
                          'include_two_step': include_two_step,
                          'rr_min_diameter': 2,
                          'rr_min_products': 10,
-                         'rr_max_reactions': 1}
+                         'rr_max_reactions': 1,
+                         'aizynth_reaction_mode': 'policy',
+                         'retrobiocat_reaction_mode': 'complexity'}
 
     def update_settings(self, settings):
         self.settings.update(settings)

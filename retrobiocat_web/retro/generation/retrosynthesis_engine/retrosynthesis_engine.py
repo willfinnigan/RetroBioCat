@@ -106,6 +106,26 @@ class ReactionSelector():
 
         return smiles_to_keep, reactions_to_keep
 
+    def select_best_aizynth_by_policy(self, listProducts, listReactions, max_reactions):
+        if (len(listReactions) < max_reactions) or (max_reactions == False):
+            return listProducts, listReactions
+
+        policy_scores = []
+        for reaction in listReactions:
+            policy_scores.append(self.network.graph.nodes[reaction]['attributes']['metadata']['policy_probability'])
+
+        sorted_reactions = node_analysis.sort_by_score(listReactions, policy_scores, reverse=True)
+        for reaction in sorted_reactions[max_reactions:]:
+            self.graphPruner.delete_terminal_reaction_node(self.network, reaction)
+
+        reactions_to_keep = sorted_reactions[0:max_reactions]
+        smiles_to_keep = []
+        for reaction in reactions_to_keep:
+            for smi in list(self.network.graph.successors(reaction)):
+                smiles_to_keep.append(smi)
+
+        return smiles_to_keep, reactions_to_keep
+
 class RuleApplicator():
 
     def __init__(self, network):
@@ -464,6 +484,7 @@ class RetrosynthesisEngine():
 
     def single_step(self, smile, rxns, graph, disallowedProducts=None):
         rxn_type = 'retrobiocat'
+        rxn_mode = self.network.settings.get('retrobiocat_reaction_mode', 'complexity')
 
         if self._should_rules_be_applied(smile, graph) == False:
             return [],[]
@@ -471,11 +492,13 @@ class RetrosynthesisEngine():
         rxnsSubstratesDict = self.ruleApplication.run(smile, rxns, graph)
         listProducts, listReactions = self.graphManipulator.add_nodes_to_graph(rxnsSubstratesDict, smile, graph, rxn_type)
         listProducts, listReactions = self.reactionSelector.remove_disallowed_products(disallowedProducts, listProducts,listReactions)
-        listProducts, listReactions = self.reactionSelector.select_best_by_complexity(listProducts, listReactions, self.network.settings['max_reactions'])
+        if rxn_mode == 'complexity':
+            listProducts, listReactions = self.reactionSelector.select_best_by_complexity(listProducts, listReactions, self.network.settings['max_reactions'])
         return listProducts, listReactions
 
     def single_aizynth_step(self, smile, graph, disallowedProducts=None):
         rxn_type = 'aizynth'
+        rxn_mode = self.network.settings.get('aizynth_reaction_mode', 'complexity')
 
         if self._should_rules_be_applied(smile, graph) == False:
             return [],[]
@@ -483,7 +506,15 @@ class RetrosynthesisEngine():
         rxnsSubstratesDict, metadata = self.aizynth_rule_application.run(smile, graph)
         listProducts, listReactions = self.graphManipulator.add_nodes_to_graph(rxnsSubstratesDict, smile, graph, rxn_type, metadata=metadata)
         listProducts, listReactions = self.reactionSelector.remove_disallowed_products(disallowedProducts, listProducts, listReactions)
-        listProducts, listReactions = self.reactionSelector.select_best_by_complexity(listProducts, listReactions, self.network.settings['max_reactions'])
+
+        if rxn_mode == 'complexity':
+            listProducts, listReactions = self.reactionSelector.select_best_by_complexity(listProducts,
+                                                                                          listReactions,
+                                                                                          self.network.settings['max_reactions'])
+        elif rxn_mode == 'policy':
+            listProducts, listReactions = self.reactionSelector.select_best_aizynth_by_policy(listProducts,
+                                                                                              listReactions,
+                                                                                              self.network.settings['max_reactions'])
         return listProducts, listReactions
 
     def generate_network(self, target_smile, number_steps, rxns, graph, disallowedProducts=None):

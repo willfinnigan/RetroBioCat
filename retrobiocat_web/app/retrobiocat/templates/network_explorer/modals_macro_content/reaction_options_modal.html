@@ -1,28 +1,31 @@
 <div class="container">
+    <p>
+        Select the method you would like to use when filtering reactions more than the maxmimum allowed..
+    </p>
 
-    <div class="form-inline">
-        <label for="max_pathways">Max reactions:</label>
-        <input type="number" id="max_reactions" class="form-control w-25" value="{{max_reactions}}">
+    <h5 class="mt-4">Biocatalysis: RetroBioCat reaction selection</h5>
+    <div class="form-check">
+        <input class="form-check-input" type="radio" name="retrobiocat_mode" id="rbc_complexity" value="complexity" checked>
+        <label class="form-check-label" for="rbc_complexity">
+            Select best change in complexity
+        </label>
+    </div>
+
+    <h5 class="mt-4">Chemistry: Aizynth reaction selection</h5>
+    <div class="form-check">
+        <input class="form-check-input" type="radio" name="aizynth_mode" id="aiz_policy" value="policy" checked>
+        <label class="form-check-label" for="aiz_policy">
+            Select highest prediction by policy model
+        </label>
     </div>
 
     <div class="form-check">
-        <input class="form-check-input" type="radio" name="reaction_mode_radio" id="default_reaction_select" value="default" checked>
-        <label class="form-check-label" for="default">
-            Biocatalysis - Default RetroBioCat ruleset
+        <input class="form-check-input" type="radio" name="aizynth_mode" id="aiz_complexity" value="complexity">
+        <label class="form-check-label" for="aiz_policy">
+            Select best change in complexity
         </label>
     </div>
-    <div class="form-check">
-        <input class="form-check-input" type="radio" name="reaction_mode_radio" id="aizynth_reaction_select" value="aizynth">
-        <label class="form-check-label" for="aizynth">
-            Chemistry - AIZynthfinder templates + policy
-        </label>
-    </div>
-    <div class="form-check disabled">
-        <input class="form-check-input" type="radio" name="reaction_mode_radio" id="retrorules_reaction_select" value="retrorules" disabled>
-        <label class="form-check-label" for="retrorules">
-            Metabolism - RetroRules
-        </label>
-    </div>
+
 
 </div>
 

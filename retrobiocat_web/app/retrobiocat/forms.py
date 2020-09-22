@@ -39,7 +39,7 @@ class NetworkExploreForm(FlaskForm):
     target_smiles = StringField('Target SMILES', validators=[DataRequired(), is_accepted_by_rdkit])
     number_steps = IntegerField('Initial steps', default=1, validators=[NumberRange(min=0, max=10)])
     max_initial_nodes = IntegerField('Max initial nodes', default=20, validators=[NumberRange(min=1, max=80)])
-    max_reactions = IntegerField('Max reactions', default=30, validators=[NumberRange(min=0, max=50)])
+    max_reactions = IntegerField('Max reactions', default=10, validators=[NumberRange(min=0, max=50)])
     allow_backwards = BooleanField('Allow backwards steps')
     remove_small = BooleanField('Remove small molecules (eg NH3)', default=True)
     combine_enantiomers = BooleanField('Combine enantiomers for racemic starting material', default=True)
