@@ -96,12 +96,18 @@ class ActionApplier():
 
         reactions = self.get_actions(smile)
         rxns = {}
+        metadata = {}
         for reaction in reactions:
             name = f"Chem_{reaction['metadata']['classification']}"
-            if name not in rxns:
-                rxns[name] = []
-            rxns[name].append(rdchiralReaction(reaction['smarts']))
-        return rxns
+            extra_string = ''
+            num = 1
+            while name+extra_string in rxns:
+                extra_string = f"_{num}"
+                num += 1
+            name = name+extra_string
+            rxns[name] = [rdchiralReaction(reaction['smarts'])]
+            metadata[name] = reaction['metadata']
+        return rxns, metadata
 
     def _predict(self, mol):
         fingerprint = self._get_fingerprint(mol, 2, nbits=len(self.policy_model))

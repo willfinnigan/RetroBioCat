@@ -25,7 +25,7 @@ def moltosvg(mol,molSize=(300,300)):
     mol = rdMolDraw2D.PrepareMolForDrawing(mol)
     drawer = rdMolDraw2D.MolDraw2DSVG(molSize[0],molSize[1])
     opts = drawer.drawOptions()
-    opts.padding = 0.1
+    opts.padding = 0.15
     drawer.SetFontSize(1.0)
     drawer.DrawMolecule(mol)
     drawer.FinishDrawing()

@@ -225,7 +225,7 @@ class GraphManipulator():
         if 'node_type' not in graph.nodes[p_smile]['attributes']:
             graph.nodes[p_smile]['attributes']['node_type'] = 'substrate'
 
-        reaction_node = self._add_reaction_node_to_graph(graph, reaction_name, p_smile)
+        reaction_node = self._add_reaction_node_to_graph(graph, reaction_name, p_smile, 'custom', {})
 
         s_mol = Chem.MolFromSmiles(substrate_smiles)
         s_frags = Chem.GetMolFrags(s_mol, asMols=True)
@@ -242,12 +242,12 @@ class GraphManipulator():
 
         return list_s_smiles, [reaction_node]
 
-    def add_nodes_to_graph(self, rxnsSubstratesDict, target_smi, graph):
+    def add_nodes_to_graph(self, rxnsSubstratesDict, target_smi, graph, reaction_type, metadata={}):
         list_products, list_reactions = [], []
         for name in rxnsSubstratesDict:
             for precursor_list in rxnsSubstratesDict[name]:
                 if self._check_if_reaction_goes_backwards(graph, precursor_list, target_smi) == False:
-                    reaction_node = self._add_reaction_node_to_graph(graph, name, target_smi)
+                    reaction_node = self._add_reaction_node_to_graph(graph, name, target_smi, reaction_type, metadata)
                     if reaction_node not in list_reactions:
                         list_reactions.append(reaction_node)
 
@@ -257,10 +257,12 @@ class GraphManipulator():
                             list_products.append(product)
         return list_products, list_reactions
 
-    def _add_reaction_node_to_graph(self, graph, reaction_name, source_smile):
+    def _add_reaction_node_to_graph(self, graph, reaction_name, source_smile, reaction_type, metadata):
         unique_reaction_name = reaction_name + '(' + str(uuid.uuid1()) + ')'
         graph.add_node(unique_reaction_name, attributes={'name': reaction_name,
                                                          'node_type': 'reaction',
+                                                         'reaction_type': reaction_type,
+                                                         'metadata': metadata.get(reaction_name, {}),
                                                          'node_num': self._get_node_number(unique_reaction_name, graph)})
         graph.add_edge(source_smile, unique_reaction_name)
         return unique_reaction_name
@@ -439,7 +441,7 @@ class AIZynthfinder_RuleApplicator(RuleApplicator):
         self.action_applier = aizynthfinder_actions.aizynth_action_applier
 
     def run(self, smile, graph):
-        rxns = self.action_applier.get_rxns(smile)
+        rxns, metadata = self.action_applier.get_rxns(smile)
 
         precursor_dict = self.apply_rules(smile, rxns)
         precursor_dict = self._remove_precursors_already_in_graph(graph, smile, precursor_dict)
@@ -448,10 +450,7 @@ class AIZynthfinder_RuleApplicator(RuleApplicator):
             for name in precursor_dict:
                 precursor_dict[name] = self._remove_simple_precursors(precursor_dict[name])
 
-        return precursor_dict
-
-
-
+        return precursor_dict, metadata
 
 class RetrosynthesisEngine():
 
@@ -464,21 +463,25 @@ class RetrosynthesisEngine():
         self.aizynth_rule_application = AIZynthfinder_RuleApplicator(network)
 
     def single_step(self, smile, rxns, graph, disallowedProducts=None):
+        rxn_type = 'retrobiocat'
+
         if self._should_rules_be_applied(smile, graph) == False:
             return [],[]
 
         rxnsSubstratesDict = self.ruleApplication.run(smile, rxns, graph)
-        listProducts, listReactions = self.graphManipulator.add_nodes_to_graph(rxnsSubstratesDict, smile, graph)
+        listProducts, listReactions = self.graphManipulator.add_nodes_to_graph(rxnsSubstratesDict, smile, graph, rxn_type)
         listProducts, listReactions = self.reactionSelector.remove_disallowed_products(disallowedProducts, listProducts,listReactions)
         listProducts, listReactions = self.reactionSelector.select_best_by_complexity(listProducts, listReactions, self.network.settings['max_reactions'])
         return listProducts, listReactions
 
     def single_aizynth_step(self, smile, graph, disallowedProducts=None):
+        rxn_type = 'aizynth'
+
         if self._should_rules_be_applied(smile, graph) == False:
             return [],[]
 
-        rxnsSubstratesDict = self.aizynth_rule_application.run(smile, graph)
-        listProducts, listReactions = self.graphManipulator.add_nodes_to_graph(rxnsSubstratesDict, smile, graph)
+        rxnsSubstratesDict, metadata = self.aizynth_rule_application.run(smile, graph)
+        listProducts, listReactions = self.graphManipulator.add_nodes_to_graph(rxnsSubstratesDict, smile, graph, rxn_type, metadata=metadata)
         listProducts, listReactions = self.reactionSelector.remove_disallowed_products(disallowedProducts, listProducts, listReactions)
         listProducts, listReactions = self.reactionSelector.select_best_by_complexity(listProducts, listReactions, self.network.settings['max_reactions'])
         return listProducts, listReactions

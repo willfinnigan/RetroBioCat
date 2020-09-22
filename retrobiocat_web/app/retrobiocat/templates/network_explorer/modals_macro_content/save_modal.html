@@ -34,11 +34,10 @@
 
         function add_save_link(name, link, uuid) {
             var a = document.createElement("a");
-
-            var linkText = document.createTextNode(name);
+            var full_link = 'https://' + window.location.hostname + link
+            var linkText = document.createTextNode(full_link);
             a.appendChild(linkText);
             a.href = link;
-            a.className = "dropdown-item";
             document.getElementById("list_saves").appendChild(a);
         }
 

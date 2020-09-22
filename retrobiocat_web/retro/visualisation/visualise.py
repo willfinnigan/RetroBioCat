@@ -67,6 +67,7 @@ class Visualiser(object):
                           'type': 'substrate'})
 
         for node in node_analysis.get_reaction_nodes(graph):
+
             nodes.append({'id': node,
                           'size': 10,
                           'borderWidth': 2,
@@ -75,7 +76,9 @@ class Visualiser(object):
                           'label': graph.nodes[node]['attributes']['name'],
                           'title': node,
                           'shape': 'dot',
-                          'type': 'reaction'
+                          'type': 'reaction',
+                          'reaction_type': graph.nodes[node]['attributes'].get('reaction_type', 'retrobiocat'),
+                          'metadata': graph.nodes[node]['attributes'].get('metadata', {})
                           })
 
         for e in graph.edges:

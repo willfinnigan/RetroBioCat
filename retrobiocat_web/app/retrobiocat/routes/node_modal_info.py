@@ -83,6 +83,24 @@ def get_top_biocatdb_hits():
 
         return jsonify(result=result)
 
+@bp.route('/_get_reaction_svg', methods=['GET', 'POST'])
+def get_reaction_svg():
+    substrates = json.loads(request.form['parents'])
+    products = json.loads(request.form['children'])
+    label = request.form['label']
+
+
+    reaction_smiles = f"{substrates[0]}"
+    if len(substrates) > 1:
+        reaction_smiles += f".{substrates[1]}"
+    reaction_smiles += f">>{products[0]}"
+    query_reaction_svg = smiles_rxn_to_svg(reaction_smiles, rxnSize=(600, 100))
+
+    result = {'query_reaction_svg': query_reaction_svg,
+              'reaction_name': label}
+    return jsonify(result=result)
+
+
 @bp.route('/_get_possible_enzymes', methods=['GET', 'POST'])
 def get_possible_enzymes():
     reaction_node = request.form['reaction_node']
@@ -93,6 +111,9 @@ def get_possible_enzymes():
 
     enzyme = attr_dict[reaction_node]['selected_enzyme']
     possible_enzymes = attr_dict[reaction_node]['possible_enzymes']
+
+    if '' in possible_enzymes:
+        possible_enzymes.remove('')
 
     choices = []
     for enz in possible_enzymes:

@@ -81,6 +81,12 @@ def submit_reaction_issue():
     comment = request.form['comment']
     public = bool(strtobool(request.form['public']))
 
+    if len(Reaction.objects(name=reaction_name)) == 0:
+        result = {'status': 'danger',
+                  'msg': 'Can not raise an issue for a non retrobiocat reaction',
+                  'issues': []}
+        return jsonify(result=result)
+
     reaction_smiles = f"{substrates[0]}"
     if len(substrates) > 1:
         reaction_smiles += f".{substrates[1]}"

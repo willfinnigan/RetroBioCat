@@ -12,45 +12,50 @@
             <div class="modal-body text-break">
                 <h5>Query reaction:</h5>
                 <div id="query_svg" class="no_margin text-center center"></div>
-                <button class="btn btn-sm btn-outline-danger mb-4" onclick="close_reaction_modal()" data-toggle="modal" data-target="#reaction_issue_modal">
+                <button id="report_button" class="btn btn-sm btn-outline-danger mb-4" onclick="close_reaction_modal()" data-toggle="modal" data-target="#reaction_issue_modal">
                     Raise an issue with this reaction
                 </button>
-                <h5>Enzyme type selection:</h5>
-                <div class="form-group text-center center">
-                    <select id="reaction_modal_enzyme_select" class="form-control custom-select w-75">
-                    <option value=""></option>
-                    </select>
-                    <small class="form-text text-muted">Select from possible enzymes for this reaction</small>
-                </div>
 
-                <ul class="nav nav-tabs" id="tab_list" role="tablist" hidden>
-                    <li class="nav-item">
-                        <a class="nav-link active" id="top_hits_link"
-                           data-toggle="tab" href="#top_hits"
-                           role="tab" aria-controls="top_hits"
-                           aria-selected="true">
-                            Top hits from BioCatDB
-                        </a>
-                    </li>
-
-                    <li class="nav-item" hidden>
-                        <a class="nav-link" id="activity_data_content_link"
-                           data-toggle="tab" href="#activity_data_content"
-                           role="tab" aria-controls="activity_data_content">
-                            Activity data
-                        </a>
-                    </li>
-                </ul>
-
-                <div class="tab-content" id="tab_content">
-                    <div class="tab-pane fade show active" id="top_hits" role="tabpanel" aria-labelledby="top_hits_tab">
-                        {% include 'node_modal/reaction_modal/top_hits.html' %}
+                <div id="retrobiocat_type_reactions">
+                    <h5>Enzyme type selection:</h5>
+                    <div class="form-group text-center center">
+                        <select id="reaction_modal_enzyme_select" class="form-control custom-select w-75">
+                        <option value=""></option>
+                        </select>
+                        <small class="form-text text-muted">Select from possible enzymes for this reaction</small>
                     </div>
 
-                     <div class="tab-pane fade" id="activity_data_content" role="tabpanel" aria-labelledby="activity_data_content">
-                        {% include 'node_modal/reaction_modal/activity_more_info_content.html' %}
-                     </div>
+                    <ul class="nav nav-tabs" id="tab_list" role="tablist" hidden>
+                        <li class="nav-item">
+                            <a class="nav-link active" id="top_hits_link"
+                               data-toggle="tab" href="#top_hits"
+                               role="tab" aria-controls="top_hits"
+                               aria-selected="true">
+                                Top hits from BioCatDB
+                            </a>
+                        </li>
+
+                        <li class="nav-item" hidden>
+                            <a class="nav-link" id="activity_data_content_link"
+                               data-toggle="tab" href="#activity_data_content"
+                               role="tab" aria-controls="activity_data_content">
+                                Activity data
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="tab_content">
+                        <div class="tab-pane fade show active" id="top_hits" role="tabpanel" aria-labelledby="top_hits_tab">
+                            {% include 'node_modal/reaction_modal/top_hits.html' %}
+                        </div>
+
+                         <div class="tab-pane fade" id="activity_data_content" role="tabpanel" aria-labelledby="activity_data_content">
+                            {% include 'node_modal/reaction_modal/activity_more_info_content.html' %}
+                         </div>
+                    </div>
                 </div>
+
+                <div id="aizynth_type_reactions"></div>
 
             </div>
         </div>
@@ -67,8 +72,46 @@
         parent_nodes = network.getConnectedNodes(node, 'from')
         children_nodes = network.getConnectedNodes(node, 'to')
         label = data['nodes'].get(node)['label']
-        get_top_hits(node, network_id, parent_nodes, children_nodes, label, 'selected_enzyme')
         window.currently_selected_reaction_node = node
+
+        get_reaction_svg(label, parent_nodes, children_nodes)
+
+        if (data['nodes'].get([window.currently_selected_reaction_node])[0]['reaction_type'] === 'retrobiocat') {
+            get_top_hits(node, network_id, parent_nodes, children_nodes, label, 'selected_enzyme')
+            document.getElementById("retrobiocat_type_reactions").style.display = "inline";
+            document.getElementById("report_button").style.display = "inline";
+            document.getElementById("aizynth_type_reactions").style.display = "none";
+            document.getElementById("aizynth_type_reactions").innerHTML = ""
+        } else {
+            add_aizynth_metadata()
+            document.getElementById("aizynth_type_reactions").style.display = "inline";
+            document.getElementById("retrobiocat_type_reactions").style.display = "none";
+            document.getElementById("report_button").style.display = "none";
+        }
+    }
+
+    function add_aizynth_metadata() {
+        var metadata = data['nodes'].get([window.currently_selected_reaction_node])[0]['metadata']
+        var main_div = document.getElementById("aizynth_type_reactions")
+
+        main_div.innerHTML = '<h5 class="text-center mt-3">Aizynthfinder reaction suggestion - metadata</h5>'
+
+        for (const [key, value] of Object.entries(metadata)) {
+            main_div.innerHTML += "<p><strong>" + key + ":</strong> " + value + "</p>"
+        }
+    }
+
+    function get_reaction_svg(label, parents, children) {
+        $.post('/_get_reaction_svg', {
+            parents: JSON.stringify(parents),
+            children: JSON.stringify(children),
+            label: label,
+        }).done(function (data) {
+            document.getElementById("query_svg").innerHTML = data.result.query_reaction_svg
+            document.getElementById("reaction_node_title").innerHTML = data.result.reaction_name
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
     }
 
     function get_top_hits(reaction_node, network_id, parents, children, label, enzyme) {
@@ -81,9 +124,6 @@
             label: label,
             enzyme: enzyme
         }).done(function (data) {
-            console.log(data)
-            document.getElementById("query_svg").innerHTML = data.result.query_reaction_svg
-            document.getElementById("reaction_node_title").innerHTML = data.result.reaction_name
             set_hit_title(data.result.reaction_name, data.result.enzyme_name)
             add_hit_data(data.result.node_info, data.result.product_keys)
         }).fail(function(xhr, status, error) {
