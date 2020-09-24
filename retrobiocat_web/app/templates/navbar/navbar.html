@@ -29,7 +29,6 @@
                     <a class="dropdown-item" href="{{ url_for('biocatdb.substrate_scope_search') }}">Substrate scope</a>
                     <a class="dropdown-item" href="{{ url_for('biocatdb.sequence_search') }}">Enzymes</a>
                     <a class="dropdown-item" href="{{ url_for('biocatdb.papers_search') }}">Papers</a>
-                    <a class="dropdown-item" href="{{url_for('biocatdb.paper_progress')}}">Database completion</a>
                 </div>
             </li>
 
@@ -37,12 +36,16 @@
                 <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true"
                    aria-expanded="false">Community-driven</a>
                 <div class="dropdown-menu" aria-labelledby="dropdown01">
+                    <p class="no_margin"><strong>Reaction rules</strong></p>
                     <a class="dropdown-item" href="{{ url_for('retrobiocat.suggest_new_reaction') }}">Suggest a new reaction</a>
                     <a class="dropdown-item" href="{{ url_for('retrobiocat.reaction_suggestions_table') }}">Reaction suggestions</a>
                     <a class="dropdown-item" href="{{ url_for('retrobiocat.reaction_issues_table') }}">Reaction issues</a>
+                    <p class="no_margin"><strong>Enzyme database</strong></p>
+                    <a class="dropdown-item" href="{{url_for('biocatdb.paper_progress')}}">Database completion</a>
+                    <a class="dropdown-item" href="{{url_for('biocatdb.leaderboard')}}">Contributors</a>
+                    <p class="no_margin"><strong>Other</strong></p>
                     <a class="dropdown-item" href="https://github.com/willfinnigan/RetroBioCat/issues" target="_blank">Report a bug</a>
                     <a class="dropdown-item" href="https://groups.google.com/g/retrobiocat" target="_blank">Forum</a>
-                    <a class="dropdown-item text-danger" href="{{url_for('biocatdb.leaderboard')}}">Contributors</a>
                 </div>
             </li>
 

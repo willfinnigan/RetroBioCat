@@ -11,7 +11,6 @@ from wtforms import SubmitField, StringField
 import mongoengine as db
 
 @bp.route('/paper_progress', methods=['GET', 'POST'])
-@roles_required('experimental')
 def paper_progress():
 
     enzyme_types = EnzymeType.objects().order_by('enzyme_type')
