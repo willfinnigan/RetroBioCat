@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% set active_page = "community_driven" %}
+
+
+{% block content %}
+
+    <div class="container mx-5">
+        <div class="row">
+            <div class="col">
+                <h2 class="card-title text-center mt-5">Enzyme teams</h2>
+                {% for team in teams %}
+                    <div class="card card-form" style="width: 23rem;">
+                        <div class="card-body">
+                            <h3 class="no_margin">{{team}}</h3>
+                            <h6 class="text-muted">{{team_info[team]['full_name']}}</h6>
+                            <div class="progress progress-bar_override">
+                                <div class="progress-bar {{team_info[team]['progress'][2]}}" id="paper_progress"
+                                     style="width: {{team_info[team]['progress'][0]}}">
+                                    {{team_info[team]['progress'][1]}}
+                                </div>
+                            </div>
+                            <p class="text-center"><small>Papers completed</small></p>
+
+                            {% for user in team_info[team]['enzyme_champions']%}
+                                <p><strong>{{ user }}</strong></p>
+                            {% endfor %}
+                            {% for user in team_info[team]['team_members']%}
+                                <p>{{ user }}</p>
+                            {% endfor %}
+                        </div>
+
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
