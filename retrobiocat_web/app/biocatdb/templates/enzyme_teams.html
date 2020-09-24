@@ -5,11 +5,11 @@
 {% block content %}
 
     <div class="container mx-5">
+        <h2 class="card-title text-center my-5">Enzyme teams</h2>
         <div class="row">
-            <div class="col">
-                <h2 class="card-title text-center mt-5">Enzyme teams</h2>
+            <div class="card-deck">
                 {% for team in teams %}
-                    <div class="card card-form" style="width: 23rem;">
+                    <div class="card card-form mb-3 mx-auto" style="min-width: 21rem; max-width: 23rem;">
                         <div class="card-body">
                             <h3 class="no_margin">{{team}}</h3>
                             <h6 class="text-muted">{{team_info[team]['full_name']}}</h6>
@@ -28,7 +28,6 @@
                                 <p>{{ user }}</p>
                             {% endfor %}
                         </div>
-
                     </div>
                 {% endfor %}
             </div>

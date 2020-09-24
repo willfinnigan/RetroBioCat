@@ -43,7 +43,8 @@ def enzyme_teams():
     contributors = User.objects(roles=contributor_role).select_related()
 
     for user in contributors:
-        user_string = f"{user.first_name} {user.last_name}, {user.affiliation}"
+        user_string = f"{user.first_name} {user.last_name}"
+        affiliation_string = f"{user.affiliation}"
         for enzyme_type in user.enzyme_teams:
             if enzyme_type.enzyme_type not in teams:
                 teams.append(enzyme_type.enzyme_type)
@@ -53,9 +54,9 @@ def enzyme_teams():
                                                       'progress': calculate_paper_progress.get_enzyme_paper_progress(enzyme_type)}
 
             if enzyme_type in user.enzyme_champion:
-                team_info[enzyme_type.enzyme_type]['enzyme_champions'].append(user_string)
+                team_info[enzyme_type.enzyme_type]['enzyme_champions'].append([user_string, affiliation_string])
             else:
-                team_info[enzyme_type.enzyme_type]['team_members'].append(user_string)
+                team_info[enzyme_type.enzyme_type]['team_members'].append([user_string, affiliation_string])
 
     teams.sort()
 
