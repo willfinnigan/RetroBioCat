@@ -6,10 +6,10 @@
 
     <div class="container mx-5">
         <h2 class="card-title text-center my-5">Enzyme teams</h2>
-        <div class="row mx-auto">
+        <div class="row justify-content-center">
                 {% for team in teams %}
                     <div class="col-auto mb-3">
-                        <div class="card card-form mb-3 mx-auto" style="width: 20rem;">
+                        <div class="card card-form mb-3 mx-auto" style="width: 25rem; min-height:400px">
                             <div class="card-body">
                                 <h3 class="no_margin">{{team}}</h3>
                                 <h6 class="text-muted">{{team_info[team]['full_name']}}</h6>
@@ -22,10 +22,10 @@
                                 <p class="text-center"><small>Papers completed</small></p>
 
                                 {% for user in team_info[team]['enzyme_champions']%}
-                                    <p><strong>{{user[0]}}</strong> - <small>{{user[1]}}</small></p>
+                                    <p class="no_margin"><strong>{{user[0]}}</strong> - <small>{{user[1]}}</small></p>
                                 {% endfor %}
                                 {% for user in team_info[team]['team_members']%}
-                                    <p><strong>{{user[0]}}</strong> - <small>{{user[1]}}</small></p>
+                                    <p class="no_margin"><strong>{{user[0]}}</strong> - <small>{{user[1]}}</small></p>
                                 {% endfor %}
                             </div>
                         </div>
