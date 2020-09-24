@@ -6,27 +6,28 @@
 
     <div class="container mx-5">
         <h2 class="card-title text-center my-5">Enzyme teams</h2>
-        <div class="row">
-            <div class="card-deck">
+        <div class="row mx-auto">
                 {% for team in teams %}
-                    <div class="card card-form mb-3 mx-auto" style="min-width: 21rem; max-width: 23rem;">
-                        <div class="card-body">
-                            <h3 class="no_margin">{{team}}</h3>
-                            <h6 class="text-muted">{{team_info[team]['full_name']}}</h6>
-                            <div class="progress progress-bar_override">
-                                <div class="progress-bar {{team_info[team]['progress'][2]}}" id="paper_progress"
-                                     style="width: {{team_info[team]['progress'][0]}}">
-                                    {{team_info[team]['progress'][1]}}
+                    <div class="col-auto mb-3">
+                        <div class="card card-form mb-3 mx-auto" style="width: 20rem;">
+                            <div class="card-body">
+                                <h3 class="no_margin">{{team}}</h3>
+                                <h6 class="text-muted">{{team_info[team]['full_name']}}</h6>
+                                <div class="progress progress-bar_override">
+                                    <div class="progress-bar {{team_info[team]['progress'][2]}}" id="paper_progress"
+                                         style="width: {{team_info[team]['progress'][0]}}">
+                                        {{team_info[team]['progress'][1]}}
+                                    </div>
                                 </div>
-                            </div>
-                            <p class="text-center"><small>Papers completed</small></p>
+                                <p class="text-center"><small>Papers completed</small></p>
 
-                            {% for user in team_info[team]['enzyme_champions']%}
-                                <p><strong>{{user[0]}}</strong> - <small>{{user[1]}}</small></p>
-                            {% endfor %}
-                            {% for user in team_info[team]['team_members']%}
-                                <p><strong>{{user[0]}}</strong> - <small>{{user[1]}}</small></p>
-                            {% endfor %}
+                                {% for user in team_info[team]['enzyme_champions']%}
+                                    <p><strong>{{user[0]}}</strong> - <small>{{user[1]}}</small></p>
+                                {% endfor %}
+                                {% for user in team_info[team]['team_members']%}
+                                    <p><strong>{{user[0]}}</strong> - <small>{{user[1]}}</small></p>
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
                 {% endfor %}
