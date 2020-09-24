@@ -22,10 +22,10 @@
                             <p class="text-center"><small>Papers completed</small></p>
 
                             {% for user in team_info[team]['enzyme_champions']%}
-                                <p><strong>{{ user }}</strong></p>
+                                <p><strong>{{user[0]}}</strong> - <small>{{user[1]}}</small></p>
                             {% endfor %}
                             {% for user in team_info[team]['team_members']%}
-                                <p>{{ user }}</p>
+                                <p><strong>{{user[0]}}</strong> - <small>{{user[1]}}</small></p>
                             {% endfor %}
                         </div>
                     </div>
