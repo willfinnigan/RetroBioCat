@@ -13,8 +13,9 @@ For more information, please see our preprint:
 [Finnigan, William; Hepworth, Lorna J.; Turner, Nicholas J.; Flitsch, Sabine (2020): RetroBioCat: Computer-Aided Synthesis Planning for Biocatalytic Reactions and Cascades. ChemRxiv. Preprint. https://doi.org/10.26434/chemrxiv.12571235.v1](https://chemrxiv.org/articles/preprint/RetroBioCat_Computer-Aided_Synthesis_Planning_for_Biocatalytic_Reactions_and_Cascades/12571235?fbclid=IwAR3PBVXF-MGavQ2ejq3gdVQhdRxUYxNLPvI-EozTnqfm1Ut9R2eDJOD6i4I)  
 
 ## Requirements and testing
-python >= 3.7  
-rdkit >= 2020  
+python = 3.7  
+rdkit >= 2020
+tensorflow >= 2.1.0  
 Python packages listed in requirements.txt.  The lastest version of each package is recommended other than where specified.
 
 Retrobiocat also requires a running mongodb and redis instance, for which we recommended using docker.
@@ -40,6 +41,10 @@ docker-compose build --no-cache
 - Copy the building_blocks.db file from https://figshare.com/articles/software/RetroBioCat_database_files/12696482
  into the `/docker/data/buyability` folder
 
+- Copy the templates and policy model from 
+https://figshare.com/articles/AiZynthFinder_a_fast_robust_and_flexible_open-source_software_for_retrosynthetic_planning/12334577 
+into the `/docker/data/aizynthfinder` folder
+
 - Run.
 ```
 docker-compose up
@@ -64,6 +69,10 @@ git clone https://github.com/willfinnigan/retrobiocat.git
 
 * Copy the building_blocks.db file from https://figshare.com/articles/software/RetroBioCat_database_files/12696482
  into `/retrobiocat/retrobiocat_web/retro/data/buyability/`
+ 
+ - Copy the templates and policy model from 
+https://figshare.com/articles/AiZynthFinder_a_fast_robust_and_flexible_open-source_software_for_retrosynthetic_planning/12334577 
+into the `/retrobiocat/retrobiocat_web/retro/data/aizynthfinder` folder
 
 * Install retrobiocat_web along with requirements.
 ```
