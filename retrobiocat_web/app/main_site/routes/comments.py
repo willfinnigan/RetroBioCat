@@ -9,6 +9,7 @@ import json
 from distutils.util import strtobool
 from retrobiocat_web.mongo.models.reaction_models import Issue, Reaction, ReactionSuggestion
 from retrobiocat_web.mongo.models.comments import Comment
+from retrobiocat_web.mongo.models.biocatdb_models import Paper
 
 @bp.route('/_submit_comment', methods=['GET', 'POST'])
 @auth_required()
@@ -48,7 +49,10 @@ def submit_comment():
             r_sug = ReactionSuggestion.objects(id=parent_id)[0]
             r_sug.comments.append(comment_obj)
             r_sug.save()
-
+        elif parent_type == 'paper':
+            paper = Paper.objects(id=parent_id)[0]
+            paper.comments.append(comment_obj)
+            paper.save()
 
     result = {'status': 'success',
               'msg': 'Comment submitted',

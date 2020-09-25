@@ -32,17 +32,14 @@
                               {% include '/data_submission/paper_data.html' %}
                           </div>
                           <div class="tab-pane fade" id="sequences" role="tabpanel" aria-labelledby="sequences_tab">
-                              <div class="container-fluid">
                                 {% include '/tabulator_tables/sequences_table/sequences_table.html' %}
                                 <button id="add_enzyme_button" class="btn btn-success" data-toggle="modal" data-target="#add_new_enzyme_modal">Add Enzyme</button>
                                 <button class="btn btn-outline-primary" id="upload_seq_excel" data-toggle='modal' data-target='#upload_seq_excel_modal'>Upload Excel</button>
-                              </div>
                           </div>
                           <div class="tab-pane fade" id="activity" role="tabpanel" aria-labelledby="activity_tab">
-                              <div class="container-fluid">
                                   {% include '/tabulator_tables/activity_table/activity_table.html' %}
-                              </div>
                           </div>
+
                         </div>
                     </div>
                 </div>
@@ -69,6 +66,20 @@
         }
 
         setInterval(renew_session(), 30000);
+
+        $(document).ready(function() {
+            if (location.hash) {
+                $("a[href='" + location.hash + "']").tab("show");
+            }
+            $(document.body).on("click", "a[data-toggle='tab']", function(event) {
+                location.hash = this.getAttribute("href");
+            });
+        });
+
+        $(window).on("popstate", function() {
+            var anchor = location.hash || $("a[data-toggle='tab']").first().attr("href");
+            $("a[href='" + anchor + "']").tab("show");
+        });
 
     </script>
 

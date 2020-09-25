@@ -2,9 +2,7 @@
 
 <div class="container-fluid">
     <div class="row mt-5">
-        <div class="col"></div>
-        <div class="col">
-
+        <div class="col mx-auto" style="max-width:48rem">
             <p>Paper is currently assigned to: <small>{{paper['paper_owner_name']}}</small></p>
 
             <h4><strong>Status: </strong><span id='status' style="color:{{status['status_colour']}}">{{status['status']}}</span></h4>
@@ -37,20 +35,91 @@
 
             </div>
 
-            <div class="custom-control custom-checkbox my-4">
+            <div class="custom-control custom-checkbox mt-4">
                 <input class="custom-control-input" type="checkbox" id="reviewed" {{status['review_checked']}} {{status['review_disabled']}}>
                 <label class="custom-control-label" for="reviewed">Reviewed</label>
-                <small class="form-text text-muted">Checked when data has been reviewed by a 'super contributor' or 'enzyme champion'</small>
+                <small class="form-text text-muted no_margin">Reviewed by: {{status['reviewed_by']}}</small>
             </div>
 
+            <div class="custom-control custom-checkbox mb-4 mt-1" {{status['issues_hidden']}}>
+                <input class="custom-control-input" type="checkbox" id="issues" {{status['issues_checked']}} {{status['review_disabled']}}>
+                <label class="custom-control-label" for="issues">Has issues</label>
+            </div>
+
+            <div class="container text-center">
+                <h4 class="mt-4">Comments</h4>
+                {% for comment in comments %}
+                    <div class="card my-2">
+                        <div class="card-header text-left">
+
+                            <p class="no_margin">
+                                {{comment['user']}}
+                                <small class="no_margin">{{comment['date']}}</small>
+                                <span class="float-right">
+                                    {% if comment['can_edit'] == True %}
+                                        <button id="{{comment['comment_id']}}_edit"
+                                                class="btn btn-sm btn-outline-warning"
+                                                onclick="load_comment_info('{{comment['comment_id']}}')"
+                                                data-toggle="modal" data-target="#edit_comment_modal">
+                                            Edit
+                                        </button>
+                                    {% endif %}
+
+                                    {% if comment['can_delete'] == True %}
+                                        <button class="btn btn-sm btn-outline-danger"
+                                                id="{{comment['comment_id']}}_delete"
+                                                onclick=toggle_delete_confirm("{{comment['comment_id']}}")>
+                                            Delete
+                                        </button>
+                                        <button id="{{comment['comment_id']}}_def_delete"
+                                                class="btn btn-sm btn-danger"
+                                                style="display: none"
+                                                onclick="delete_comment('{{comment['comment_id']}}')">
+                                            Definitely Delete?
+                                        </button>
+                                        {% endif %}
+                                    </span>
+                                </p>
+                            </div>
+                                <div class="card-body text-left">
+                                    <p class="card-text">{{comment['comment']}}</p>
+                                </div>
+                            </div>
+                {% endfor %}
+                <button class="btn btn-primary px-5" data-toggle="modal" data-target="#comment_modal">Comment</button>
+            </div>
+
+
         </div>
-        <div class="col"></div>
     </div>
 </div>
 
 <script>
+    window.parent_type = "paper"
+    window.parent_id = "{{paper['id']}}"
+
+    function toggle_delete_confirm(button_id) {
+        document.getElementById(button_id + '_delete').style.display = "none"
+        document.getElementById(button_id + '_def_delete').style.display = "block"
+    }
+
+    function delete_comment(comment_id) {
+        $.post('/_delete_comment', {
+            comment_id: comment_id
+        }).done(function (data) {
+            response_msg(data.result.msg, data.result.status, data.result.issues, "response_div")
+            location.reload()
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+
     document.getElementById("reviewed").onchange = function(){
         update_reviewed()
+    };
+
+    document.getElementById("issues").onchange = function(){
+        has_issues()
     };
 
     function update_reviewed() {
@@ -63,5 +132,18 @@
             })
         }
 
+    function has_issues() {
+        $.post('/_paper_issues', {
+            paper_id: "{{paper['id']}}",
+            issues: document.getElementById("issues").checked,
+            }).done(function(data) {
+                location.reload();
+            })
+        }
 </script>
+
+{% include 'comments/comment_modal.html' %}
+{% include 'comments/edit_comment_modal.html' %}
+
+
 

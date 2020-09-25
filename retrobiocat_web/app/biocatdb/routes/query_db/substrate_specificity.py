@@ -68,7 +68,7 @@ def substrate_specificity(task_id):
     task = current_app.task_queue.fetch_job(task_id)
     activity_data = task.result
 
-    return render_template('substrate_specificity/table_result_specificity.html', activity_data=activity_data, title="Substrate specificity query")
+    return render_template('substrate_specificity/table_result_specificity.html', substrate_specificity_data=activity_data, title="Substrate specificity query")
 
 
 def task_get_spec_data(form_data):
@@ -129,7 +129,7 @@ def paper_substrate_specificity(paper_id):
     activity_data = process_activity_data.process_activity_data(activity_data)
     activity_data = process_activity_data.smiles_to_svg(activity_data)
 
-    return render_template('substrate_specificity/table_result_specificity.html', activity_data=activity_data, title=f"{paper.short_citation} activity data")
+    return render_template('substrate_specificity/table_result_specificity.html', substrate_specificity_data=activity_data, title=f"{paper.short_citation} activity data")
 
 @bp.route("/enzyme_substrates/<enzyme_name>", methods=["GET"])
 def enzyme_substrate_specificity(enzyme_name):
@@ -138,7 +138,7 @@ def enzyme_substrate_specificity(enzyme_name):
     activity_data = process_activity_data.process_activity_data(activity_data)
     activity_data = process_activity_data.smiles_to_svg(activity_data)
 
-    return render_template('substrate_specificity/table_result_specificity.html', activity_data=activity_data, title=f"{enzyme_name} substrate specificity")
+    return render_template('substrate_specificity/table_result_specificity.html', activity_data=substrate_specificity_data, title=f"{enzyme_name} substrate specificity")
 
 @bp.route("/enzyme_substrates_type/<enzyme_type>", methods=["GET"])
 def enzyme_substrate_specificity_type(enzyme_type):
@@ -151,7 +151,7 @@ def enzyme_substrate_specificity_type(enzyme_type):
     activity_data = process_activity_data.process_activity_data(activity_data)
     activity_data = process_activity_data.smiles_to_svg(activity_data)
 
-    return render_template('substrate_specificity/table_result_specificity.html', activity_data=activity_data,
+    return render_template('substrate_specificity/table_result_specificity.html', substrate_specificity_data=activity_data,
                            title=f"Substrate scope for all {enzyme_type} enzymes")
 
 @bp.route("/substrate_scope_search", methods=["GET", "POST"])

@@ -16,6 +16,7 @@ class EnzymeType(db.Document):
     meta = {'indexes': ['enzyme_type']}
 
 from retrobiocat_web.mongo.models.user_models import User
+from retrobiocat_web.mongo.models.comments import Comment
 
 class Paper(db.Document):
     doi = db.StringField(unique=True)
@@ -33,6 +34,9 @@ class Paper(db.Document):
     status = db.StringField(default='')
     tags = db.ListField(db.StringField())
     reviewed = db.BooleanField(default=False)
+    reviewed_by = db.ReferenceField(User)
+    has_issues = db.BooleanField(default=False)
+    comments = db.ListField(db.ReferenceField(Comment, reverse_delete_rule=4))
 
     def __unicode__(self):
         return self.short_citation

@@ -13,6 +13,7 @@ import mongoengine as db
 from retrobiocat_web.app.biocatdb.functions.papers import paper_status
 from retrobiocat_web.app.biocatdb.functions import check_permission
 from retrobiocat_web.app.biocatdb.functions import sequence_table
+from retrobiocat_web.app.biocatdb.functions.substrate_specificity import process_activity_data
 
 def get_activity_data(paper):
     include = ['id', "reaction", "enzyme_name", "substrate_1_smiles", "substrate_2_smiles",
@@ -60,17 +61,19 @@ def get_paper_data(paper, user):
 
     return paper_dict
 
-def get_status(paper):
+def get_status(paper, user):
     paper_progress_text, paper_progress = paper_status.paper_metadata_status(paper)
     sequence_progress_text, sequence_progress = paper_status.sequences_status(paper)
     activity_progress_text, activity_progress = paper_status.activity_status(paper)
-    status, status_colour = paper_status.get_status(paper_progress, sequence_progress, activity_progress)
+    status, status_colour = paper_status.get_status(paper_progress, sequence_progress, activity_progress, paper)
 
     paper.status = status
     paper.save()
 
     status_dict = {'review_checked': '',
                    'review_disabled': 'disabled',
+                   'issues_checked': '',
+                   'issues_hidden': 'hidden',
                    'status': status,
                    'status_colour': status_colour,
                    'paper_progress': paper_progress,
@@ -82,11 +85,42 @@ def get_status(paper):
 
     if current_user.has_role('super_contributor'):
         status_dict['review_disabled'] = ''
+        status_dict['issues_hidden'] = ''
+    if current_user.has_role('enzyme_champion'):
+        for tag in paper.tags:
+            if tag in user.enzyme_champion:
+                status_dict['review_disabled'] = ''
+                status_dict['issues_hidden'] = ''
+
+    if paper.has_issues == True:
+        status_dict['issues_hidden'] = ''
 
     if paper.reviewed == True:
         status_dict['review_checked'] = 'checked'
+    if paper.has_issues == True:
+        status_dict['issues_checked'] = 'checked'
 
     return status_dict
+
+def get_comments(paper, user):
+    comments = []
+    for comment in paper.comments:
+        comment_can_edit = False
+        comment_can_delete = False
+        if current_user.has_role('rxn_rules_admin') or comment.owner == user:
+            comment_can_edit = True
+            comment_can_delete = True
+
+        new_comment = {'user': f"{comment.owner.first_name} {comment.owner.last_name}, {comment.owner.affiliation}",
+                       'date': comment.date.strftime("%d/%m/%Y, %H:%M:%S"),
+                       'comment': comment.text,
+                       'comment_id': str(comment.id),
+                       'can_edit': comment_can_edit,
+                       'can_delete': comment_can_delete
+                       }
+        comments.append(new_comment)
+
+    return comments
 
 @bp.route('/submission_main_page/<paper_id>', methods=['GET'])
 @roles_required('contributor')
@@ -109,7 +143,8 @@ def submission_main_page(paper_id):
     enzyme_names = list(Sequence.objects(papers=paper).distinct('enzyme_name'))
     enzyme_types = list(EnzymeType.objects().distinct('enzyme_type'))
     enzyme_data = sequence_table.get_enzyme_data(db.Q(papers=paper))
-    status_dict = get_status(paper)
+    status_dict = get_status(paper, user)
+    comments = get_comments(paper, user)
 
     return render_template('data_submission/submission_main_page.html',
                            paper=paper_data,
@@ -118,7 +153,8 @@ def submission_main_page(paper_id):
                            status=status_dict,
                            seq_table_height='60vh', enzyme_types=enzyme_types, show_header_filters=False, include_owner=True, lock_enz_type='false',
                            reactions=reactions, enzyme_names=enzyme_names+['Chemical'],
-                           doi=paper.doi)
+                           doi=paper.doi,
+                           comments=comments)
 
 @bp.route('/_check_connection', methods=['GET', 'POST'])
 def check_connection():

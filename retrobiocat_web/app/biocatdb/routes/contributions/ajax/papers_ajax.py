@@ -302,6 +302,21 @@ def review_paper():
 
     return jsonify({})
 
+@bp.route('/_paper_issues', methods=['GET', 'POST'])
+@roles_required('contributor')
+def paper_issues():
+    paper = Paper.objects(id=request.form['paper_id'])[0]
+    if check_permission.check_seq_permissions(current_user.id, paper):
+        issues = bool(strtobool(request.form['issues']))
+        paper.has_issues = issues
+        paper.save()
+
+        flash("Paper issues status updated", 'success')
+    else:
+        flash('No access to review')
+
+    return jsonify({})
+
 @bp.route('/_self_assign', methods=['GET', 'POST'])
 @roles_required('contributor')
 def self_assign():

@@ -9,6 +9,12 @@
 <button class="btn btn-success" onclick="save()" id="test_and_save">Save</button>
 <p id="please_wait" hidden>Saving, please wait..</p>
 
+<a class="float-right" href="{{url_for('biocatdb.paper_substrate_specificity', paper_id=paper['id'])}}" target="_blank">
+    <button class="btn btn-danger">
+        View in DB
+    </button>
+</a>
+
 
 
 <script>
@@ -132,22 +138,6 @@
 
             })
         }
-
-    $(document).ready(function() {
-        if (location.hash) {
-            $("a[href='" + location.hash + "']").tab("show");
-        }
-        $(document.body).on("click", "a[data-toggle='tab']", function(event) {
-            location.hash = this.getAttribute("href");
-        });
-    });
-
-    $(window).on("popstate", function() {
-        var anchor = location.hash || $("a[data-toggle='tab']").first().attr("href");
-        $("a[href='" + anchor + "']").tab("show");
-    });
-
-
 
 </script>
 

@@ -12,7 +12,7 @@
     var low_colour = "#ffdab8"
     var none_colour = "#ffb8b8"
 
-    var columns = [
+    var substrate_specificity_columns = [
 
         {'title': "_id", 'field': "_id", visible:false},
 
@@ -152,14 +152,14 @@
         {'title': "Selectivity", 'field': "selectivity", 'minWidth':100, formatter:"textarea"},
     ]
 
-    var tabledata = {{activity_data|safe}}
+    var substrate_specificity_tabledata = {{substrate_specificity_data|safe}}
 
-    var table = new Tabulator("#substrate_specificity_table", {
-        data:tabledata, //assign data to table
+    var substrate_specificity_table = new Tabulator("#substrate_specificity_table", {
+        data:substrate_specificity_tabledata, //assign data to table
         maxHeight:"75vh",
         layout:"fitColumns",
         addRowPos:"bottom",
-        columns:columns,
+        columns:substrate_specificity_columns,
         cellHozAlign:"center",
         cellVertAlign:"middle",
         rowClick:function(e, row){

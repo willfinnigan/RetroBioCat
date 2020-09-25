@@ -5,7 +5,7 @@
 {% if row_click_modal == True %}
 <p class="text-info no_margin"><small>Click on a row for more information and links to related data</small></p>
 {% endif %}
-<div id="seq_table"></div>
+<div class="mb-3" id="seq_table"></div>
 <div id="seq_response"></div>
 {% include 'tabulator_tables/sequences_table/other_modals/merge_modal.html' %}
 {% include 'tabulator_tables/sequences_table/other_modals/delete_modal.html' %}
@@ -40,6 +40,10 @@
     };
 
     var seq_columns = [
+
+        {% if 'edit' in seq_button_columns %}
+            {'title': 'Edit', 'width':80, formatter:editButton, align:"center", cellClick:function(e, cell){load_edit_seq_data(cell.getRow().getData().enzyme_name)}},
+        {% endif %}
 
         {'title':"ID", align:"center", 'field':"_id", visible:false, headerSort:false},
 
@@ -81,10 +85,6 @@
 
         {% if 'merge' in seq_button_columns %}
             {'title': 'Merge', 'width':80, formatter:mergeButton, align:"center", cellClick:function(e, cell){load_seq_merge(cell.getRow().getData().enzyme_name)}},
-        {% endif %}
-
-        {% if 'edit' in seq_button_columns %}
-            {'title': 'Edit', 'width':80, formatter:editButton, align:"center", cellClick:function(e, cell){load_edit_seq_data(cell.getRow().getData().enzyme_name)}},
         {% endif %}
 
     ]

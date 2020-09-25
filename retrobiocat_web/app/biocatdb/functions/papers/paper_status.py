@@ -70,28 +70,33 @@ def activity_status(paper):
     else:
         return progress_text, str(progress)+'%'
 
-def get_status(paper_progress, sequence_progress, activity_progress):
+def get_status(paper_progress, sequence_progress, activity_progress, paper):
     paper_progress = int(paper_progress[:-1])
     sequence_progress = int(sequence_progress[:-1])
     activity_progress = int(activity_progress[:-1])
 
     if paper_progress == 100 and sequence_progress == 100 and activity_progress == 100:
-        return 'Complete', 'green'
+        status, colour = 'Complete', 'green'
     elif paper_progress == 100 and sequence_progress == 100 and activity_progress == 90:
-        return 'Complete - Awaiting review', 'green'
+        status, colour = 'Complete - Awaiting review', 'green'
     elif paper_progress != 100 and sequence_progress == 100 and activity_progress >= 90:
-        return 'Requires paper metadata', 'green'
+        status, colour = 'Requires paper metadata', 'green'
     else:
         if sequence_progress == 50:
-            return 'Enzymes need protein sequences', 'orange'
+            status, colour = 'Enzymes need protein sequences', 'orange'
         else:
-            return 'Data required', 'red'
+            status, colour = 'Data required', 'red'
+
+    if paper.has_issues == True:
+        status, colour = 'Issues need to be resolved', 'red'
+
+    return status, colour
 
 def update_status(paper):
     paper_progress_text, paper_progress = paper_metadata_status(paper)
     sequence_progress_text, sequence_progress = sequences_status(paper)
     activity_progress_text, activity_progress = activity_status(paper)
-    status, status_colour = get_status(paper_progress, sequence_progress, activity_progress)
+    status, status_colour = get_status(paper_progress, sequence_progress, activity_progress, paper)
 
     paper.status = status
     paper.save()
