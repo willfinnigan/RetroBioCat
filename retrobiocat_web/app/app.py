@@ -117,7 +117,7 @@ def create_app(config_class=Config, use_talisman=True):
             if user.has_role('enzyme_champion') and user.enzyme_champion is not None:
                 inject_dict['enzyme_champion'] = [enz_type_obj.enzyme_type for enz_type_obj in user.enzyme_champion]
             if user.has_role('contributor'):
-                inject_dict['user_papers_need_data'] = len(Paper.objects(Q(owner=user) & (Q(status='Data required') | Q(status='Enzymes need protein sequences'))))
+                inject_dict['user_papers_need_data'] = len(Paper.objects(Q(owner=user) & (Q(status='Data required') | Q(status='Enzymes need protein sequences') | Q(status='Issues need to be resolved'))))
                 inject_dict['user_seqs_need_data'] = len(Sequence.objects(Q(owner=user) & ((Q(sequence=None)|Q(sequence='')) & (Q(sequence_unavailable__ne=True)))))
 
             inject_dict['total_team_notifications'] = 0
