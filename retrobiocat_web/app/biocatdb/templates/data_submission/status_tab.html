@@ -128,7 +128,7 @@
             reviewed: document.getElementById("reviewed").checked,
 
             }).done(function(data) {
-                location.reload();
+                response_msg(data.result.msg, data.result.status, data.result.issues, "response_div")
             })
         }
 
@@ -137,7 +137,7 @@
             paper_id: "{{paper['id']}}",
             issues: document.getElementById("issues").checked,
             }).done(function(data) {
-                location.reload();
+                response_msg(data.result.msg, data.result.status, data.result.issues, "response_div")
             })
         }
 </script>

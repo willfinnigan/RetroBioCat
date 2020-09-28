@@ -300,11 +300,11 @@ def review_paper():
             paper.reviewed_by = None
         paper.save()
 
-        flash("Paper review status updated", 'success')
-    else:
-        flash('No access to review')
+        result = {'status': 'success',
+                  'msg': 'Review status updated',
+                  'issues': []}
 
-    return jsonify({})
+        return jsonify(result=result)
 
 @bp.route('/_paper_issues', methods=['GET', 'POST'])
 @roles_required('contributor')
@@ -315,11 +315,11 @@ def paper_issues():
         paper.has_issues = issues
         paper.save()
 
-        flash("Paper issues status updated", 'success')
-    else:
-        flash('No access to review')
+        result = {'status': 'success',
+                  'msg': 'Issue status updated',
+                  'issues': []}
 
-    return jsonify({})
+        return jsonify(result=result)
 
 @bp.route('/_self_assign', methods=['GET', 'POST'])
 @roles_required('contributor')
