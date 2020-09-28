@@ -255,7 +255,7 @@ def process_uploaded_excel(df):
                   "Conversion (%)": "conversion",
                   "Conversion time (hrs)": "conversion_time",
                   "Selectivity": "selectivity",
-                  "Categorical": "categotical",
+                  "Categorical": "categorical",
                   "Binary": "binary"
                 }
 
