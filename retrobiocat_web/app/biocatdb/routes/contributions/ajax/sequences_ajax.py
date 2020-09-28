@@ -387,7 +387,15 @@ def process_uploaded_excel(df):
 
     data_list = df.to_dict(orient='records')
 
+    # Remove any spaces at end
+    for i, data in enumerate(data_list):
+        while data_list[i]['enzyme_name'][-1] == ' ':
+            print("Removing end space")
+            data_list[i]['enzyme_name'] = data_list[i]['enzyme_name'][:-1]
+
+
     return data_list
+
 
 def save_or_add_seqs(data_list, paper):
     # Used by upload excel
