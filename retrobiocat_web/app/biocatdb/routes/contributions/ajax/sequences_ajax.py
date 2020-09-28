@@ -332,7 +332,7 @@ def update_seq_papers_status(enzyme_name):
         paper_progress_text, paper_progress = paper_status.paper_metadata_status(paper)
         sequence_progress_text, sequence_progress = paper_status.sequences_status(paper)
         activity_progress_text, activity_progress = paper_status.activity_status(paper)
-        status, status_colour = paper_status.get_status(paper_progress, sequence_progress, activity_progress)
+        status, status_colour = paper_status.get_status(paper_progress, sequence_progress, activity_progress, paper)
 
         paper.status = status
         paper.save()

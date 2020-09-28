@@ -1,7 +1,7 @@
 from retrobiocat_web.app.biocatdb import bp
 from flask import render_template, flash, redirect, url_for, request, jsonify, session
 from flask_security import roles_required, current_user
-from retrobiocat_web.mongo.models.user_models import User
+from retrobiocat_web.mongo.models.user_models import User, Role
 from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType, Sequence, Activity, Paper
 from retrobiocat_web.mongo.models.reaction_models import Reaction
 from retrobiocat_web.app.app import user_datastore
@@ -126,6 +126,19 @@ def get_comments(paper, user):
 
     return comments
 
+def get_admin_dict(paper):
+    admin_dict = {}
+
+    contributor_choices = [(f"{c.first_name} {c.last_name}", str(c.id)) for c in User.contributors()]
+    admin_dict['contributors'] = [('Unassigned', '')] + contributor_choices
+
+    if paper.owner != None:
+        admin_dict['owner'] = str(paper.owner.id)
+    else:
+        admin_dict['owner'] = ''
+
+    return admin_dict
+
 @bp.route('/submission_main_page/<paper_id>', methods=['GET'])
 @roles_required('contributor')
 def submission_main_page(paper_id):
@@ -149,6 +162,11 @@ def submission_main_page(paper_id):
     enzyme_data = sequence_table.get_enzyme_data(db.Q(papers=paper))
     status_dict = get_status(paper, user)
     comments = get_comments(paper, user)
+    admin_panel = False
+    admin_dict = {}
+    if current_user.has_role('admin'):
+        admin_panel = True
+        admin_dict = get_admin_dict(paper)
 
     return render_template('data_submission/submission_main_page.html',
                            paper=paper_data,
@@ -158,7 +176,9 @@ def submission_main_page(paper_id):
                            seq_table_height='60vh', enzyme_types=enzyme_types, show_header_filters=False, include_owner=True, lock_enz_type='false',
                            reactions=reactions, enzyme_names=enzyme_names+['Chemical'],
                            doi=paper.doi,
-                           comments=comments)
+                           comments=comments,
+                           admin_panel=admin_panel,
+                           admin_dict=admin_dict)
 
 @bp.route('/_check_connection', methods=['GET', 'POST'])
 def check_connection():

@@ -38,3 +38,8 @@ class User(db.Document, UserMixin):
 
     def __str__(self):
         return self.email
+
+    @db.queryset_manager
+    def contributors(doc_cls, queryset):
+        c_role = Role.objects(name='contributor')[0]
+        return queryset.filter(roles=c_role)

@@ -23,6 +23,12 @@
                           <li class="nav-item">
                             <a class="nav-link" id="activity_tab" data-toggle="tab" href="#activity" role="tab" aria-controls="activity" aria-selected="false">Activity</a>
                           </li>
+                          {% if admin_panel == True %}
+                            <li class="nav-item">
+                                <a class="nav-link" id="admin_panel_tab" data-toggle="tab" href="#admin_panel" role="tab" aria-controls="admin_panel" aria-selected="false">Admin</a>
+                            </li>
+                          {% endif %}
+
                         </ul>
                         <div class="tab-content" id="myTabContent">
                           <div class="tab-pane fade show active" id="status" role="tabpanel" aria-labelledby="status_tab">
@@ -39,6 +45,11 @@
                           <div class="tab-pane fade" id="activity" role="tabpanel" aria-labelledby="activity_tab">
                                   {% include '/tabulator_tables/activity_table/activity_table.html' %}
                           </div>
+                          {% if admin_panel == True %}
+                              <div class="tab-pane fade" id="admin_panel" role="tabpanel" aria-labelledby="admin_panel_tab">
+                                      {% include 'data_submission/admin_panel.html' %}
+                              </div>
+                          {% endif %}
 
                         </div>
                     </div>

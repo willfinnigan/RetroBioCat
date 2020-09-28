@@ -1,0 +1,62 @@
+
+
+<div class="container-fluid">
+    <div class="row mt-5">
+        <div class="col mx-auto" style="max-width:48rem">
+            <h5 class="text-center">Admin panel</h5>
+
+            <div class="form-group">
+                <label for="set_paper_owner" class="control-label">Paper owner: </label>
+                <select id="set_paper_owner" class="form-control custom-select w-75">
+                {% for contributor in admin_dict['contributors'] %}
+                    {% if contributor[1] == admin_dict['owner'] %}
+                        <option selected="selected" value="{{contributor[1]}}">{{contributor[0]}}</option>
+                    {% else %}
+                        <option value="{{contributor[1]}}">{{contributor[0]}}</option>
+                    {% endif %}
+                {% endfor %}
+                </select>
+            </div>
+
+            <button class="btn btn-outline-primary" onclick="admin_unassigned_seqs_to_owner()">Assign unassigned seqs to owner</button>
+
+            <button class="btn btn-outline-success" onclick="admin_activity_to_owner()">Assign activity data to owner</button>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById("set_paper_owner").onchange = function(){
+        admin_set_owner()
+    };
+
+    function admin_set_owner() {
+        $.post('/_admin_set_owner', {
+            paper_id: "{{paper['id']}}",
+            new_owner_id: document.getElementById("set_paper_owner").value,
+
+            }).done(function(data) {
+                response_msg(data.result.msg, data.result.status, data.result.issues, "response_div")
+            })
+        }
+
+    function admin_activity_to_owner() {
+        $.post('/_admin_activity_to_owner', {
+            paper_id: "{{paper['id']}}",
+
+            }).done(function(data) {
+                response_msg(data.result.msg, data.result.status, data.result.issues, "response_div")
+            })
+        }
+
+    function admin_unassigned_seqs_to_owner() {
+        $.post('/_admin_unassigned_seqs_to_owner', {
+            paper_id: "{{paper['id']}}",
+
+            }).done(function(data) {
+                response_msg(data.result.msg, data.result.status, data.result.issues, "response_div")
+            })
+        }
+
+</script>
