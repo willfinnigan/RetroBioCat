@@ -149,4 +149,21 @@
         get_mutants_of_type()
     }
 
+    document.getElementById("self_assigned").onchange = function() {
+        change_sequence_assign()
+    }
+
+    function change_sequence_assign() {
+        $.post('/_change_sequence_assign', {
+            original_name: document.getElementById("original_name").innerHTML,
+            self_assigned: document.getElementById("self_assigned").checked,
+            }).done(function(data) {
+                response_msg(data.result.msg, data.result.status, data.result.issues, "self_assign_response_div")
+
+                if (data.result.status === 'success') {
+                    load_edit_seq_data(document.getElementById("original_name").innerHTML)
+                }
+            })
+        }
+
 </script>

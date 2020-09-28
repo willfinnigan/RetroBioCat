@@ -141,6 +141,31 @@ def save_edited_sequence():
     return jsonify(result=result)
 
 
+
+@bp.route('/_change_sequence_assign', methods=['GET', 'POST'])
+@roles_required('contributor')
+def change_sequence_assign():
+    original_name = request.form['original_name']
+    self_assigned = bool(strtobool(request.form['self_assigned']))
+    print(self_assigned)
+
+    user = user_datastore.get_user(current_user.id)
+    seq = Sequence.objects(enzyme_name=original_name)[0]
+
+    if (seq.owner == user) and (self_assigned is False):
+        seq.owner = None
+        seq.save()
+    elif (seq.owner == None) and (self_assigned == True):
+        seq.owner = user
+        seq.save()
+
+    result = {'status': 'success',
+              'msg': 'Sequence assigned',
+              'issues': []}
+    return jsonify(result=result)
+
+
+
 @bp.route('/_load_sequence_data', methods=['GET', 'POST'])
 def load_sequence_data():
 
@@ -481,6 +506,9 @@ def save_or_add_seqs(data_list, paper):
                 seq.save()
 
     return issues
+
+
+
 
 
 
