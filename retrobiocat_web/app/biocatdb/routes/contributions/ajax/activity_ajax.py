@@ -214,6 +214,7 @@ def upload_activity_excel():
             excel_file.save(filename)
             df = pd.read_excel(filename)
             data_list = process_uploaded_excel(df)
+            data_list = clear_empty_rows(data_list)
             os.remove(filename)
 
             result = {'status': 'success',
@@ -267,3 +268,14 @@ def process_uploaded_excel(df):
     data_list = df.to_dict(orient='records')
 
     return data_list
+
+def clear_empty_rows(data_list):
+    new_data_list = []
+    for data in data_list:
+        if data.get('reaction', '') != '':
+            if data.get('enzyme_type', '') != '':
+                if data.get('enzyme_name', '') != '':
+                    new_data_list.append(data)
+
+    return new_data_list
+
