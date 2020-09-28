@@ -18,9 +18,9 @@
                 </select>
             </div>
 
-            <button class="btn btn-outline-primary" onclick="admin_unassigned_seqs_to_owner()">Assign unassigned seqs to owner</button>
-
             <button class="btn btn-outline-success" onclick="admin_activity_to_owner()">Assign activity data to owner</button>
+            <button class="btn btn-outline-primary" onclick="admin_unassigned_seqs_to_owner()">Assign unassigned seqs to owner</button>
+            <button class="btn btn-outline-danger" onclick="admin_all_seqs_to_owner()">Assign ALL seqs to owner</button>
 
         </div>
     </div>
@@ -52,6 +52,15 @@
 
     function admin_unassigned_seqs_to_owner() {
         $.post('/_admin_unassigned_seqs_to_owner', {
+            paper_id: "{{paper['id']}}",
+
+            }).done(function(data) {
+                response_msg(data.result.msg, data.result.status, data.result.issues, "response_div")
+            })
+        }
+
+    function admin_all_seqs_to_owner() {
+        $.post('/_admin_all_seqs_to_owner', {
             paper_id: "{{paper['id']}}",
 
             }).done(function(data) {

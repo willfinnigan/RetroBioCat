@@ -31,11 +31,11 @@ def admin_set_owner():
 @roles_required('admin')
 def admin_activity_to_owner():
     paper = Paper.objects(id=request.form['paper_id']).select_related()[0]
-    activity = Activity.objects(paper=paper)
+    activities = Activity.objects(paper=paper)
 
-    for act in activity:
+    for activity in activities:
         activity.added_by = paper.owner
-        act.save()
+        activity.save()
 
     result = {'status': 'success',
               'msg': 'Activity added by updated',
@@ -57,6 +57,22 @@ def admin_unassigned_seqs_to_owner():
 
     result = {'status': 'success',
               'msg': 'Unassigned sequences assigned to paper owner',
+              'issues': []}
+
+    return jsonify(result=result)
+
+@bp.route('/_admin_all_seqs_to_owner', methods=['GET', 'POST'])
+@roles_required('admin')
+def admin_all_seqs_to_owner():
+    paper = Paper.objects(id=request.form['paper_id']).select_related()[0]
+    seqs = Sequence.objects(db.Q(papers=paper))
+
+    for seq in seqs:
+        seq.owner = paper.owner
+        seq.save()
+
+    result = {'status': 'success',
+              'msg': 'All sequences assigned to paper owner',
               'issues': []}
 
     return jsonify(result=result)
