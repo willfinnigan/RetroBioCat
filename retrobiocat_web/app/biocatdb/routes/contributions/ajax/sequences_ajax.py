@@ -406,6 +406,7 @@ def save_or_add_seqs(data_list, paper):
 
         if 'sequence' in seq_dict:
             seq_dict['sequence'] = seq_dict['sequence'].replace('\n', '')
+            seq_dict['sequence'] = seq_dict['sequence'].replace(' ', '')
 
         if seq_dict.get('enzyme_name','') == '':
             issues.append(f"Sequence must have a name")
