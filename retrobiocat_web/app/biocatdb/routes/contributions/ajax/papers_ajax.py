@@ -294,6 +294,10 @@ def review_paper():
     if check_permission.check_seq_permissions(current_user.id, paper):
         reviewed = bool(strtobool(request.form['reviewed']))
         paper.reviewed = reviewed
+        if reviewed == True:
+            paper.reviewed_by = user
+        else:
+            paper.reviewed_by = None
         paper.save()
 
         flash("Paper review status updated", 'success')

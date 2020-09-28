@@ -72,6 +72,7 @@ def get_status(paper, user):
 
     status_dict = {'review_checked': '',
                    'review_disabled': 'disabled',
+                   'reviewed_by': '',
                    'issues_checked': '',
                    'issues_hidden': 'hidden',
                    'status': status,
@@ -91,6 +92,9 @@ def get_status(paper, user):
             if tag in user.enzyme_champion:
                 status_dict['review_disabled'] = ''
                 status_dict['issues_hidden'] = ''
+    if paper.reviewed_by != None:
+        rb = paper.reviewed_by
+        status_dict['reviewed_by'] = f"{rb.first_name} {rb.last_name}, {rb.affiliation}"
 
     if paper.has_issues == True:
         status_dict['issues_hidden'] = ''
