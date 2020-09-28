@@ -215,6 +215,7 @@ def upload_activity_excel():
             df = pd.read_excel(filename)
             data_list = process_uploaded_excel(df)
             data_list = clear_empty_rows(data_list)
+            data_list = remove_enzyme_name_end_spaces(data_list)
             os.remove(filename)
 
             result = {'status': 'success',
@@ -278,4 +279,12 @@ def clear_empty_rows(data_list):
                     new_data_list.append(data)
 
     return new_data_list
+
+def remove_enzyme_name_end_spaces(data_list):
+    for i, data in enumerate(data_list):
+        while data_list[i]['enzyme_name'][-1] == ' ':
+            print("Removing end space")
+            data_list[i]['enzyme_name'] = data_list[i]['enzyme_name'][:-1]
+    return data_list
+
 
