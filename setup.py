@@ -4,7 +4,6 @@ from retrobiocat_web import __version__
 with open('requirements.txt') as f:
   requirements = f.read().splitlines()
 
-
 setup(
   name = 'retrobiocat_web',
   packages = find_packages(),
