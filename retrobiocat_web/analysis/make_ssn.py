@@ -8,13 +8,18 @@ def new_node(seq_obj):
     else:
         colour = 'darkred'
 
+    if hasattr(seq_obj, 'protein_name') and hasattr(seq_obj, 'tax') :
+        title = f"{seq_obj.protein_name} - {seq_obj.tax}"
+    else:
+        title = seq_obj.enzyme_name
+
     node = {'id': seq_obj.enzyme_name,
             'size': 40,
-            'borderWidth': 2,
-            'borderWidthSelected': 4,
-            'color': colour,
+            'borderWidth': 1,
+            'borderWidthSelected': 3,
+            'color': {'background': colour, 'border': 'black'},
             'label': seq_obj.enzyme_name,
-            'title': seq_obj.enzyme_name,
+            'title': title,
             'shape': 'dot'}
 
     return node

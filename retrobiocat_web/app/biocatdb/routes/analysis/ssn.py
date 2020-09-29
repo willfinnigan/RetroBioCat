@@ -11,10 +11,10 @@ import mongoengine as db
 def ssn(enzyme_type):
     nodes, edges = make_ssn.get_nodes_and_edges(enzyme_type)
 
-    edges_options = {'smooth': {'type': "continuous", }}
-    physics_options = {'stabilization': False,
-                       'barnesHut': {'gravitationalConstant': -80000,
-                                     'springConstant': 0.001,
+    edges_options = {'smooth': False}
+    physics_options = {'stabilization': True,
+                       'barnesHut': {'gravitationalConstant': -20000,
+                                     'springConstant': 0.1,
                                      'springLength': 200},
                        }
     interaction_options = {'tooltipDelay': 200,
