@@ -44,9 +44,6 @@ def get_nodes_and_edges(enzyme_type):
         if ali_obj.identity >= 0.7:
             edges.append(new_edge(ali_obj))
 
-    print(nodes)
-    print(edges)
-
     return nodes, edges
 
 

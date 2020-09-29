@@ -20,9 +20,9 @@
     <script type="text/javascript">
         // initialize global variables.
         var container = document.getElementById('myssn');
-        var options = {edges: {{edges_options|safe}},
-                       physics: {{physics_options|safe}},
-                       interaction: {{interaction_options|safe}}
+        var options = {edges: {{edges_options|tojson}},
+                       physics: {{physics_options|tojson}},
+                       interaction: {{interaction_options|tojson}}
                       };
 
         var data = {'nodes': new vis.DataSet({{nodes|tojson}}), 'edges': new vis.DataSet({{edges|tojson}})};
