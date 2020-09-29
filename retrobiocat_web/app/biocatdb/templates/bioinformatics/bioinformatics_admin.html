@@ -23,7 +23,8 @@
                                         <div class="progress">
                                             <div class="progress-bar" role="progressbar" style="width: {{blasted_enz_types[enz_type]}}%"></div>
                                         </div>
-                                        <button class="btn btn-sm btn-outline-secondary" onclick="queue_blast_search('{{enz_type}}')">Queue blasts for {{enz_type}}</button>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="queue_blast_search('{{enz_type}}')">Queue blasts for {{enz_type}}</button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="queue_alignments('{{enz_type}}')">Queue alignments for {{enz_type}}</button>
                                     </div>
                                 {% endfor %}
 
@@ -39,14 +40,20 @@
     </div>
 
     <script>
-
-
         function queue_blast_search(enzyme_type) {
             $.post('/_find_homologs', {
                 enzyme_type: enzyme_type
                 }).done(function(data) {
                     response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
                     location.reload()
+                })
+        }
+
+        function queue_alignments(enzyme_type) {
+            $.post('/_make_alignments', {
+                enzyme_type: enzyme_type
+                }).done(function(data) {
+                    response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
                 })
         }
 

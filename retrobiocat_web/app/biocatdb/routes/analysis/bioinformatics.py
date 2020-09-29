@@ -9,7 +9,7 @@ import mongoengine as db
 
 
 def task_find_homologs(enzyme_name):
-    seq = Sequence.objects(enzyme_name=enzyme_name)[0]
+    seq = Sequence.objects(db.Q(enzyme_name=enzyme_name) & db.Q(blast=None))[0]
     print(f'Starting blast for sequence: {seq.enzyme_name}')
 
     try:
@@ -52,8 +52,6 @@ def find_homologs():
             seq.blast = datetime.datetime.now()
         seq.save()
 
-    current_app.blast_queue.enqueue(task_make_alignments, enzyme_type)
-
     result = {'status': 'success',
               'msg': f"Started job to blast all {enzyme_type}'s",
               'issues': []}
@@ -61,6 +59,20 @@ def find_homologs():
     flash(f"Started job to blast all {enzyme_type}'s", "success")
 
     return jsonify(result=result)
+
+@bp.route('/_make_alignments', methods=['GET', 'POST'])
+@roles_required('admin')
+def make_alignments():
+    enzyme_type = request.form['enzyme_type']
+
+    current_app.db_queue.enqueue(task_make_alignments, enzyme_type)
+
+    result = {'status': 'success',
+              'msg': f"Started job to align all {enzyme_type}'s",
+              'issues': []}
+
+    return jsonify(result=result)
+
 
 @bp.route('/bioinformatics_admin_page', methods=['GET', 'POST'])
 @roles_required('admin')
