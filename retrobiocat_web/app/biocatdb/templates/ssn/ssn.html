@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% set active_page = "" %}
+
+{% block content %}
+    <div style="overflow-y: hidden; height:90vh">
+        <div id="myssn"></div>
+    </div>
+
+
+    <script type="text/javascript">
+        // initialize global variables.
+        var container = document.getElementById('myssn');
+        var options = {edges: {{edges_options|safe}},
+                       physics: {{physics_options|safe}},
+                       interaction: {{interaction_options|safe}}
+                      };
+
+        var data = {'nodes': new vis.DataSet({{nodes|tojson}}), 'edges': new vis.DataSet({{edges|tojson}})};
+        var network = new vis.Network(container, data, options);
+    </script>
+
+{% endblock %}

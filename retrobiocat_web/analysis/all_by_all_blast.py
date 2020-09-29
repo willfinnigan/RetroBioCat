@@ -74,6 +74,7 @@ def get_sequence_object(name):
 def create_alignments_from_blast_record(seq_obj, blast_record, enzyme_type):
     """ Create alignment database entries from the parsed blast record """
 
+    alignment_count = 0
     query_length = len(seq_obj.sequence)
     enzyme_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
 
@@ -91,7 +92,7 @@ def create_alignments_from_blast_record(seq_obj, blast_record, enzyme_type):
                 identity = hsp.identities / hsp.align_length
                 sbjct_length = len(sbjct_obj.sequence)
                 bitscore = hsp.bits
-                x = 2 - bitscore * (query_length * sbjct_length)
+                x = 2 - bitscore * (query_length / sbjct_length)
                 alignment_score = np.log10(-x)
                 e_value = hsp.expect
 
@@ -102,7 +103,11 @@ def create_alignments_from_blast_record(seq_obj, blast_record, enzyme_type):
                                       identity=identity,
                                       alignment_score=alignment_score,
                                       e_value=e_value)
+                seq_obj.save()
+                sbjct_obj.save()
                 alignment.save()
+                alignment_count += 1
+    print(f'Created {alignment_count} alignment objects')
 
 def do_all_by_all_blast(enzyme_type):
     """ Loop over sequences of an enzyme type creating alignments between all sequences of that type """
@@ -123,6 +128,7 @@ def do_all_by_all_blast(enzyme_type):
 
 
 if __name__ == "__main__":
+
     from retrobiocat_web.mongo.default_connection import make_default_connection
     make_default_connection()
     Alignment.drop_collection()
@@ -130,3 +136,5 @@ if __name__ == "__main__":
     enzyme_type = 'AAD'
     make_blast_db_for_enzyme_type(enzyme_type)
     do_all_by_all_blast(enzyme_type)
+
+

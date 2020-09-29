@@ -1,7 +1,7 @@
 import requests
 from Bio.Blast import NCBIXML
 from io import StringIO
-from retrobiocat_web.mongo.models.biocatdb_models import Sequence, UniRef90, EnzymeType
+from retrobiocat_web.mongo.models.biocatdb_models import Sequence, UniRef90, EnzymeType, Alignment
 import time
 import mongoengine as db
 
@@ -150,8 +150,9 @@ if __name__ == '__main__':
     make_default_connection()
 
     UniRef90.drop_collection()
+    Alignment.drop_collection()
 
-    seq = Sequence.objects(enzyme_name='mpCAR')[0]
+    seq = Sequence.objects(enzyme_name='PmyxLAAD')[0]
     protein_seq = seq.sequence
 
     job_id = start_blast_job(protein_seq)

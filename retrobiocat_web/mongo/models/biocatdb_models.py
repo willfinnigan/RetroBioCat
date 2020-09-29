@@ -155,9 +155,6 @@ class UniRef90(db.Document):
     tax = db.StringField()
     tax_id = db.StringField()
 
-    identities = db.DictField()
-    alignment_scores = db.DictField()
-
 class Alignment(db.Document):
     enzyme_type = db.ReferenceField(EnzymeType)
     proteins = db.ListField(db.GenericReferenceField(choices=[UniRef90, Sequence]), max_length=2)
