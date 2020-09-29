@@ -138,7 +138,7 @@ def enzyme_substrate_specificity(enzyme_name):
     activity_data = process_activity_data.process_activity_data(activity_data)
     activity_data = process_activity_data.smiles_to_svg(activity_data)
 
-    return render_template('substrate_specificity/table_result_specificity.html', activity_data=substrate_specificity_data, title=f"{enzyme_name} substrate specificity")
+    return render_template('substrate_specificity/table_result_specificity.html', activity_data=activity_data, title=f"{enzyme_name} substrate specificity")
 
 @bp.route("/enzyme_substrates_type/<enzyme_type>", methods=["GET"])
 def enzyme_substrate_specificity_type(enzyme_type):
