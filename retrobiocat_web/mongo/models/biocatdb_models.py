@@ -165,6 +165,7 @@ class Alignment(db.Document):
     coverage = db.FloatField()
     bitscore = db.FloatField()
     alignment_score = db.FloatField()
+    e_value = db.FloatField()
 
 
 

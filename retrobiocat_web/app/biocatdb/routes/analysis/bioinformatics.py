@@ -2,7 +2,7 @@ from retrobiocat_web.app.biocatdb import bp
 from flask import render_template, flash, redirect, url_for, request, jsonify, session, current_app
 from flask_security import roles_required, current_user
 from retrobiocat_web.mongo.models.biocatdb_models import Paper, Activity, Sequence, Molecule, Tag, EnzymeType
-from retrobiocat_web.analysis import embl_restfull
+from retrobiocat_web.analysis import embl_restfull, all_by_all_blast
 from rq.registry import StartedJobRegistry
 import datetime
 import mongoengine as db
@@ -26,6 +26,12 @@ def task_find_homologs(enzyme_name):
 
     return 'Done'
 
+def task_make_alignments(enzyme_type):
+    print('Making alignments..')
+    all_by_all_blast.make_blast_db_for_enzyme_type(enzyme_type)
+    all_by_all_blast.do_all_by_all_blast(enzyme_type)
+    print('Done')
+
 
 @bp.route('/_find_homologs', methods=['GET', 'POST'])
 @roles_required('admin')
@@ -45,6 +51,8 @@ def find_homologs():
         else:
             seq.blast = datetime.datetime.now()
         seq.save()
+
+    current_app.blast_queue.enqueue(task_make_alignments, enzyme_type)
 
     result = {'status': 'success',
               'msg': f"Started job to blast all {enzyme_type}'s",

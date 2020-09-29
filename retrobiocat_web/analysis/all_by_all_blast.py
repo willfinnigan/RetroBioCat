@@ -9,6 +9,7 @@ from Bio.Blast import NCBIXML
 from Bio.Blast.Applications import NcbiblastpCommandline
 from io import StringIO
 import numpy as np
+import shutil
 
 ALLBYALL_BLAST_FOLDER = str(Path(__file__).parents[0]) + '/all_by_all_blast'
 
@@ -40,7 +41,6 @@ def make_blast_db_for_enzyme_type(enzyme_type):
     command = f"makeblastdb -in {directory}/{enzyme_type}.fasta -dbtype prot"
     sp.run(command, shell=True)
 
-
 def run_blast(fasta_to_blast, database):
     """ Run blast and parse output into a biopython blast record """
 
@@ -60,7 +60,6 @@ def make_single_seq_fasta(name, sequence, enzyme_type):
 
     return fasta_path
 
-
 def get_sequence_object(name):
     seq_query = Sequence.objects(enzyme_name=name)
     if len(seq_query) != 0:
@@ -73,6 +72,7 @@ def get_sequence_object(name):
     return None
 
 def create_alignments_from_blast_record(seq_obj, blast_record, enzyme_type):
+    """ Create alignment database entries from the parsed blast record """
 
     query_length = len(seq_obj.sequence)
     enzyme_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
@@ -82,24 +82,31 @@ def create_alignments_from_blast_record(seq_obj, blast_record, enzyme_type):
             hsp = alignment.hsps[0]
             sbjct_name = alignment.title.replace(f"{alignment.hit_id} ", "")
             sbjct_obj = get_sequence_object(sbjct_name)
-            sbjct_length = len(sbjct_obj.sequence)
 
-            coverage = hsp.align_length / query_length
-            identity = hsp.identities / hsp.align_length
-
-            alignment_query = Alignment.objects(db.Q(proteins__in=seq_obj)
-                                                & db.Q(proteins__in=sbjct_obj)
+            alignment_query = Alignment.objects(db.Q(proteins__in=[seq_obj])
+                                                & db.Q(proteins__in=[sbjct_obj])
                                                 & db.Q(enzyme_type=enzyme_type_obj))
             if len(alignment_query) == 0:
+                coverage = hsp.align_length / query_length
+                identity = hsp.identities / hsp.align_length
+                sbjct_length = len(sbjct_obj.sequence)
+                bitscore = hsp.bits
+                x = 2 - bitscore * (query_length * sbjct_length)
+                alignment_score = np.log10(-x)
+                e_value = hsp.expect
+
                 alignment = Alignment(enzyme_type=enzyme_type_obj,
                                       proteins=[seq_obj,sbjct_obj],
                                       coverage=coverage,
-                                      bitscore=hsp.bits,
-                                      identity=identity)
+                                      bitscore=bitscore,
+                                      identity=identity,
+                                      alignment_score=alignment_score,
+                                      e_value=e_value)
                 alignment.save()
 
 def do_all_by_all_blast(enzyme_type):
     """ Loop over sequences of an enzyme type creating alignments between all sequences of that type """
+
     directory = f"{ALLBYALL_BLAST_FOLDER}/{enzyme_type}"
     seqs = Sequence.objects(db.Q(enzyme_type=enzyme_type) & db.Q(sequence__ne=""))
     enzyme_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
@@ -114,11 +121,12 @@ def do_all_by_all_blast(enzyme_type):
         print(f"{seq.enzyme_name} blasted against all {enzyme_type}s")
 
 
+
 if __name__ == "__main__":
     from retrobiocat_web.mongo.default_connection import make_default_connection
     make_default_connection()
     Alignment.drop_collection()
 
-    enzyme_type = 'CAR'
+    enzyme_type = 'AAD'
     make_blast_db_for_enzyme_type(enzyme_type)
     do_all_by_all_blast(enzyme_type)
