@@ -13,15 +13,16 @@ def ssn(enzyme_type):
 
     edges_options = {'smooth': False}
     physics_options = {'stabilization': {'enabled': True,
-                                         'iterations': 50},
-                       "barnesHut": {"gravitationalConstant": -15000,
+                                         'iterations': 100},
+                       "barnesHut": {"gravitationalConstant": -16000,
                                      "springLength": 300,
                                      "springConstant": 0.1,
-                                     "damping": 0.2,
-                                     "avoidOverlap": 0.5},
+                                     "damping": 0.1,
+                                     "avoidOverlap": 0.1},
                        "maxVelocity": 49,
                        "minVelocity": 0.75,
                        "solver": "barnesHut"}
+
 
     interaction_options = {'tooltipDelay': 0,
                            'hideEdgesOnDrag': True}
