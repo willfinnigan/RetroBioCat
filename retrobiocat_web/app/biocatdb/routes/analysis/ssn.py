@@ -13,7 +13,7 @@ def ssn(enzyme_type):
 
     edges_options = {'smooth': False}
     physics_options = {'stabilization': {'enabled': True,
-                                         'iterations': 100},
+                                         'iterations': 50},
                        "barnesHut": {"gravitationalConstant": -15000,
                                      "springLength": 300,
                                      "springConstant": 0.1,
