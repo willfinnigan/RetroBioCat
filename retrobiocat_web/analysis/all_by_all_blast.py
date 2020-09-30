@@ -10,6 +10,7 @@ from Bio.Blast.Applications import NcbiblastpCommandline
 from io import StringIO
 import numpy as np
 import shutil
+import datetime
 
 ALLBYALL_BLAST_FOLDER = str(Path(__file__).parents[0]) + '/all_by_all_blast'
 
@@ -119,11 +120,14 @@ def do_all_by_all_blast(enzyme_type):
     database = f"{directory}/{enzyme_type}.fasta"
 
     for seq in list(seqs)+list(bioinf_seqs):
-        fasta_path = make_single_seq_fasta(seq.enzyme_name, seq.sequence, enzyme_type)
-        blast_record = run_blast(fasta_path, database)
-        os.remove(fasta_path)
-        create_alignments_from_blast_record(seq, blast_record, enzyme_type)
-        print(f"{seq.enzyme_name} blasted against all {enzyme_type}s")
+        if seq.alignments_made is None:
+            fasta_path = make_single_seq_fasta(seq.enzyme_name, seq.sequence, enzyme_type)
+            blast_record = run_blast(fasta_path, database)
+            os.remove(fasta_path)
+            create_alignments_from_blast_record(seq, blast_record, enzyme_type)
+            print(f"{seq.enzyme_name} blasted against all {enzyme_type}s")
+            seq.alignments_made = datetime.datetime.now()
+            seq.save()
 
 
 

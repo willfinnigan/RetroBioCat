@@ -40,11 +40,9 @@ def find_homologs():
 
     seqs = Sequence.objects(db.Q(enzyme_type=enzyme_type) & db.Q(bioinformatics_ignore__ne=True))
     for seq in seqs:
-        if seq.sequence != '' and seq.sequence is not None:
+        if seq.sequence != '' and seq.sequence is not None and seq.blast != None:
             if len(seq.sequence) > 50:
-                seq.blast = None
                 name = str(seq.enzyme_name)
-                print(name)
                 current_app.blast_queue.enqueue(task_find_homologs, name)
             else:
                 seq.blast = datetime.datetime.now()

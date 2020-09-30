@@ -12,13 +12,20 @@ def ssn(enzyme_type):
     nodes, edges = make_ssn.get_nodes_and_edges(enzyme_type)
 
     edges_options = {'smooth': False}
-    physics_options = {'stabilization': True,
-                       'barnesHut': {'gravitationalConstant': -20000,
-                                     'springConstant': 0.1,
-                                     'springLength': 200},
-                       }
-    interaction_options = {'tooltipDelay': 200,
+    physics_options = {'stabilization': {'enabled': True,
+                                         'iterations': 100},
+                       "barnesHut": {"gravitationalConstant": -15000,
+                                     "springLength": 300,
+                                     "springConstant": 0.1,
+                                     "damping": 0.2,
+                                     "avoidOverlap": 0.5},
+                       "maxVelocity": 49,
+                       "minVelocity": 0.75,
+                       "solver": "barnesHut"}
+
+    interaction_options = {'tooltipDelay': 0,
                            'hideEdgesOnDrag': True}
+
 
     return render_template('ssn/ssn.html',
                            nodes=nodes, edges=edges,

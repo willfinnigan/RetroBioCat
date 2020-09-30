@@ -13,16 +13,26 @@
     </style>
 
     <div style="overflow-y: hidden; height:90vh">
+        {% include 'ssn/ssn_top_bar.html' %}
         <div id="myssn"></div>
     </div>
 
+    {% include 'ssn/modals/network_physics_modal.html' %}
 
     <script type="text/javascript">
         // initialize global variables.
         var container = document.getElementById('myssn');
         var options = {edges: {{edges_options|tojson}},
                        physics: {{physics_options|tojson}},
-                       interaction: {{interaction_options|tojson}}
+                       interaction: {{interaction_options|tojson}},
+                       configure: {filter: function (option, path) {
+                                    if (path.indexOf("physics") !== -1) {
+                                        return true;}
+                                    if (path.indexOf("smooth") !== -1 || option === "smooth") {
+                                        return true;
+                                    }
+                                    return false;},
+                                    container: document.getElementById("ssn_network_config")},
                       };
 
         var data = {'nodes': new vis.DataSet({{nodes|tojson}}), 'edges': new vis.DataSet({{edges|tojson}})};

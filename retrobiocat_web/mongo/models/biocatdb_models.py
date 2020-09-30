@@ -68,6 +68,7 @@ class Sequence(db.Document):
     papers = db.ListField(db.ReferenceField(Paper))
 
     blast = db.DateTimeField()
+    alignments_made = db.DateTimeField()
 
     def __unicode__(self):
         return self.enzyme_name
@@ -150,6 +151,7 @@ class UniRef90(db.Document):
     result_of_blasts_for = db.ListField(db.ReferenceField(Sequence))
     seq_match = db.ReferenceField(Sequence)
     blast_round = db.IntField()
+    alignments_made = db.DateTimeField()
 
     protein_name = db.StringField()
     tax = db.StringField()
