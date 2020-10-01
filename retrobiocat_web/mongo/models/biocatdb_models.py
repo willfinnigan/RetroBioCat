@@ -6,6 +6,7 @@ class EnzymeType(db.Document):
     full_name = db.StringField(default='')
     description = db.StringField(default='')
     other_abbreviations = db.ListField(db.StringField())
+    bioinformatics_status = db.StringField(default='Idle')
 
     def __unicode__(self):
         return self.enzyme_type
@@ -131,6 +132,8 @@ class Activity(db.Document):
     selectivity = db.StringField()
     auto_generated = db.BooleanField()
 
+    meta = {'indexes': ['enzyme_name', 'enzyme_type', 'reaction']}
+
 class Tag(db.Document):
     seq = db.StringField()
     n_term = db.BooleanField(default=False)
@@ -157,6 +160,8 @@ class UniRef90(db.Document):
     tax = db.StringField()
     tax_id = db.StringField()
 
+    meta = {'indexes': ['enzyme_type']}
+
 class Alignment(db.Document):
     enzyme_type = db.ReferenceField(EnzymeType)
     proteins = db.ListField(db.GenericReferenceField(choices=[UniRef90, Sequence]), max_length=2)
@@ -165,6 +170,9 @@ class Alignment(db.Document):
     bitscore = db.FloatField()
     alignment_score = db.FloatField()
     e_value = db.FloatField()
+
+    meta = {'indexes': ['enzyme_type']}
+
 
 
 

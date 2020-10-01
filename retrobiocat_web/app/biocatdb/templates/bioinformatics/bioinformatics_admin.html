@@ -23,10 +23,26 @@
                                         <div class="progress">
                                             <div class="progress-bar" role="progressbar" style="width: {{blasted_enz_types[enz_type]}}%"></div>
                                         </div>
-                                        <button class="btn btn-sm btn-outline-primary" onclick="queue_blast_search('{{enz_type}}')">Queue blasts for {{enz_type}}</button>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="queue_alignments('{{enz_type}}')">Queue alignments for {{enz_type}}</button>
+                                        <div class="progress">
+                                            <div class="progress-bar progress-bar-danger" role="progressbar" style="width: {{aligned_enz_types[enz_type]}}%"></div>
+                                        </div>
+
+                                        <p>BioCatDB sequences: {{enzyme_numbers[enz_type]['biocatdb']}}</p>
+                                        <p>UniRef90 sequences: {{enzyme_numbers[enz_type]['uniref']}}</p>
+                                        <p>Alignments: {{enzyme_numbers[enz_type]['alignments']}}</p>
+
+                                        {% if enzyme_bioinformatics_status[enz_type] == 'Idle' %}
+                                            {% set button_disable = '' %}
+                                        {% else %}
+                                            {% set button_disable = '' %}
+                                        {% endif %}
+                                        <button class="btn btn-sm btn-outline-primary {{button_disable}}" onclick="queue_blast_search('{{enz_type}}')" {{button_disable}}>Queue blasts for {{enz_type}}</button>
+                                        <button class="btn btn-sm btn-outline-warning {{button_disable}}" onclick="reset_blast_status('{{enz_type}}')" {{button_disable}}>Reset blast status for {{enz_type}}</button>
                                     </div>
                                 {% endfor %}
+
+
+                                <button class="btn btn-sm btn-danger" onclick="clear_all_bioinformatics_data()">Clear all data</button>
 
                                 </div>
                             </div>
@@ -49,13 +65,25 @@
                 })
         }
 
-        function queue_alignments(enzyme_type) {
-            $.post('/_make_alignments', {
+        function reset_blast_status(enzyme_type) {
+            $.post('/_reset_blast_status', {
                 enzyme_type: enzyme_type
                 }).done(function(data) {
                     response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+                    location.reload()
                 })
         }
+
+        function clear_all_bioinformatics_data() {
+            $.post('/_clear_all_bioinformatics_data', {
+                }).done(function(data) {
+                    response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+                    location.reload()
+                })
+        }
+
+
+
 
 
 

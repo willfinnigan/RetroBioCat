@@ -9,19 +9,19 @@ import mongoengine as db
 
 @bp.route('/ssn/<enzyme_type>', methods=['GET'])
 def ssn(enzyme_type):
-    nodes, edges = make_ssn.get_nodes_and_edges(enzyme_type)
+    identity = 0.7
+    nodes, edges = make_ssn.get_nodes_and_edges(enzyme_type, identity)
 
     edges_options = {'smooth': False}
     physics_options = {'stabilization': {'enabled': True,
-                                         'iterations': 100},
-                       "barnesHut": {"gravitationalConstant": -16000,
-                                     "springLength": 300,
-                                     "springConstant": 0.015,
-                                     "damping": 0.2,
-                                     "avoidOverlap": 0.1},
+                                         'iterations': 50},
+                       "repulsion": {
+                            "centralGravity": 0.1,
+                            "nodeDistance": 500
+                        },
                        "maxVelocity": 49,
                        "minVelocity": 0.75,
-                       "solver": "barnesHut"}
+                       "solver": "repulsion"}
 
     interaction_options = {'tooltipDelay': 0,
                            'hideEdgesOnDrag': True}

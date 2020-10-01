@@ -25,9 +25,6 @@
         var options = {edges: {{edges_options|tojson}},
                        physics: {{physics_options|tojson}},
                        interaction: {{interaction_options|tojson}},
-                       clustering: {initialMaxNodes: 10,
-                                    clusterThreshold:15,
-                                    reduceToNodes:10},
                        configure: {filter: function (option, path) {
                                     if (path.indexOf("physics") !== -1) {
                                         return true;}
@@ -53,6 +50,9 @@
         function clusterByHubsize() {
             network.setData(data);
             var clusterOptionsByData = {
+                joinCondition:function(nodeOptions) {
+                    return nodeOptions.node_type !== 'biocatdb';
+                  },
                 processProperties: function (clusterOptions, childNodes) {
                     clusterOptions.label = "[" + childNodes.length + "]";
                     return clusterOptions;

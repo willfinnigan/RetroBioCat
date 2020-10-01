@@ -119,6 +119,9 @@ def save_edited_sequence():
 
     sequence = sequence.replace('\n', '')
 
+    if sequence != seq.sequence:
+        seq.blast = None
+
     if sequence_check(sequence) == False:
         status = 'danger'
         msg = 'Could not update sequence'

@@ -16,7 +16,7 @@ if __name__ == '__main__':
     app.app_context().push()
 
     with Connection(app.redis):
-        qs = sys.argv[1:] or ['tasks', 'network', 'pathway', 'db', 'blast']
+        qs = sys.argv[1:] or ['tasks', 'network', 'pathway', 'db', 'alignment', 'blast']
 
         w = Worker(qs, log_job_description=False)
         w.work()

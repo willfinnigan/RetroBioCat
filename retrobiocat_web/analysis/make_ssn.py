@@ -5,8 +5,10 @@ def new_node(seq_obj):
 
     if 'UniRef90' in seq_obj.enzyme_name:
         colour = 'darkblue'
+        node_type = 'uniref'
     else:
         colour = 'darkred'
+        node_type = 'biocatdb'
 
     if hasattr(seq_obj, 'protein_name') and hasattr(seq_obj, 'tax') :
         title = f"{seq_obj.protein_name} - {seq_obj.tax}"
@@ -20,7 +22,8 @@ def new_node(seq_obj):
             'color': {'background': colour, 'border': 'black'},
             'label': seq_obj.enzyme_name,
             'title': title,
-            'shape': 'dot'}
+            'shape': 'dot',
+            'node_type': node_type}
 
     return node
 
@@ -33,7 +36,7 @@ def new_edge(ali_obj):
             'to': seq_2.enzyme_name}
     return edge
 
-def get_nodes_and_edges(enzyme_type):
+def get_nodes_and_edges(enzyme_type, identity):
     enz_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
     alignments = Alignment.objects(enzyme_type=enz_type_obj).select_related()
 
@@ -41,12 +44,12 @@ def get_nodes_and_edges(enzyme_type):
     unirefs = UniRef90.objects(enzyme_type=enz_type_obj)
 
     nodes = []
-    for seq_obj in list(sequences) + list(unirefs):
+    for seq_obj in list(unirefs) + list(sequences):
         nodes.append(new_node(seq_obj))
 
     edges = []
     for ali_obj in alignments:
-        if ali_obj.identity >= 0.7:
+        if ali_obj.identity >= identity and ali_obj.proteins[0].enzyme_name != ali_obj.proteins[1].enzyme_name:
             edges.append(new_edge(ali_obj))
 
     return nodes, edges

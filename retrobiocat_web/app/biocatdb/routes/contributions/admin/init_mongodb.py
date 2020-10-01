@@ -6,7 +6,7 @@ from retrobiocat_web.mongo.models.user_models import User
 from retrobiocat_web.mongo.init_db import rxn_rules_to_db
 from retrobiocat_web.mongo.init_db import biocatdb_excel_to_db, make_molecule_db
 from retrobiocat_web.mongo.models.reaction_models import Reaction
-from retrobiocat_web.mongo.models.biocatdb_models import Paper, Activity, Sequence, Molecule, Tag
+from retrobiocat_web.mongo.models.biocatdb_models import Paper, Activity, Sequence, Molecule, Tag, EnzymeType
 import tempfile
 from werkzeug.utils import secure_filename
 import os
@@ -305,6 +305,22 @@ def convert_to_pdb_schema():
 
     return jsonify(result=result)
 
+@bp.route('/_clear_all_redis_jobs', methods=['GET', 'POST'])
+@roles_required('admin')
+def clear_all_redis_jobs():
+    enz_types = EnzymeType.objects()
+    for et in enz_types:
+        et.bioinformatics_status = 'Idle'
+        et.save()
+
+    for queue in current_app.redis_queues:
+        queue.delete()
+
+    result = {'status': 'success',
+              'msg': 'Cleared all redis jobs',
+              'issues': []}
+
+    return jsonify(result=result)
 
 
 
