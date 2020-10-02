@@ -1,4 +1,4 @@
-from retrobiocat_web.mongo.models.biocatdb_models import Sequence, EnzymeType, UniRef90, Alignment
+from retrobiocat_web.mongo.models.biocatdb_models import Sequence, EnzymeType, UniRef90
 import mongoengine as db
 
 def new_node(seq_obj):
@@ -38,7 +38,7 @@ def new_edge(ali_obj):
 
 def get_nodes_and_edges(enzyme_type, identity):
     enz_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
-    alignments = Alignment.objects(enzyme_type=enz_type_obj).select_related()
+    alignments = []
 
     sequences = Sequence.objects(db.Q(sequence__ne=None) & db.Q(sequence__ne='') & db.Q(enzyme_type=enzyme_type))
     unirefs = UniRef90.objects(enzyme_type=enz_type_obj)

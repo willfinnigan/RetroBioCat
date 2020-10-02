@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from retrobiocat_web.mongo.models.biocatdb_models import Sequence, EnzymeType, UniRef90, Alignments
+from retrobiocat_web.mongo.models.biocatdb_models import Sequence, EnzymeType, UniRef90
 import mongoengine as db
 import subprocess as sp
 import shutil
@@ -82,11 +82,6 @@ def get_sequence_object(name):
 
     return None
 
-def get_alignments_obj(enzyme_type):
-    query = Alignments.objects(enzyme_type=enzyme_type)
-    if len(query) == 0:
-        enzyme_type_object = EnzymeType(enzyme_type=enzyme_type)[0]
-        alignments_obj = Alignments(enzyme_type=enzyme_type_object)
 
 def blast_seq_against_local_enzyme_db(seq_obj, enzyme_type,
                                       max_e=0.0005, min_identity=0.3, min_coverage=0.7):

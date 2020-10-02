@@ -1,7 +1,7 @@
 import requests
 from Bio.Blast import NCBIXML
 from io import StringIO
-from retrobiocat_web.mongo.models.biocatdb_models import Sequence, UniRef90, EnzymeType, Alignment
+from retrobiocat_web.mongo.models.biocatdb_models import Sequence, UniRef90, EnzymeType
 import time
 import mongoengine as db
 import datetime

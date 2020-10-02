@@ -1,7 +1,7 @@
 from retrobiocat_web.app.biocatdb import bp
 from flask import render_template, flash, redirect, url_for, request, jsonify, session, current_app
 from flask_security import roles_required, current_user
-from retrobiocat_web.mongo.models.biocatdb_models import Paper, Activity, Sequence, Molecule, Tag, EnzymeType, UniRef90, Alignment
+from retrobiocat_web.mongo.models.biocatdb_models import Paper, Activity, Sequence, Molecule, Tag, EnzymeType, UniRef90
 from retrobiocat_web.analysis import embl_restfull, all_by_all_blast
 from rq.registry import StartedJobRegistry
 import datetime
@@ -173,7 +173,6 @@ def clear_all_bioinformatics_data():
         seq.alignments_made = None
         seq.save()
 
-    Alignment.drop_collection()
     UniRef90.drop_collection()
 
     result = {'status': 'success',
