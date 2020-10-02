@@ -7,7 +7,7 @@
             {{ form.target_smiles(type="text", form="main_form", class="form-control", placeholder='eg CCC=O  (can be blank)')}}
             <button class="btn btn-danger"
             type="button"
-            data-toggle="modal" data-target="#drawer}">Draw</button>
+            data-toggle="modal" data-target="#drawer">Draw</button>
         </div>
         {% for error in form.target_smiles.errors %}
             <span style="color: red;">[{{ error }}]</span>

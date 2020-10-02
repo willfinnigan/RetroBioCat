@@ -162,16 +162,8 @@ class UniRef90(db.Document):
 
     meta = {'indexes': ['enzyme_type']}
 
-class Alignment(db.Document):
-    enzyme_type = db.ReferenceField(EnzymeType)
-    proteins = db.ListField(db.GenericReferenceField(choices=[UniRef90, Sequence]), max_length=2)
-    identity = db.FloatField()
-    coverage = db.FloatField()
-    bitscore = db.FloatField()
-    alignment_score = db.FloatField()
-    e_value = db.FloatField()
 
-    meta = {'indexes': ['enzyme_type']}
+
 
 
 

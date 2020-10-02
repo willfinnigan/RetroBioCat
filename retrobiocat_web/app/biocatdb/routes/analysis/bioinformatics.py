@@ -134,7 +134,6 @@ def bioinformatics_admin_page():
         enzyme_numbers[enz_type] = {}
         enzyme_numbers[enz_type]['biocatdb'] = len(Sequence.objects(enzyme_type=enz_type))
         enzyme_numbers[enz_type]['uniref'] = len(UniRef90.objects(enzyme_type=enz_type_obj))
-        enzyme_numbers[enz_type]['alignments'] = len(Alignment.objects(enzyme_type=enz_type_obj))
 
     enz_type_dict = {}
     for enz_type_obj in enzyme_types:
@@ -148,24 +147,12 @@ def bioinformatics_admin_page():
             if enz_type_dict[enz_type] != 0:
                 enz_type_dict[enz_type] = round((enz_type_dict[enz_type]/len(seqs))*100, 0)
 
-    aligned_enz_types = {}
-    for enz_type_obj in enzyme_types:
-        enz_type = enz_type_obj.enzyme_type
-        aligned_enz_types[enz_type] = 0
-        seq_objs = list(Sequence.objects(enzyme_type=enz_type)) + list(UniRef90.objects(enzyme_type=enz_type_obj))
-        if len(seq_objs) != 0:
-            for sq in seq_objs:
-                if sq.alignments_made is not None:
-                    aligned_enz_types[enz_type] += 1
-            if aligned_enz_types[enz_type] != 0:
-                aligned_enz_types[enz_type] = round((aligned_enz_types[enz_type]/len(seq_objs))*100, 0)
 
     registry = StartedJobRegistry(queue=current_app.blast_queue)
     num_jobs = registry.count
 
     return render_template('bioinformatics/bioinformatics_admin.html',
                            blasted_enz_types=enz_type_dict,
-                           aligned_enz_types=aligned_enz_types,
                            enzyme_bioinformatics_status=enzyme_bioinformatics_status,
                            num_jobs=num_jobs,
                            enzyme_numbers=enzyme_numbers)

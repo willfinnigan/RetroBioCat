@@ -117,6 +117,7 @@ class BlastParser(object):
     def __init__(self):
         self.min_coverage = 0.8
         self.min_identity = 0.3
+
         self.min_size_frac = 0.8
         self.max_size_frac = 1.2
         self.max_e = 0.0005
