@@ -1,42 +1,12 @@
 import requests
 from Bio.Blast import NCBIXML
 from io import StringIO
-from retrobiocat_web.mongo.models.biocatdb_models import Sequence, UniRef90, EnzymeType
+from retrobiocat_web.mongo.models.biocatdb_models import Sequence, UniRef50, EnzymeType
 import time
 import mongoengine as db
 import datetime
 from flask import current_app
 
-def get_sequence(identifier):
-    url = f"https://www.uniprot.org/uniref/{identifier}.fasta"
-    req = requests.get(url)
-
-    if req.status_code in [200]:
-        fasta = req.text
-        seq = fasta[fasta.find('\n'):]
-        seq = seq.replace('\n', '')
-    else:
-        seq = None
-
-    return seq
-
-def get_name_from_header(header):
-    name_start = header.find(' ') + 1
-    name_end = header.find(' n=')
-    name = header[name_start:name_end]
-    return name
-
-def get_tax_from_header(header):
-    tax_start = header.find('Tax=') + 4
-    tax_end = header[tax_start:].find(' TaxID') + tax_start
-    tax = header[tax_start:tax_end]
-    return tax
-
-def get_tax_id_from_header(header):
-    tax_start = header.find('TaxID=') + 6
-    tax_end = header[tax_start:].find(' ') + tax_start
-    tax = header[tax_start:tax_end]
-    return tax
 
 class BlastRunner(object):
 
@@ -46,17 +16,20 @@ class BlastRunner(object):
         self.status_url = 'https://www.ebi.ac.uk/Tools/services/rest/ncbiblast/status'
         self.result_url = 'https://www.ebi.ac.uk/Tools/services/rest/ncbiblast/result'
 
-        self.exp = '1e-4'
         self.alignments = '1000'
-        self.db = 'uniref90'
+        self.db = 'uniref50'
         self.email = 'wjafinnigan@gmail.com'
 
     def run(self, sequence):
         job_id = self._start_job(sequence)
         self._poll_till_complete(job_id)
         xml = self._get_blast_record(job_id)
+        if xml is None:
+            return None
 
-        return xml
+        blast_record = NCBIXML.read(StringIO(xml))
+
+        return blast_record
 
     def _start_job(self, sequence):
         data = {'email': self.email,
@@ -64,7 +37,6 @@ class BlastRunner(object):
                  'stype': 'protein',
                  'sequence': sequence,
                  'database': self.db,
-                 'exp': self.exp,
                  'alignments': self.alignments}
 
         response = requests.post(self.run_url, data=data)
@@ -114,19 +86,19 @@ class BlastRunner(object):
 
 class BlastParser(object):
 
-    def __init__(self):
-        self.min_coverage = 0.8
-        self.min_identity = 0.3
+    def __init__(self, log_level=0):
+        self.min_coverage = 0.7
+        self.min_identity = 0.2
 
-        self.min_size_frac = 0.8
-        self.max_size_frac = 1.2
-        self.max_e = 0.0005
-        self.identifier_head = 'UR90:'
+        self.min_size_frac = 0.75
+        self.max_size_frac = 1.25
+        self.max_e = 5
+        self.identifier_head = 'UR50:'
         self.blast_round = 1
+        self.log_level = log_level
 
-    def parse(self, xml, seq_obj):
-        blast_record = NCBIXML.read(StringIO(xml))
-
+    def parse(self, output, seq_obj):
+        blast_record = output
         query_length = len(seq_obj.sequence)
         enzyme_type_obj = EnzymeType.objects(enzyme_type=seq_obj.enzyme_type)[0]
 
@@ -134,28 +106,27 @@ class BlastParser(object):
             identifier = alignment.hit_id.replace(self.identifier_head, '')
 
             if self._alignment_filters(alignment, query_length):
-                db_query = UniRef90.objects(db.Q(enzyme_name=identifier) & db.Q(enzyme_type=enzyme_type_obj))
+                db_query = UniRef50.objects(db.Q(enzyme_name=identifier) & db.Q(enzyme_type=enzyme_type_obj))
                 if len(db_query) == 0:
-                    protein_sequence = get_sequence(identifier)
-                    if self._sequence_filters(protein_sequence, query_length) :
-                        if self._check_biocatdb_match(protein_sequence, identifier) is False:
-                            print(f"Adding sequence for {identifier}")
-                            self._add_uniref(alignment, identifier, protein_sequence, enzyme_type_obj, seq_obj)
+                    protein_sequence = self._get_sequence(identifier)
+                    if self._sequence_filters(protein_sequence, query_length):
+                        self.log(f"Adding sequence for {identifier}")
+                        self._add_uniref(alignment, identifier, protein_sequence, enzyme_type_obj, seq_obj)
 
     def _add_uniref(self, alignment, identifier, sequence, enzyme_type_obj, seq_seed):
 
         try:
-            uniref_seq = UniRef90(enzyme_name=identifier,
-                                  protein_name=get_name_from_header(alignment.title),
-                                  tax=get_tax_from_header(alignment.title),
-                                  tax_id=get_tax_id_from_header(alignment.title),
+            uniref_seq = UniRef50(enzyme_name=identifier,
+                                  protein_name=self._get_name_from_header(alignment.title),
+                                  tax=self._get_tax_from_header(alignment.title),
+                                  tax_id=self._get_tax_id_from_header(alignment.title),
                                   sequence=sequence,
                                   enzyme_type=enzyme_type_obj,
                                   result_of_blasts_for=[seq_seed],
                                   blast_round=self.blast_round)
             uniref_seq.save()
         except Exception as e:
-            print(e)
+            self.log(e)
 
     def _alignment_filters(self, alignment, query_length):
         if len(alignment.hsps) == 1:
@@ -174,42 +145,84 @@ class BlastParser(object):
                 return True
         return False
 
-    def _check_biocatdb_match(self, sequence, identifier):
-        seq_query = Sequence.objects(sequence=sequence)
-        if len(seq_query) != 0:
-            biocatdb_seq = seq_query[0]
-            biocatdb_seq.other_identifiers.append(identifier)
-            biocatdb_seq.save()
-            return True
-        return False
+    def log(self, msg, level=1):
+        if self.log_level >= level:
+            print(f"BlastParser({level}): {msg}")
 
+    @staticmethod
+    def _get_sequence(identifier):
+        url = f"https://www.uniprot.org/uniref/{identifier}.fasta"
+        req = requests.get(url)
 
-def set_up_blast_job(enzyme_name, enzyme_type):
+        if req.status_code in [200]:
+            fasta = req.text
+            seq = fasta[fasta.find('\n'):]
+            seq = seq.replace('\n', '')
+        else:
+            seq = None
+
+        return seq
+
+    @staticmethod
+    def _get_name_from_header(header):
+        name_start = header.find(' ') + 1
+        name_end = header.find(' n=')
+        name = header[name_start:name_end]
+        return name
+
+    @staticmethod
+    def _get_tax_from_header(header):
+        tax_start = header.find('Tax=') + 4
+        tax_end = header[tax_start:].find(' TaxID') + tax_start
+        tax = header[tax_start:tax_end]
+        return tax
+
+    @staticmethod
+    def _get_tax_id_from_header(header):
+        tax_start = header.find('TaxID=') + 6
+        tax_end = header[tax_start:].find(' ') + tax_start
+        tax = header[tax_start:tax_end]
+        return tax
+
+def set_up_blast_job(enzyme_name):
     current_app.app_context().push()
 
     seq = Sequence.objects(db.Q(enzyme_name=enzyme_name))[0]
     if seq.blast is None:
         print(f'Starting blast for sequence: {seq.enzyme_name}')
-        xml = BlastRunner().run(seq.sequence)
-        current_app.process_blasts_queue.enqueue(parse_blast_results, enzyme_name, xml,
-                                                job_id=f'{enzyme_type}_{enzyme_name}_process_blast')
+        output = BlastRunner().run(seq.sequence)
+        current_app.process_blasts_queue.enqueue(parse_blast_results, enzyme_name, output)
 
-def parse_blast_results(enzyme_name, xml):
+def parse_blast_results(enzyme_name, output):
+    current_app.app_context().push()
     seq = Sequence.objects(db.Q(enzyme_name=enzyme_name))[0]
 
-    if xml is not None:
-        BlastParser().parse(xml, seq)
+    if output is not None:
+        BlastParser().parse(output, seq)
 
         seq.blast = datetime.datetime.now()
         seq.save()
         print(f'Finished blast of sequence {seq.enzyme_name}')
 
+    current_app.task_queue.enqueue(check_blast_status, seq.enzyme_type)
+
+def check_blast_status(enzyme_type):
+    seqs = Sequence.objects(db.Q(enzyme_type=enzyme_type))
+    all_complete = True
+    for seq in seqs:
+        if seq.blast is None:
+            all_complete = False
+
+    if all_complete == True:
+        enz_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
+        enz_type_obj.bioinformatics_status = 'All blasts complete'
+        enz_type_obj.save()
 
 if __name__ == '__main__':
     from retrobiocat_web.mongo.default_connection import make_default_connection
     make_default_connection()
 
-    seq = Sequence.objects(enzyme_name='CgDAADH')[0]
+    seq = Sequence.objects(enzyme_type='AAD')[1]
     protein_seq = seq.sequence
 
     xml = BlastRunner().run(protein_seq)

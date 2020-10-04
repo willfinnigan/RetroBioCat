@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from retrobiocat_web.mongo.models.biocatdb_models import Sequence, EnzymeType, UniRef90
+from retrobiocat_web.mongo.models.biocatdb_models import Sequence, EnzymeType, UniRef50
 import mongoengine as db
 import subprocess as sp
 import shutil
@@ -24,6 +24,7 @@ class AllByAllBlaster(object):
         self.all_by_all_blast_folder = str(Path(__file__).parents[0]) + '/analysis_data/all_by_all_blast'
         self.directory = f"{self.all_by_all_blast_folder}/{enzyme_type}"
         self.database = f"{self.directory}/{enzyme_type}.fasta"
+        self.cdhit_output = f"{self.directory}/cd_hit"
         self.num_threads = num_threads
         self.max_alignments = 10000
 
@@ -54,6 +55,20 @@ class AllByAllBlaster(object):
         alignment_names, alignment_scores = self._process_blast_record(seq_obj, blast_record)
         self.log(f"{len(alignment_names)} made.")
         return alignment_names, alignment_scores
+
+    def get_clusters(self, identity):
+
+        t0 = time.time()
+        if not os.path.exists(self.cdhit_output):
+            os.mkdir(self.cdhit_output)
+
+        out_file = f"{self.cdhit_output}/{identity}_identity"
+        cmd = f"cd-hit -i {self.database} -o {out_file} -c {identity}"
+
+        sp.run(cmd, shell=True)
+
+        t1 = time.time()
+        self.log(f"Clustered sequences for {self.enzyme_type} at {identity} identity in {round(t1-t0,1)} seconds")
 
     def _blast_seq(self, seq_obj):
         """ Run blast and parse output into a biopython blast record """
@@ -92,7 +107,7 @@ class AllByAllBlaster(object):
                 coverage = hsp.align_length / query_length
                 identity = hsp.identities / hsp.align_length
 
-                if (identity >= self.min_identity) and (coverage >= self.min_coverage):
+                if (subject_name != query_object.enzyme_name) and (identity >= self.min_identity) and (coverage >= self.min_coverage):
                     score = self._calc_alignment_score(hsp.bits, query_length, hsp.align_length)
                     alignment_names.append(subject_name)
                     alignment_scores.append(score)
@@ -105,7 +120,7 @@ class AllByAllBlaster(object):
         """ Create a fasta file containing all the sequences of an enzyme type """
 
         seqs = Sequence.objects(db.Q(enzyme_type=self.enzyme_type) & db.Q(sequence__ne=""))
-        bioinf_seqs = UniRef90.objects(db.Q(enzyme_type=self.enzyme_type_obj))
+        bioinf_seqs = UniRef50.objects(db.Q(enzyme_type=self.enzyme_type_obj))
 
         with open(f"{self.directory}/{self.enzyme_type}.fasta", 'w') as file:
             for seq in list(seqs) + list(bioinf_seqs):
@@ -136,3 +151,4 @@ if __name__ == '__main__':
     etb = AllByAllBlaster('AAD', print_log=True)
     etb.make_blast_db()
     alignment_names, alignment_scores = etb.get_alignments(seq_obj)
+

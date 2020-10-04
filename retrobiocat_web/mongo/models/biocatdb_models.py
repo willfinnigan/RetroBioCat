@@ -145,7 +145,7 @@ class Tag(db.Document):
     def __str__(self):
         return self.seq
 
-class UniRef90(db.Document):
+class UniRef50(db.Document):
     # These fields are shared with Sequence
     enzyme_name = db.StringField()
     sequence = db.StringField()
@@ -168,11 +168,13 @@ class UniRef90(db.Document):
     def __str__(self):
         return self.enzyme_name
 
-class DB_SSN(db.Document):
+class UniRef90(db.DynamicDocument):
+    pass
 
-    enzyme_type = db.ReferenceField(EnzymeType)
-    graph_dict = db.DictField()
-    att_dict = db.DictField()
+
+class Alignment(db.DynamicDocument):
+    pass
+
 
 
 

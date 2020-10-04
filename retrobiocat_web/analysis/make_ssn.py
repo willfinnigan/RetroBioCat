@@ -1,4 +1,4 @@
-from retrobiocat_web.mongo.models.biocatdb_models import Sequence, EnzymeType, UniRef90, DB_SSN
+from retrobiocat_web.mongo.models.biocatdb_models import Sequence, EnzymeType, UniRef50
 from retrobiocat_web.analysis.all_by_all_blast import AllByAllBlaster
 from flask import render_template, flash, redirect, url_for, request, jsonify, session, current_app
 import mongoengine as db
@@ -21,6 +21,8 @@ class SSN(object):
             self.aba_blaster = AllByAllBlaster(enzyme_type, print_log=print_log)
         else:
             self.aba_blaster = aba_blaster
+
+        self.node_metadata = {}
 
         self.print_log = print_log
 
@@ -60,6 +62,12 @@ class SSN(object):
         att_dict = json.load(open(f'{self.save_path}/attributes.json'))
 
         self.graph = nx.from_pandas_edgelist(df_graph, edge_attr=['weight'])
+
+        # Nodes with no edges are not in edge list..
+        for node in att_dict:
+            if node not in self.graph.nodes:
+                self._add_protein_node(node)
+
         nx.set_node_attributes(self.graph, att_dict)
 
         t1 = time.time()
@@ -117,7 +125,7 @@ class SSN(object):
         if only_biocatdb is True:
             seq_objects = list(sequences)
         else:
-            unirefs = UniRef90.objects(enzyme_type=self.enzyme_type_obj)
+            unirefs = UniRef50.objects(enzyme_type=self.enzyme_type_obj)
             seq_objects = list(sequences) + list(unirefs)
 
         # Get sequences not in nodes
@@ -136,24 +144,57 @@ class SSN(object):
         return not_in_nodes
 
     def remove_nonexisting_seqs(self):
-        sequences = Sequence.objects(enzyme_type=self.enzyme_type).distinct('enzyme_name')
-        unirefs = UniRef90.objects(enzyme_type=self.enzyme_type_obj).distinct('enzyme_name')
-        protein_names = list(sequences) + list(unirefs)
 
+        t0 = time.time()
+        sequences = Sequence.objects(enzyme_type=self.enzyme_type).distinct('enzyme_name')
+        unirefs = UniRef50.objects(enzyme_type=self.enzyme_type_obj).distinct('enzyme_name')
+        protein_names = list(sequences) + list(unirefs)
+        count = 0
         for node in list(self.graph.nodes):
             if node not in protein_names:
                 self.log(f"Node: {node} not in the database - removing")
                 self.graph.remove_node(node)
+                count += 1
+
+        t1 = time.time()
+        self.log(f"Identified {count} sequences which were in SSN but not in database, in {round(t1-t0,1)} seconds")
+
+
+
+    def visualise(self, min_score=0):
+        self._get_uniref_metadata()
+
+        nodes = []
+        edges = []
+        for name in self.graph.nodes:
+            nodes.append(self._visualise_new_node(name))
+
+        for edge in self.graph.edges:
+            weight = self.graph.get_edge_data(edge[0], edge[1], default={'weight': 0})['weight']
+            if weight >= min_score:
+                edges.append(self._visualise_new_edge(edge[0], edge[1], weight))
+
+        return nodes, edges
+
+    def _get_uniref_metadata(self):
+        self.node_metadata = {}
+
+        unirefs = UniRef50.objects(enzyme_type=self.enzyme_type_obj).exclude('id', 'enzyme_type', 'sequence', "result_of_blasts_for")
+
+        for seq_obj in unirefs:
+            if seq_obj.enzyme_name in self.graph.nodes:
+                self.node_metadata[seq_obj.enzyme_name] = json.loads(seq_obj.to_json())
 
     def _add_protein_node(self, node_name, alignments_made=False):
         """ If a protein is not already in the graph, then add it """
-        if 'UniRef90' in node_name:
+        if 'UniRef50' in node_name:
             node_type = 'uniref'
         else:
             node_type = 'biocatdb'
 
-        if node_name not in list(self.graph.nodes):
-            self.graph.add_node(node_name, node_type=node_type, alignments_made=alignments_made)
+        if node_name not in self.graph.nodes:
+            self.graph.add_node(node_name, node_type=node_type,
+                                alignments_made=alignments_made)
             return 1
 
         if alignments_made == True:
@@ -162,27 +203,68 @@ class SSN(object):
         return 0
 
     def _add_alignment_edge(self, node_name, alignment_node_name, alignment_score):
-        self.graph.add_edge(node_name, alignment_node_name, weight=alignment_score)
+        if node_name != alignment_node_name:
+            self.graph.add_edge(node_name, alignment_node_name, weight=alignment_score)
 
     def log(self, msg):
         if self.print_log == True:
             print("SSN: " + msg)
 
+    def _visualise_new_node(self, node_name):
+        if 'UniRef50' in node_name:
+            colour = 'darkblue'
+            node_type = 'uniref'
+        else:
+            colour = 'darkred'
+            node_type = 'biocatdb'
+
+
+        metadata = self.node_metadata.get(node_name, {})
+        protein_name = metadata.get('protein_name', '')
+        tax = metadata.get('tax', '')
+        if protein_name != '':
+            label = f"{protein_name} - {tax}"
+        else:
+            label = node_name
+
+        node = {'id': node_name,
+                'size': 40,
+                'borderWidth': 1,
+                'borderWidthSelected': 3,
+                'color': {'background': colour, 'border': 'black'},
+                'label': label,
+                'title': label,
+                'shape': 'dot',
+                'node_type': node_type,
+                'metadata': metadata}
+
+        return node
+
+    @staticmethod
+    def _visualise_new_edge(node_one, node_two, weight):
+        edge = {'id': f"from {node_one} to {node_two}",
+                'from': node_one,
+                'to': node_two,
+                'weight': weight}
+        return edge
+
+
     @staticmethod
     def _get_sequence_object(enzyme_name):
-        if 'UniRef90' in enzyme_name:
-            return UniRef90.objects(enzyme_name=enzyme_name)[0]
+        if 'UniRef50' in enzyme_name:
+            return UniRef50.objects(enzyme_name=enzyme_name)[0]
         else:
             return Sequence.objects(enzyme_name=enzyme_name)[0]
 
-def task_expand_ssn(enzyme_type, print_log=True):
+def task_expand_ssn(enzyme_type, print_log=True, max_num=1000):
     current_app.app_context().push()
 
-    ssn = SSN(enzyme_type, print_log=print_log)
+    aba_blaster = AllByAllBlaster(enzyme_type, print_log=print_log)
+    aba_blaster.make_blast_db()
+
+    ssn = SSN(enzyme_type, aba_blaster=aba_blaster, print_log=print_log)
     ssn.load()
     ssn.remove_nonexisting_seqs()
-
-    max_num = 200
 
     biocatdb_seqs = ssn.nodes_not_present(only_biocatdb=True, max_num=max_num)
     if len(biocatdb_seqs) != 0:
@@ -200,7 +282,7 @@ def task_expand_ssn(enzyme_type, print_log=True):
 
     not_present = ssn.nodes_not_present(max_num=max_num)
     if len(not_present) != 0:
-        ssn.add_multiple_proteins(need_alignments)
+        ssn.add_multiple_proteins(not_present)
         ssn.save()
         current_app.alignment_queue.enqueue(new_expand_ssn_job, enzyme_type)
 
@@ -220,7 +302,6 @@ def new_expand_ssn_job(enzyme_type):
         current_app.alignment_queue.enqueue(task_expand_ssn, enzyme_type, job_id=job_name)
 
 
-
 if __name__ == '__main__':
     from retrobiocat_web.mongo.default_connection import make_default_connection
     make_default_connection()
@@ -234,6 +315,8 @@ if __name__ == '__main__':
     need_alignments = aad_ssn.nodes_need_alignments(max_num=10)
     aad_ssn.add_multiple_proteins(need_alignments)
 
-    aad_ssn.save()
+    nodes, edges = aad_ssn.visualise()
+
+    aad_ssn._get_uniref_metadata()
 
 

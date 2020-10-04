@@ -1,7 +1,7 @@
 from retrobiocat_web.app.biocatdb import bp
 from flask import render_template, flash, redirect, url_for, request, jsonify, session, current_app
 from flask_security import roles_required, current_user
-from retrobiocat_web.mongo.models.biocatdb_models import Paper, Activity, Sequence, Molecule, Tag, EnzymeType, UniRef90
+from retrobiocat_web.mongo.models.biocatdb_models import Paper, Activity, Sequence, Molecule, Tag, EnzymeType, UniRef90, UniRef50, Alignment
 from retrobiocat_web.analysis import embl_restfull, all_by_all_blast, make_ssn
 from rq.registry import StartedJobRegistry
 import datetime
@@ -18,17 +18,13 @@ def set_blast_jobs(enzyme_type):
     set_bioinformatics_status(enzyme_type, 'Blasts Queued')
     current_app.blast_queue.enqueue(set_bioinformatics_status, enzyme_type, 'Running Blasts')
 
-    blast_jobs = []
-    last_blast_job = None
     seqs = Sequence.objects(db.Q(enzyme_type=enzyme_type) & db.Q(bioinformatics_ignore__ne=True))
     for seq in seqs:
         print(seq.enzyme_name)
         if seq.sequence != '' and seq.sequence is not None and seq.blast is None:
             if len(seq.sequence) > 50:
                 name = str(seq.enzyme_name)
-                last_blast_job = current_app.blast_queue.enqueue(embl_restfull.set_up_blast_job, name, enzyme_type,
-                                                                 job_id=f'{enzyme_type}_{seq.enzyme_name}_run_blast')
-                blast_jobs.append(last_blast_job.id)
+                current_app.blast_queue.enqueue(embl_restfull.set_up_blast_job, name)
                 print(f'Queued blast for {seq.enzyme_name}')
             else:
                 print(f'Not blasting {seq.enzyme_name}')
@@ -36,33 +32,6 @@ def set_blast_jobs(enzyme_type):
         else:
             seq.blast = datetime.datetime.now()
         seq.save()
-
-    current_app.task_queue.enqueue(check_if_all_blasts_complete, enzyme_type, blast_jobs, depends_on=last_blast_job)
-
-def check_if_all_blasts_complete(enzyme_type, job_list):
-    current_app.app_context().push()
-
-    time.sleep(60)
-    active_process_jobs = list(StartedJobRegistry(queue=current_app.process_blasts_queue).get_job_ids())
-    active_process_jobs.extend(current_app.process_blasts_queue.job_ids)
-    for job_id in active_process_jobs:
-        if f"{enzyme_type}_" in job_id:
-            job_list.append(job_id)
-
-    jobs = Job.fetch_many(job_list, connection=current_app.redis)
-
-    jobs_still_pending = []
-    for job in jobs:
-        status = job.get_status()
-        if status == 'queued' or status == 'started':
-            if job.id not in jobs_still_pending:
-                jobs_still_pending.append(job.id)
-
-    if len(jobs_still_pending) == 0:
-        set_bioinformatics_status(enzyme_type, 'Blasts Complete')
-
-    else:
-        current_app.task_queue.enqueue(check_if_all_blasts_complete, enzyme_type, jobs_still_pending)
 
 @bp.route('/_find_homologs', methods=['GET', 'POST'])
 @roles_required('admin')
@@ -95,7 +64,6 @@ def find_allhomologs():
 
     return jsonify(result=result)
 
-
 @bp.route('/_expand_ssn', methods=['GET', 'POST'])
 @roles_required('admin')
 def expand_ssn():
@@ -126,7 +94,7 @@ def bioinformatics_admin_page():
         enz_type = enz_type_obj.enzyme_type
         enzyme_numbers[enz_type] = {}
         enzyme_numbers[enz_type]['biocatdb'] = len(Sequence.objects(enzyme_type=enz_type))
-        enzyme_numbers[enz_type]['uniref'] = len(UniRef90.objects(enzyme_type=enz_type_obj))
+        enzyme_numbers[enz_type]['uniref'] = len(UniRef50.objects(enzyme_type=enz_type_obj))
 
     enz_type_dict = {}
     for enz_type_obj in enzyme_types:
@@ -164,7 +132,9 @@ def clear_all_bioinformatics_data():
         seq.alignments_made = None
         seq.save()
 
+    UniRef50.drop_collection()
     UniRef90.drop_collection()
+    Alignment.drop_collection()
 
     result = {'status': 'success',
               'msg': f"Done",
@@ -172,3 +142,4 @@ def clear_all_bioinformatics_data():
 
     flash(f"Done", "success")
     return jsonify(result=result)
+

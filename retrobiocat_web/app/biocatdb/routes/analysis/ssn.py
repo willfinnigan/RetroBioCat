@@ -6,12 +6,15 @@ from retrobiocat_web.analysis import embl_restfull, all_by_all_blast, make_ssn
 from rq.registry import StartedJobRegistry
 import datetime
 import mongoengine as db
+from retrobiocat_web.analysis.make_ssn import SSN
 
 @bp.route('/ssn/<enzyme_type>', methods=['GET'])
 @roles_required('admin')
-def ssn(enzyme_type):
-    identity = 0.7
-    nodes, edges = make_ssn.get_nodes_and_edges(enzyme_type, identity)
+def ssn_page(enzyme_type):
+    ssn = SSN(enzyme_type, print_log=True)
+    ssn.load()
+
+    nodes, edges = ssn.visualise(min_score=75)
 
     edges_options = {'smooth': False}
     physics_options = {'stabilization': {'enabled': True,

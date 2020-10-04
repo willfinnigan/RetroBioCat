@@ -3,7 +3,7 @@ import mongoengine as db
 
 def new_node(seq_obj):
 
-    if 'UniRef90' in seq_obj.enzyme_name:
+    if 'UniRef50' in seq_obj.enzyme_name:
         colour = 'darkblue'
         node_type = 'uniref'
     else:
