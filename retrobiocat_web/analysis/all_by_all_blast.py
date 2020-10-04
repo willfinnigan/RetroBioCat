@@ -10,102 +10,129 @@ from Bio.Blast.Applications import NcbiblastpCommandline
 from io import StringIO
 import numpy as np
 import shutil
-import datetime
 import time
-import networkx as nx
+
 from decimal import Decimal
 
-ALLBYALL_BLAST_FOLDER = str(Path(__file__).parents[0]) + '/all_by_all_blast'
+class AllByAllBlaster(object):
+    """ For performing all by all blasts for a given enzyme type """
 
-def calc_alignment_score(bitscore, query_length, subject_length):
-    two = Decimal(2)
-    bitscore = Decimal(bitscore)
-    x = np.power(two, -bitscore) * query_length * subject_length
-    alignment_score = -np.log10(x)
-    return alignment_score
+    def __init__(self, enzyme_type, print_log=False, num_threads=2):
+        self.enzyme_type = enzyme_type
+        self.enzyme_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
 
-def make_fasta(enzyme_type, directory):
-    """ Create a fasta file containing all the sequences of an enzyme type """
+        self.all_by_all_blast_folder = str(Path(__file__).parents[0]) + '/analysis_data/all_by_all_blast'
+        self.directory = f"{self.all_by_all_blast_folder}/{enzyme_type}"
+        self.database = f"{self.directory}/{enzyme_type}.fasta"
+        self.num_threads = num_threads
+        self.max_alignments = 10000
 
-    seqs = Sequence.objects(db.Q(enzyme_type=enzyme_type) & db.Q(sequence__ne=""))
-    enzyme_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
-    bioinf_seqs = UniRef90.objects(db.Q(enzyme_type=enzyme_type_obj))
+        self.max_e = 5
+        self.min_coverage = 0.8
+        self.min_identity = 0.3
 
-    with open(f"{directory}/{enzyme_type}.fasta", 'w') as file:
-        for seq in list(seqs) + list(bioinf_seqs):
-            name = seq.enzyme_name
-            seq = seq.sequence.replace('\n', '')
+        self.print_log = print_log
 
-            file.write(f'>{name}\n')
-            file.write(f"{seq}\n")
+    def make_blast_db(self):
+        """ Create a blast database for a single enzyme type """
+        self.log(f"Making blast database for {self.enzyme_type}")
 
-def make_blast_db_for_enzyme_type(enzyme_type):
-    """ Create a blast database for a single enzyme type """
+        if os.path.exists(self.directory):
+            shutil.rmtree(self.directory)
+        os.mkdir(self.directory)
 
-    directory = f"{ALLBYALL_BLAST_FOLDER}/{enzyme_type}"
-    if os.path.exists(directory):
-        shutil.rmtree(directory)
-    os.mkdir(directory)
+        self._make_db_fasta()
 
-    make_fasta(enzyme_type, directory)
+        command = f"makeblastdb -in {self.directory}/{self.enzyme_type}.fasta -dbtype prot"
+        sp.run(command, shell=True)
 
-    command = f"makeblastdb -in {directory}/{enzyme_type}.fasta -dbtype prot"
-    sp.run(command, shell=True)
+    def get_alignments(self, seq_obj):
+        """ Get the alignments for a given sequence object (either Sequence or UniRef90)"""
 
-def run_blast(fasta_to_blast, database):
-    """ Run blast and parse output into a biopython blast record """
+        self.log(f" - Getting alignments for sequence: {seq_obj.enzyme_name}..")
+        blast_record = self._blast_seq(seq_obj)
+        alignment_names, alignment_scores = self._process_blast_record(seq_obj, blast_record)
+        self.log(f"{len(alignment_names)} made.")
+        return alignment_names, alignment_scores
 
-    output = NcbiblastpCommandline(query=fasta_to_blast, db=database, outfmt=5)()[0]
+    def _blast_seq(self, seq_obj):
+        """ Run blast and parse output into a biopython blast record """
+        t0 = time.time()
+        protein_seq = seq_obj.sequence.replace('\n', '')
+        protein_name = seq_obj.enzyme_name
+        fasta_path = f"{self.directory}/{protein_name}.fasta"
+        with open(fasta_path, 'w') as file:
+            file.write(f'>{protein_name}\n')
+            file.write(f"{protein_seq}\n")
 
-    return output
+        output = NcbiblastpCommandline(query=fasta_path, db=self.database, evalue=self.max_e,
+                                       num_threads=self.num_threads, outfmt=5, num_alignments=self.max_alignments)()[0]
+        blast_record = NCBIXML.read(StringIO(output))
 
-def make_single_seq_fasta(name, sequence, enzyme_type):
-    """ Make a fasta file for a single sequence in the directory """
+        os.remove(fasta_path)
+        t1 = time.time()
+        self.log(f"sequence blasted in {round(t1-t0,0)} seconds")
 
-    directory = f"{ALLBYALL_BLAST_FOLDER}/{enzyme_type}"
-    fasta_path = f"{directory}/{name}.fasta"
-    with open(fasta_path, 'w') as file:
-        sequence = sequence.replace('\n', '')
-        file.write(f'>{name}\n')
-        file.write(f"{sequence}\n")
+        return blast_record
 
-    return fasta_path
+    def _process_blast_record(self, query_object, blast_record):
+        """ Process the blast record generating a list of alignments"""
 
-def get_sequence_object(name):
-    seq_query = Sequence.objects(enzyme_name=name)
-    if len(seq_query) != 0:
-        return seq_query[0]
+        t0 = time.time()
+        query_length = len(query_object.sequence)
 
-    seq_query = UniRef90.objects(enzyme_name=name)
-    if len(seq_query) != 0:
-        return seq_query[0]
+        alignment_names = []
+        alignment_scores = []
+        for alignment in blast_record.alignments:
+            if len(alignment.hsps) == 1:
+                hsp = alignment.hsps[0]
 
-    return None
+                subject_name = alignment.title.replace(f"{alignment.hit_id} ", "")
+
+                coverage = hsp.align_length / query_length
+                identity = hsp.identities / hsp.align_length
+
+                if (identity >= self.min_identity) and (coverage >= self.min_coverage):
+                    score = self._calc_alignment_score(hsp.bits, query_length, hsp.align_length)
+                    alignment_names.append(subject_name)
+                    alignment_scores.append(score)
+        t1 = time.time()
+        self.log(f"processed alignments in {round(t1-t0,0)} seconds")
+
+        return alignment_names, alignment_scores
+
+    def _make_db_fasta(self):
+        """ Create a fasta file containing all the sequences of an enzyme type """
+
+        seqs = Sequence.objects(db.Q(enzyme_type=self.enzyme_type) & db.Q(sequence__ne=""))
+        bioinf_seqs = UniRef90.objects(db.Q(enzyme_type=self.enzyme_type_obj))
+
+        with open(f"{self.directory}/{self.enzyme_type}.fasta", 'w') as file:
+            for seq in list(seqs) + list(bioinf_seqs):
+                name = seq.enzyme_name
+                seq = seq.sequence.replace('\n', '')
+
+                file.write(f'>{name}\n')
+                file.write(f"{seq}\n")
+
+    def log(self, msg):
+        if self.print_log == True:
+            print("ABA_Blaster: " + msg)
+
+    @staticmethod
+    def _calc_alignment_score(bitscore, query_length, subject_length):
+        two = Decimal(2)
+        bitscore = Decimal(bitscore)
+        x = np.power(two, -bitscore) * query_length * subject_length
+        alignment_score = round(-np.log10(x),2)
+        return alignment_score
+
+if __name__ == '__main__':
+    from retrobiocat_web.mongo.default_connection import make_default_connection
+    make_default_connection()
 
 
-def blast_seq_against_local_enzyme_db(seq_obj, enzyme_type,
-                                      max_e=0.0005, min_identity=0.3, min_coverage=0.7):
-
-    directory = f"{ALLBYALL_BLAST_FOLDER}/{enzyme_type}"
-    database = f"{directory}/{enzyme_type}.fasta"
-    query_length = len(seq_obj.sequence)
-
-    fasta_path = make_single_seq_fasta(seq_obj.enzyme_name, seq_obj.sequence, enzyme_type)
-    output = run_blast(fasta_path, database)
-    blast_record = NCBIXML.read(StringIO(output))
-    os.remove(fasta_path)
-
-    alignments = []
-    for alignment in blast_record.alignments:
-        if len(alignment.hsps) == 1:
-            hsp = alignment.hsps[0]
-
-            sbjct_name = alignment.title.replace(f"{alignment.hit_id} ", "")
-            sbjct_obj = get_sequence_object(sbjct_name)
-
-            coverage = hsp.align_length / query_length
-            identity = hsp.identities / hsp.align_length
-
-            if (hsp.expect <= max_e) and (identity >= min_identity) and (coverage >= min_coverage):
-                pass
-
+    seq_obj = Sequence.objects(enzyme_type='AAD')[0]
+    etb = AllByAllBlaster('AAD', print_log=True)
+    etb.make_blast_db()
+    alignment_names, alignment_scores = etb.get_alignments(seq_obj)

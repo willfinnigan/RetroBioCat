@@ -160,10 +160,19 @@ class UniRef90(db.Document):
     tax = db.StringField()
     tax_id = db.StringField()
 
-    meta = {'indexes': ['enzyme_type']}
+    meta = {'indexes': ['enzyme_type', 'enzyme_name']}
 
+    def __unicode__(self):
+        return self.enzyme_name
 
+    def __str__(self):
+        return self.enzyme_name
 
+class DB_SSN(db.Document):
+
+    enzyme_type = db.ReferenceField(EnzymeType)
+    graph_dict = db.DictField()
+    att_dict = db.DictField()
 
 
 

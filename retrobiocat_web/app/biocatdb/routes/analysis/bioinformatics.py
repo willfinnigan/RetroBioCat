@@ -2,7 +2,7 @@ from retrobiocat_web.app.biocatdb import bp
 from flask import render_template, flash, redirect, url_for, request, jsonify, session, current_app
 from flask_security import roles_required, current_user
 from retrobiocat_web.mongo.models.biocatdb_models import Paper, Activity, Sequence, Molecule, Tag, EnzymeType, UniRef90
-from retrobiocat_web.analysis import embl_restfull, all_by_all_blast
+from retrobiocat_web.analysis import embl_restfull, all_by_all_blast, make_ssn
 from rq.registry import StartedJobRegistry
 import datetime
 import mongoengine as db
@@ -15,6 +15,9 @@ def set_bioinformatics_status(enzyme_type, status):
     enz_type_obj.save()
 
 def set_blast_jobs(enzyme_type):
+    set_bioinformatics_status(enzyme_type, 'Blasts Queued')
+    current_app.blast_queue.enqueue(set_bioinformatics_status, enzyme_type, 'Running Blasts')
+
     blast_jobs = []
     last_blast_job = None
     seqs = Sequence.objects(db.Q(enzyme_type=enzyme_type) & db.Q(bioinformatics_ignore__ne=True))
@@ -34,48 +37,7 @@ def set_blast_jobs(enzyme_type):
             seq.blast = datetime.datetime.now()
         seq.save()
 
-    return blast_jobs, last_blast_job
-
-@bp.route('/_find_homologs', methods=['GET', 'POST'])
-@roles_required('admin')
-def find_homologs():
-    enzyme_type = request.form['enzyme_type']
-    set_bioinformatics_status(enzyme_type, 'Blasts Queued')
-    current_app.blast_queue.enqueue(set_bioinformatics_status, enzyme_type, 'Running Blasts')
-
-    blast_jobs, last_blast_job = set_blast_jobs(enzyme_type)
-
     current_app.task_queue.enqueue(check_if_all_blasts_complete, enzyme_type, blast_jobs, depends_on=last_blast_job)
-
-    result = {'status': 'success',
-              'msg': f"Started job to blast all {enzyme_type}'s",
-              'issues': []}
-
-    flash(f"Started job to blast all {enzyme_type}'s", "success")
-
-    return jsonify(result=result)
-
-
-@bp.route('/_find_all_homologs', methods=['GET', 'POST'])
-@roles_required('admin')
-def find_allhomologs():
-
-    enzyme_types = EnzymeType.objects().distinct('enzyme_type')
-
-    for enzyme_type in enzyme_types:
-        set_bioinformatics_status(enzyme_type, 'Blasts Queued')
-        current_app.blast_queue.enqueue(set_bioinformatics_status, enzyme_type, 'Running Blasts')
-        blast_jobs, last_blast_job = set_blast_jobs(enzyme_type)
-        current_app.task_queue.enqueue(check_if_all_blasts_complete, enzyme_type, blast_jobs, depends_on=last_blast_job)
-
-    result = {'status': 'success',
-              'msg': f"Started job to blast all enzyme_type's",
-              'issues': []}
-
-    flash(f"Started job to blast all enzyme_type's", "success")
-
-    return jsonify(result=result)
-
 
 def check_if_all_blasts_complete(enzyme_type, job_list):
     current_app.app_context().push()
@@ -102,20 +64,51 @@ def check_if_all_blasts_complete(enzyme_type, job_list):
     else:
         current_app.task_queue.enqueue(check_if_all_blasts_complete, enzyme_type, jobs_still_pending)
 
-@bp.route('/_reset_blast_status', methods=['GET', 'POST'])
+@bp.route('/_find_homologs', methods=['GET', 'POST'])
 @roles_required('admin')
-def reset_blast_status():
+def find_homologs():
     enzyme_type = request.form['enzyme_type']
-    seqs = Sequence.objects(db.Q(enzyme_type=enzyme_type) & db.Q(bioinformatics_ignore__ne=True))
-    for seq in seqs:
-        seq.blast = None
-        seq.save()
+    set_blast_jobs(enzyme_type)
 
     result = {'status': 'success',
-              'msg': f"Reset blast status to none for {enzyme_type}'s",
+              'msg': f"Started job to blast all {enzyme_type}'s",
               'issues': []}
 
-    flash(f"Reset blast status to none for {enzyme_type}'s", "success")
+    flash(f"Started job to blast all {enzyme_type}'s", "success")
+
+    return jsonify(result=result)
+
+@bp.route('/_find_all_homologs', methods=['GET', 'POST'])
+@roles_required('admin')
+def find_allhomologs():
+
+    enzyme_types = EnzymeType.objects().distinct('enzyme_type')
+
+    for enzyme_type in enzyme_types:
+        set_blast_jobs(enzyme_type)
+
+    result = {'status': 'success',
+              'msg': f"Started job to blast all enzyme_type's",
+              'issues': []}
+
+    flash(f"Started job to blast all enzyme_type's", "success")
+
+    return jsonify(result=result)
+
+
+@bp.route('/_expand_ssn', methods=['GET', 'POST'])
+@roles_required('admin')
+def expand_ssn():
+    enzyme_type = request.form['enzyme_type']
+    job_name = f"{enzyme_type}_expand_ssn"
+    current_app.alignment_queue.enqueue(make_ssn.task_expand_ssn, enzyme_type, job_id=job_name)
+    set_bioinformatics_status(enzyme_type, 'Making SSN')
+
+    result = {'status': 'success',
+              'msg': f"Launched expand ssn for {enzyme_type}'s",
+              'issues': []}
+
+    flash(f"Launched expand ssn for {enzyme_type}'s", "success")
     return jsonify(result=result)
 
 @bp.route('/bioinformatics_admin_page', methods=['GET', 'POST'])
@@ -147,7 +140,6 @@ def bioinformatics_admin_page():
             if enz_type_dict[enz_type] != 0:
                 enz_type_dict[enz_type] = round((enz_type_dict[enz_type]/len(seqs))*100, 0)
 
-
     registry = StartedJobRegistry(queue=current_app.blast_queue)
     num_jobs = registry.count
 
@@ -156,7 +148,6 @@ def bioinformatics_admin_page():
                            enzyme_bioinformatics_status=enzyme_bioinformatics_status,
                            num_jobs=num_jobs,
                            enzyme_numbers=enzyme_numbers)
-
 
 @bp.route('/_clear_all_bioinformatics_data', methods=['GET', 'POST'])
 @roles_required('admin')

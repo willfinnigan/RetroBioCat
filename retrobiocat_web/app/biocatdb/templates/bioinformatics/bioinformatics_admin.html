@@ -34,6 +34,7 @@
                                         {% endif %}
                                         <button class="btn btn-sm btn-outline-primary {{button_disable}}" onclick="queue_blast_search('{{enz_type}}')" {{button_disable}}>Queue blasts for {{enz_type}}</button>
                                         <button class="btn btn-sm btn-outline-warning {{button_disable}}" onclick="reset_blast_status('{{enz_type}}')" {{button_disable}}>Reset blast status for {{enz_type}}</button>
+                                        <button class="btn btn-sm btn-outline-info {{button_disable}}" onclick="expand_ssn('{{enz_type}}')" {{button_disable}}>Expand SSN for {{enz_type}}</button>
                                     </div>
                                 {% endfor %}
 
@@ -63,6 +64,15 @@
 
         function reset_blast_status(enzyme_type) {
             $.post('/_reset_blast_status', {
+                enzyme_type: enzyme_type
+                }).done(function(data) {
+                    response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+                    location.reload()
+                })
+        }
+
+        function expand_ssn(enzyme_type) {
+            $.post('/_expand_ssn', {
                 enzyme_type: enzyme_type
                 }).done(function(data) {
                     response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
