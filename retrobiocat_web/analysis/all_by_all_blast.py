@@ -139,7 +139,7 @@ class AllByAllBlaster(object):
         two = Decimal(2)
         bitscore = Decimal(bitscore)
         x = np.power(two, -bitscore) * query_length * subject_length
-        alignment_score = round(-np.log10(x),2)
+        alignment_score = int(-np.log10(x))
         return alignment_score
 
 if __name__ == '__main__':

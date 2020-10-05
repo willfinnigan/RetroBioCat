@@ -171,9 +171,13 @@ class UniRef50(db.Document):
 class UniRef90(db.DynamicDocument):
     pass
 
-
 class Alignment(db.DynamicDocument):
     pass
+
+class SeqSimNet(db.Document):
+    enzyme_type = db.ReferenceField(EnzymeType)
+    graph_data = db.DictField()
+    node_attributes = db.DictField()
 
 
 

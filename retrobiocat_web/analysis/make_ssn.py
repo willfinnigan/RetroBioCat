@@ -1,4 +1,4 @@
-from retrobiocat_web.mongo.models.biocatdb_models import Sequence, EnzymeType, UniRef50
+from retrobiocat_web.mongo.models.biocatdb_models import Sequence, EnzymeType, UniRef50, SeqSimNet
 from retrobiocat_web.analysis.all_by_all_blast import AllByAllBlaster
 from flask import render_template, flash, redirect, url_for, request, jsonify, session, current_app
 import mongoengine as db
@@ -9,6 +9,8 @@ from rq.registry import StartedJobRegistry
 from pathlib import Path
 import os
 import pandas as pd
+from bson.binary import Binary
+
 
 class SSN(object):
 
@@ -32,43 +34,39 @@ class SSN(object):
 
         self.log(f"SSN object initialised for {enzyme_type}")
 
-    def save(self):
+        self.db_ssn = self._get_db_object()
 
+    def save(self):
         t0 = time.time()
 
-        df_graph = nx.to_pandas_edgelist(self.graph)
+        graph_data = nx.to_dict_of_dicts(self.graph)
 
         att_dict = {}
         for node in list(self.graph):
             att_dict[node] = self.graph.nodes[node]
 
-        df_graph.to_csv(f"{self.save_path}/graph.csv")
-
-        with open(f'{self.save_path}/attributes.json', 'wb') as outfile:
-            outfile.write(json.dumps(att_dict).encode("utf-8"))
+        self.db_ssn.graph_data.update(graph_data)
+        self.db_ssn.node_attributes.update(att_dict)
+        self.db_ssn.save()
 
         t1 = time.time()
-
-        self.log(f"Saved SSN for {self.enzyme_type} in {round(t1-t0,1)} seconds")
+        self.log(f"Saved SSN to Mongo, for {self.enzyme_type}, in {round(t1 - t0, 1)} seconds")
 
     def load(self):
 
         t0 = time.time()
-        if not os.path.exists(f"{self.save_path}/graph.csv") or not os.path.exists(f"{self.save_path}/attributes.json"):
-            self.log(f"No saved SSN found for {self.enzyme_type}, could not load")
+        if self.db_ssn.graph_data is None:
+            self.log(f"No data saved for {self.enzyme_type} SSN, could not load")
             return False
 
-        df_graph = pd.read_csv(f"{self.save_path}/graph.csv")
-        att_dict = json.load(open(f'{self.save_path}/attributes.json'))
-
-        self.graph = nx.from_pandas_edgelist(df_graph, edge_attr=['weight'])
+        self.graph = nx.from_dict_of_dicts(self.db_ssn.graph_data)
 
         # Nodes with no edges are not in edge list..
-        for node in att_dict:
+        for node in self.db_ssn.node_attributes:
             if node not in self.graph.nodes:
                 self._add_protein_node(node)
 
-        nx.set_node_attributes(self.graph, att_dict)
+        nx.set_node_attributes(self.graph, self.db_ssn.node_attributes)
 
         t1 = time.time()
         self.log(f"Loaded SSN for {self.enzyme_type} in {round(t1 - t0, 1)} seconds")
@@ -159,8 +157,6 @@ class SSN(object):
         t1 = time.time()
         self.log(f"Identified {count} sequences which were in SSN but not in database, in {round(t1-t0,1)} seconds")
 
-
-
     def visualise(self, min_score=0):
         self._get_uniref_metadata()
 
@@ -172,9 +168,18 @@ class SSN(object):
         for edge in self.graph.edges:
             weight = self.graph.get_edge_data(edge[0], edge[1], default={'weight': 0})['weight']
             if weight >= min_score:
-                edges.append(self._visualise_new_edge(edge[0], edge[1], weight))
+                edges.append(self._visualise_new_edge(edge, weight))
 
         return nodes, edges
+
+    def filter_edges(self, min_weight=50):
+        t0 = time.time()
+        for edge in self.graph.edges:
+            weight = self.graph.get_edge_data(edge[0], edge[1], default={'weight': 0})['weight']
+            if weight < min_weight:
+                self.graph.remove_edge(edge[0], edge[1])
+        t1 = time.time()
+        self.log(f"Removed edges less than {min_weight} in {round(t1-t0,1)} seconds")
 
     def _get_uniref_metadata(self):
         self.node_metadata = {}
@@ -240,14 +245,23 @@ class SSN(object):
 
         return node
 
-    @staticmethod
-    def _visualise_new_edge(node_one, node_two, weight):
-        edge = {'id': f"from {node_one} to {node_two}",
-                'from': node_one,
-                'to': node_two,
+    def _visualise_new_edge(self, edge, weight):
+        edge = {'id': f"from {edge[0]} to {edge[1]}",
+                'from': edge[0],
+                'to': edge[1],
                 'weight': weight}
         return edge
 
+    def _get_db_object(self):
+        """ Either finds existing db entry for ssn of enzyme type, or makes a new one """
+
+        query = SeqSimNet.objects(enzyme_type=self.enzyme_type_obj)
+        if len(query) == 0:
+            db_ssn = SeqSimNet(enzyme_type=self.enzyme_type_obj)
+        else:
+            db_ssn = query[0]
+
+        return db_ssn
 
     @staticmethod
     def _get_sequence_object(enzyme_name):
@@ -256,7 +270,7 @@ class SSN(object):
         else:
             return Sequence.objects(enzyme_name=enzyme_name)[0]
 
-def task_expand_ssn(enzyme_type, print_log=True, max_num=1000):
+def task_expand_ssn(enzyme_type, print_log=True, max_num=200):
     current_app.app_context().push()
 
     aba_blaster = AllByAllBlaster(enzyme_type, print_log=print_log)
@@ -306,6 +320,8 @@ if __name__ == '__main__':
     from retrobiocat_web.mongo.default_connection import make_default_connection
     make_default_connection()
 
+    SeqSimNet.drop_collection()
+
     aad_ssn = SSN('AAD', print_log=True)
     aad_ssn.load()
 
@@ -315,8 +331,8 @@ if __name__ == '__main__':
     need_alignments = aad_ssn.nodes_need_alignments(max_num=10)
     aad_ssn.add_multiple_proteins(need_alignments)
 
-    nodes, edges = aad_ssn.visualise()
+    aad_ssn.filter_edges()
 
-    aad_ssn._get_uniref_metadata()
+    nodes, edges = aad_ssn.visualise()
 
 

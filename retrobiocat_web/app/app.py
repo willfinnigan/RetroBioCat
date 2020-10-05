@@ -50,9 +50,9 @@ def create_app(config_class=Config, use_talisman=True):
     app.pathway_queue = rq.Queue('pathway', connection=app.redis, default_timeout=600)
     app.retrorules_queue = rq.Queue('retrorules', connection=app.redis, default_timeout=600)
     app.db_queue = rq.Queue('db', connection=app.redis, default_timeout=6*60*60)
-    app.blast_queue = rq.Queue('blast', connection=app.redis, default_timeout=1*60*60, result_ttl=0)
-    app.process_blasts_queue = rq.Queue('process_blasts', connection=app.redis, default_timeout=2*60*60, result_ttl=0)
-    app.alignment_queue = rq.Queue('alignment', connection=app.redis, default_timeout=12 * 60 * 60, result_ttl=0)
+    app.blast_queue = rq.Queue('blast', connection=app.redis, default_timeout=1*60*60, result_ttl=1)
+    app.process_blasts_queue = rq.Queue('process_blasts', connection=app.redis, default_timeout=2*60*60, result_ttl=1)
+    app.alignment_queue = rq.Queue('alignment', connection=app.redis, default_timeout=12 * 60 * 60, result_ttl=1)
 
     app.redis_queues = [app.task_queue, app.network_queue, app.pathway_queue, app.retrorules_queue,
                         app.db_queue, app.blast_queue, app.alignment_queue, app.process_blasts_queue]
