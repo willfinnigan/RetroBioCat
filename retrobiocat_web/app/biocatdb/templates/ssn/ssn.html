@@ -22,9 +22,27 @@
     <script type="text/javascript">
         // initialize global variables.
         var container = document.getElementById('myssn');
-        var options = {edges: {{edges_options|tojson}},
-                       physics: {{physics_options|tojson}},
-                       interaction: {{interaction_options|tojson}},
+
+        var edges_options = {'smooth': false}
+
+        var physics_options = {'stabilization': {'enabled': true,
+                                                 'iterations': 50},
+                                "repulsion": {
+                                   "centralGravity": 0.1,
+                                   "nodeDistance": 500
+                                },
+                                "maxVelocity": 49,
+                                "minVelocity": 0.75,
+                                "solver": "repulsion",
+                                "timestep": 0.75}
+
+        var interaction_options = {'tooltipDelay': 0,
+                                   'hideEdgesOnDrag': true}
+
+
+        var options = {edges: edges_options,
+                       physics: physics_options,
+                       interaction: interaction_options,
                        configure: {filter: function (option, path) {
                                     if (path.indexOf("physics") !== -1) {
                                         return true;}
@@ -35,16 +53,31 @@
                                     container: document.getElementById("ssn_network_config")},
                       };
 
-        var data = {'nodes': new vis.DataSet({{nodes|tojson}}), 'edges': new vis.DataSet({{edges|tojson}})};
+        function edgesFilter(edge) {
+            return (edge.weight >= document.getElementById("alignment_score").value);
+        }
+
+        const edges = new vis.DataSet({{edges|tojson}})
+        const nodes = new vis.DataSet({{nodes|tojson}})
+        const edgesView = new vis.DataView(edges, { filter: edgesFilter });
+        edgesView.refresh();
+
+        var data = {'nodes': nodes, 'edges': edgesView};
+
         var network = new vis.Network(container, data, options);
 
         network.on("selectNode", function (params) {
-            if (params.nodes.length == 1) {
-                if (network.isCluster(params.nodes[0]) == true) {
+            console.log(params)
+            if (params.nodes.length === 1) {
+                if (network.isCluster(params.nodes[0]) === true) {
                     network.openCluster(params.nodes[0]);
                 }
             }
         });
+
+        document.getElementById("alignment_score").onchange = function(){
+            edgesView.refresh()
+        }
 
 
         function clusterByHubsize() {

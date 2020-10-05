@@ -16,6 +16,7 @@ class SSN(object):
 
     def __init__(self, enzyme_type, aba_blaster=None, print_log=False):
         self.graph = nx.Graph()
+
         self.enzyme_type = enzyme_type
         self.enzyme_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
 
@@ -159,6 +160,7 @@ class SSN(object):
 
     def visualise(self, min_score=0):
         self._get_uniref_metadata()
+        #pos_dict = nx.kamada_kawai_layout(self.graph, scale=4000)
 
         nodes = []
         edges = []
@@ -166,13 +168,13 @@ class SSN(object):
             nodes.append(self._visualise_new_node(name))
 
         for edge in self.graph.edges:
-            weight = self.graph.get_edge_data(edge[0], edge[1], default={'weight': 0})['weight']
-            if weight >= min_score:
-                edges.append(self._visualise_new_edge(edge, weight))
+            edges.append(self._visualise_new_edge(edge))
+
+        nodes = self._sort_biocatdb_nodes_to_front(nodes)
 
         return nodes, edges
 
-    def filter_edges(self, min_weight=50):
+    def get_graph_filtered_edges(self, min_weight=50):
         t0 = time.time()
         for edge in self.graph.edges:
             weight = self.graph.get_edge_data(edge[0], edge[1], default={'weight': 0})['weight']
@@ -215,14 +217,13 @@ class SSN(object):
         if self.print_log == True:
             print("SSN: " + msg)
 
-    def _visualise_new_node(self, node_name):
+    def _visualise_new_node(self, node_name, pos_dict=None):
         if 'UniRef50' in node_name:
             colour = 'darkblue'
             node_type = 'uniref'
         else:
             colour = 'darkred'
             node_type = 'biocatdb'
-
 
         metadata = self.node_metadata.get(node_name, {})
         protein_name = metadata.get('protein_name', '')
@@ -243,9 +244,15 @@ class SSN(object):
                 'node_type': node_type,
                 'metadata': metadata}
 
+        if pos_dict is not None:
+            x, y = tuple(pos_dict.get(node_name, (0, 0)))
+            node['x'] = x
+            node['y'] = y
+
         return node
 
-    def _visualise_new_edge(self, edge, weight):
+    def _visualise_new_edge(self, edge):
+        weight = self.graph.get_edge_data(edge[0], edge[1], default={'weight': 0})['weight']
         edge = {'id': f"from {edge[0]} to {edge[1]}",
                 'from': edge[0],
                 'to': edge[1],
@@ -262,6 +269,21 @@ class SSN(object):
             db_ssn = query[0]
 
         return db_ssn
+
+    @staticmethod
+    def _sort_biocatdb_nodes_to_front(vis_nodes):
+        """ Returns vis_nodes with any nodes marked as node_type='biocatdb' at the front """
+
+        biocatdb_nodes = []
+        other_nodes = []
+
+        for node in vis_nodes:
+            if node.get('node_type', '') == 'biocatdb':
+                biocatdb_nodes.append(node)
+            else:
+                other_nodes.append(node)
+
+        return biocatdb_nodes + other_nodes
 
     @staticmethod
     def _get_sequence_object(enzyme_name):
@@ -334,5 +356,8 @@ if __name__ == '__main__':
     aad_ssn.filter_edges()
 
     nodes, edges = aad_ssn.visualise()
+    print(nodes)
+
+
 
 

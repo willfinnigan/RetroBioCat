@@ -3,7 +3,7 @@ from wtforms import StringField, BooleanField, SubmitField, IntegerField, Decima
 from wtforms.validators import DataRequired, NumberRange, ValidationError
 from retrobiocat_web.retro.generation import node_analysis
 from retrobiocat_web.retro.enzyme_identification import query_mongodb
-from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType, Sequence, Activity
+from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType, Sequence, Activity, SeqSimNet
 from retrobiocat_web.mongo.models.reaction_models import Reaction
 
 def is_accepted_by_rdkit(form, field):
@@ -130,3 +130,12 @@ class SubstrateScopeForm(FlaskForm):
             seen.add(self.enzyme_type.data)
             seen.add(self.enzyme_name.data)
         return result
+
+class SSN_Form(FlaskForm):
+    enzyme_type = SelectField('Enzyme name')
+    alignment_score = IntegerField('Alignment score cut-off', default=50, validators=[NumberRange(min=1, max=500)])
+    submit = SubmitField('Submit')
+
+    def set_choices(self):
+        self.enzyme_type.choices = [(c, c) for c in (list(SeqSimNet.objects().distinct('enzyme_type')))]
+
