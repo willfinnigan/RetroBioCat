@@ -14,7 +14,10 @@ from bson.binary import Binary
 
 class SSN(object):
 
-    def __init__(self, enzyme_type, include_mutants=True, aba_blaster=None, print_log=False):
+    def __init__(self, enzyme_type, aba_blaster=None,
+                 include_mutants=True, only_biocatdb=False,
+                 print_log=False):
+
         self.graph = nx.Graph()
 
         self.enzyme_type = enzyme_type
@@ -28,7 +31,11 @@ class SSN(object):
         self.node_metadata = {}
 
         self.print_log = print_log
-        self.include_mutants = include_mutants
+
+        if include_mutants is True:
+            self._filter_out_mutants()
+        if only_biocatdb is True:
+            self._filer_out_uniref()
 
         self.save_path = str(Path(__file__).parents[0]) + f'/analysis_data/ssn/{self.enzyme_type}'
         if not os.path.exists(self.save_path):
@@ -163,13 +170,9 @@ class SSN(object):
         self._get_uniref_metadata()
         #pos_dict = nx.kamada_kawai_layout(self.graph, scale=4000)
 
-        graph_nodes = list(self.graph.nodes)
-        if self.include_mutants is True:
-            graph_nodes = self._filter_out_mutants(graph_nodes)
-
         nodes = []
         edges = []
-        for name in graph_nodes:
+        for name in self.graph.nodes:
             nodes.append(self._visualise_new_node(name))
 
         for edge in self.graph.edges:
@@ -190,16 +193,24 @@ class SSN(object):
         self.log(f"Created new graph with edges less than {min_weight} removed, in {round(t1-t0,1)} seconds")
         return graph
 
-    def _filter_out_mutants(self, nodes):
+    def _filter_out_mutants(self):
         t0 = time.time()
-        nodes = list(nodes)
         mutants = Sequence.objects(db.Q(enzyme_type=self.enzyme_type) & db.Q(mutant_of=''))
         for mutant in mutants:
-            if mutant.enzyme_name in nodes:
-                nodes.remove(mutant)
+            if mutant.enzyme_name in self.graph.nodes:
+                self.graph.remove_node(mutant)
+
         t1 = time.time()
         self.log(f'Filtered mutants from graph in {round(t1-t0,1)} seconds')
-        return nodes
+
+    def _filer_out_uniref(self):
+        t0 = time.time()
+        for node in self.graph.nodes:
+            if 'UniRef50' in node:
+                self.graph.remove_node(node)
+
+        t1 = time.time()
+        self.log(f'Filtered uniref50 sequences from graph in {round(t1 - t0, 1)} seconds')
 
     def _get_uniref_metadata(self):
         self.node_metadata = {}
@@ -238,10 +249,12 @@ class SSN(object):
 
     def _visualise_new_node(self, node_name, pos_dict=None):
         if 'UniRef50' in node_name:
-            colour = 'darkblue'
+            border = 'black'
+            border_width = 1
             node_type = 'uniref'
         else:
-            colour = 'darkred'
+            border = 'darkred'
+            border_width = 4
             node_type = 'biocatdb'
 
         metadata = self.node_metadata.get(node_name, {})
@@ -254,9 +267,11 @@ class SSN(object):
 
         node = {'id': node_name,
                 'size': 40,
-                'borderWidth': 1,
-                'borderWidthSelected': 3,
-                'color': {'background': colour, 'border': 'black'},
+                'borderWidth': border_width,
+                'borderWidthSelected': 4,
+                'color': {'background': 'rgba(5, 5, 168, 0.95)',
+                          'border': border,
+                          'highlight': {'border': border}},
                 'label': label,
                 'title': label,
                 'shape': 'dot',
@@ -276,7 +291,8 @@ class SSN(object):
                 'from': edge[0],
                 'to': edge[1],
                 'weight': weight,
-                'color': {'color': 'grey', 'opacity': 0.5}}
+                'width': 0.4,
+                'color': {'color': 'darkgrey', 'opacity': 0.5}}
         return edge
 
     def _get_db_object(self):

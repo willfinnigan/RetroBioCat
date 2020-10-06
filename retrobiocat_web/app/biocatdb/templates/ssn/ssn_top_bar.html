@@ -11,5 +11,12 @@
     <button class="btn btn-danger" type="button" onclick="cluster_by_hubsize()">Cluster</button>
 
     <label class="my-auto text-center pl-2 pr-1"><strong>Alignment score:</strong></label>
-    <input type="number" id="alignment_score" class="" value="{{alignment_score}}" style="width:50px">
+    <input type="number" id="alignment_score" class="" value="{{alignment_score}}" style="width:65px">
+
+    <div role="group" class="btn-group">
+        <button class="btn btn-success" type="button" onclick="select_connected_nodes()">Select connected nodes</button>
+        <button class="btn btn-primary" type="button" data-toggle="modal" data-target="#edit_selected_nodes_modal">Edit selected nodes</button>
+    </div>
 </div>
+
+

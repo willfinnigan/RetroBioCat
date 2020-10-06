@@ -1,0 +1,82 @@
+<!-- Main modal -->
+<div class="modal fade" id="edit_selected_nodes_modal" tabindex="-1" role="dialog" aria-labelledby="edit_selected_nodes_modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit selected node settings</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div id="edit_nodes_response"></div>
+                <p><span id="num_selected_nodes"></span> nodes selected</p>
+                <button class="btn btn-success" onclick="fix_positions()">Fix positions</button>
+                <button class="btn btn-primary" onclick="fix_positions(fix=false)">Un-Fix positions</button>
+                <button class="btn btn-danger" onclick="delete_nodes()">Delete nodes</button>
+
+                <br/>
+
+                <input data-jscolor="{alpha:0.95}" id="colour_picker" value="rgba(5, 5, 168, 0.95)" name="Colour picker">
+                <button class="btn btn-info" onclick="change_colour()">Change node colour</button>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+<script>
+    jscolor.presets.default = {
+        format:'rgba', previewSize:64
+    };
+
+    function change_colour() {
+        var colour = document.getElementById("colour_picker").value
+        var selected_nodes = network.getSelectedNodes()
+        selected_nodes.forEach(function (node_id, i) {
+            data['nodes'].update({id: node_id, color: {background: colour}})
+        })
+        response_msg("Colours updated", 'success', [], "edit_nodes_response")
+    }
+
+    function edit_nodes_modal_launched() {
+        var selected_nodes = network.getSelectedNodes()
+        document.getElementById("num_selected_nodes").innerHTML = selected_nodes.length
+
+        if (selected_nodes.length !== 0) {
+            document.getElementById("colour_picker").value = data['nodes'].get(selected_nodes[0]).color.background
+        }
+    }
+
+    $('#edit_selected_nodes_modal').on('shown.bs.modal', function (e) {
+        edit_nodes_modal_launched()
+    })
+
+    function fix_positions(fix=true) {
+        var selected_nodes = network.getSelectedNodes()
+        selected_nodes.forEach(function (node_id, i) {
+            data['nodes'].update({id: node_id, fixed: fix})
+        })
+
+        if (fix === true) {
+            response_msg("Node positions fixed", 'success', [], "edit_nodes_response")
+        } else {
+            response_msg("Node positions Un-fixed", 'success', [], "edit_nodes_response")
+        }
+    }
+
+    function delete_nodes() {
+        var selected_nodes = network.getSelectedNodes()
+        data['nodes'].remove(selected_nodes)
+        response_msg("Nodes deleted", 'success', [], "edit_nodes_response")
+    }
+
+
+</script>

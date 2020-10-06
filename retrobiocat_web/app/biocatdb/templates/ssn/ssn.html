@@ -18,6 +18,8 @@
     </div>
 
     {% include 'ssn/modals/network_physics_modal.html' %}
+    {% include 'ssn/modals/edit_selected_nodes_modal.html' %}
+
 
     <script type="text/javascript">
         // initialize global variables.
@@ -90,7 +92,6 @@
               num_nodes = childNodes.length
 
               childNodes.forEach(function (item, index) {
-                  console.log(childNodes[index])
                   if (childNodes[index].node_type === 'cluster') {
                       size += childNodes[index]['clustered_nodes'] * 4
                   } else {
@@ -112,19 +113,17 @@
               clusterOptions.x = childNodes[0].x
               clusterOptions.y = childNodes[0].y
               clusterOptions.clustered_nodes = num_nodes
+              clusterOptions.color.background = childNodes[0].color.background
               return clusterOptions
           },
           clusterNodeProperties: {
-              'borderWidth': 1,
+              'borderWidth': 2,
               'borderWidthSelected': 3,
-              'color': {'background': 'lightblue', 'border': 'black'},
+              'color': {'border': 'darkgrey'},
               'shape': 'dot',
               'node_type': 'cluster',
           }
         }
-
-
-
 
 
         network.on("doubleClick", function (params) {
@@ -133,7 +132,6 @@
                 if (network.isCluster(params.nodes[0]) === true) {
                     network.openCluster(params.nodes[0]);
                 } else {
-                    console.log(params.nodes[0])
                     network.clustering.clusterByConnection(params.nodes[0], cluster_options)
                 }
             }
@@ -147,6 +145,31 @@
             network.clustering.clusterByHubsize(cluster_options)
         }
 
+
+        function get_new_connected_nodes(nodes_array, selected_nodes) {
+            var new_connected_nodes = []
+            nodes_array.forEach(function (sel_node, i) {
+                var connected_nodes = network.getConnectedNodes(sel_node)
+                connected_nodes.forEach(function (con_node, j) {
+                    if (selected_nodes.includes(con_node) === false) {
+                        new_connected_nodes.push(con_node)
+                    }
+                })
+            })
+            return new_connected_nodes
+        }
+
+        function select_connected_nodes() {
+            var selected_nodes = network.getSelectedNodes()
+            var new_nodes_array = network.getSelectedNodes()
+            while (new_nodes_array.length !== 0) {
+                new_nodes_array = get_new_connected_nodes(new_nodes_array, selected_nodes)
+                selected_nodes = selected_nodes.concat(new_nodes_array)
+                console.log('selected_nodes:')
+                console.log(selected_nodes)
+            }
+            network.selectNodes(selected_nodes)
+        }
 
 
     </script>
