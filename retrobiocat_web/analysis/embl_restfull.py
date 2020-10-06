@@ -87,11 +87,11 @@ class BlastRunner(object):
 class BlastParser(object):
 
     def __init__(self, log_level=0):
-        self.min_coverage = 0.7
-        self.min_identity = 0.2
+        self.min_coverage = 0.8
+        self.min_identity = 0.3
 
-        self.min_size_frac = 0.75
-        self.max_size_frac = 1.25
+        self.min_size_frac = 0.8
+        self.max_size_frac = 1.2
         self.max_e = 5
         self.identifier_head = 'UR50:'
         self.blast_round = 1

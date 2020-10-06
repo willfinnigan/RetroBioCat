@@ -66,11 +66,75 @@
 
         var network = new vis.Network(container, data, options);
 
-        network.on("selectNode", function (params) {
+        var cluster_options = {
+          joinCondition:function(parentNodeOptions, childNodeOptions) {
+              var passed = true
+              if (parentNodeOptions.node_type === 'biocatdb') {
+                  passed = false
+              }
+              if (parentNodeOptions.node_type === 'cluster') {
+                  passed = false
+              }
+              if (childNodeOptions.node_type === 'biocatdb') {
+                  passed = false
+              }
+              if (childNodeOptions.node_type === 'cluster') {
+                  passed = false
+              }
+
+              return passed;
+          },
+          processProperties: function (clusterOptions,
+            childNodes, childEdges) {
+              size = 35
+              num_nodes = childNodes.length
+
+              childNodes.forEach(function (item, index) {
+                  console.log(childNodes[index])
+                  if (childNodes[index].node_type === 'cluster') {
+                      size += childNodes[index]['clustered_nodes'] * 4
+                  } else {
+                      size += 4
+                  }
+
+                  if (childNodes[index].hasOwnProperty('clustered_nodes')) {
+                      num_nodes += childNodes[index]['clustered_nodes'] - 1
+                  }
+              });
+
+              clusterOptions.size = size
+              if (clusterOptions.size > 200) {
+                  clusterOptions.size = 200
+              }
+
+              clusterOptions.label = "# " + num_nodes + "";
+              clusterOptions.title = "# " + num_nodes + "";
+              clusterOptions.x = childNodes[0].x
+              clusterOptions.y = childNodes[0].y
+              clusterOptions.clustered_nodes = num_nodes
+              return clusterOptions
+          },
+          clusterNodeProperties: {
+              'borderWidth': 1,
+              'borderWidthSelected': 3,
+              'color': {'background': 'lightblue', 'border': 'black'},
+              'shape': 'dot',
+              'node_type': 'cluster',
+          }
+        }
+
+
+
+
+
+        network.on("doubleClick", function (params) {
             console.log(params)
             if (params.nodes.length === 1) {
                 if (network.isCluster(params.nodes[0]) === true) {
                     network.openCluster(params.nodes[0]);
+                } else {
+                    console.log(params.nodes[0])
+                    network.clustering.clusterByConnection(params.nodes[0], cluster_options)
                 }
             }
         });
@@ -79,26 +143,12 @@
             edgesView.refresh()
         }
 
-
-        function clusterByHubsize() {
-            network.setData(data);
-            var clusterOptionsByData = {
-                joinCondition:function(nodeOptions) {
-                    return nodeOptions.node_type !== 'biocatdb';
-                  },
-                processProperties: function (clusterOptions, childNodes) {
-                    clusterOptions.label = "[" + childNodes.length + "]";
-                    return clusterOptions;
-                },
-                clusterNodeProperties: {
-                    borderWidth: 3,
-                    shape: "box",
-                    font: { size: 30 },
-                },
-            };
-
-            network.clusterByHubsize(undefined, clusterOptionsByData);
+        function cluster_by_hubsize() {
+            network.clustering.clusterByHubsize(cluster_options)
         }
+
+
+
     </script>
 
 {% endblock %}

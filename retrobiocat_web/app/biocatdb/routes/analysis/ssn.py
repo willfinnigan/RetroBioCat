@@ -23,12 +23,12 @@ def ssn_page(task_id):
                            edges=result['edges'],
                            alignment_score=result['alignment_score'])
 
-def task_get_ssn(enzyme_type, min_score):
+def task_get_ssn(enzyme_type, min_score, combine_mutants):
     job = get_current_job()
     job.meta['progress'] = 'started'
     job.save_meta()
 
-    ssn = SSN(enzyme_type, print_log=True)
+    ssn = SSN(enzyme_type, include_mutants=not combine_mutants, print_log=True)
     ssn.load()
 
     nodes, edges = ssn.visualise(min_score=min_score)
@@ -75,7 +75,8 @@ def ssn_form():
     if form.validate_on_submit() == True:
         enzyme_type = form.data['enzyme_type']
         min_score = form.data['alignment_score']
-        task = current_app.network_queue.enqueue(task_get_ssn, enzyme_type, min_score)
+        combine_mutants = form.data['combine_mutants']
+        task = current_app.network_queue.enqueue(task_get_ssn, enzyme_type, min_score, combine_mutants)
 
         if old_task_id != None:
             try:

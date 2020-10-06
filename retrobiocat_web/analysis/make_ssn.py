@@ -14,7 +14,7 @@ from bson.binary import Binary
 
 class SSN(object):
 
-    def __init__(self, enzyme_type, aba_blaster=None, print_log=False):
+    def __init__(self, enzyme_type, include_mutants=True, aba_blaster=None, print_log=False):
         self.graph = nx.Graph()
 
         self.enzyme_type = enzyme_type
@@ -28,6 +28,7 @@ class SSN(object):
         self.node_metadata = {}
 
         self.print_log = print_log
+        self.include_mutants = include_mutants
 
         self.save_path = str(Path(__file__).parents[0]) + f'/analysis_data/ssn/{self.enzyme_type}'
         if not os.path.exists(self.save_path):
@@ -162,9 +163,13 @@ class SSN(object):
         self._get_uniref_metadata()
         #pos_dict = nx.kamada_kawai_layout(self.graph, scale=4000)
 
+        graph_nodes = list(self.graph.nodes)
+        if self.include_mutants is True:
+            graph_nodes = self._filter_out_mutants(graph_nodes)
+
         nodes = []
         edges = []
-        for name in self.graph.nodes:
+        for name in graph_nodes:
             nodes.append(self._visualise_new_node(name))
 
         for edge in self.graph.edges:
@@ -176,12 +181,25 @@ class SSN(object):
 
     def get_graph_filtered_edges(self, min_weight=50):
         t0 = time.time()
-        for edge in self.graph.edges:
-            weight = self.graph.get_edge_data(edge[0], edge[1], default={'weight': 0})['weight']
+        graph = self.graph.copy()
+        for edge in graph:
+            weight = graph.get_edge_data(edge[0], edge[1], default={'weight': 0})['weight']
             if weight < min_weight:
-                self.graph.remove_edge(edge[0], edge[1])
+                graph.remove_edge(edge[0], edge[1])
         t1 = time.time()
-        self.log(f"Removed edges less than {min_weight} in {round(t1-t0,1)} seconds")
+        self.log(f"Created new graph with edges less than {min_weight} removed, in {round(t1-t0,1)} seconds")
+        return graph
+
+    def _filter_out_mutants(self, nodes):
+        t0 = time.time()
+        nodes = list(nodes)
+        mutants = Sequence.objects(db.Q(enzyme_type=self.enzyme_type) & db.Q(mutant_of=''))
+        for mutant in mutants:
+            if mutant.enzyme_name in nodes:
+                nodes.remove(mutant)
+        t1 = time.time()
+        self.log(f'Filtered mutants from graph in {round(t1-t0,1)} seconds')
+        return nodes
 
     def _get_uniref_metadata(self):
         self.node_metadata = {}
@@ -212,6 +230,7 @@ class SSN(object):
     def _add_alignment_edge(self, node_name, alignment_node_name, alignment_score):
         if node_name != alignment_node_name:
             self.graph.add_edge(node_name, alignment_node_name, weight=alignment_score)
+
 
     def log(self, msg):
         if self.print_log == True:
@@ -256,7 +275,8 @@ class SSN(object):
         edge = {'id': f"from {edge[0]} to {edge[1]}",
                 'from': edge[0],
                 'to': edge[1],
-                'weight': weight}
+                'weight': weight,
+                'color': {'color': 'grey', 'opacity': 0.5}}
         return edge
 
     def _get_db_object(self):
@@ -270,20 +290,19 @@ class SSN(object):
 
         return db_ssn
 
-    @staticmethod
-    def _sort_biocatdb_nodes_to_front(vis_nodes):
+    def _sort_biocatdb_nodes_to_front(self, vis_nodes):
         """ Returns vis_nodes with any nodes marked as node_type='biocatdb' at the front """
 
         biocatdb_nodes = []
         other_nodes = []
 
         for node in vis_nodes:
-            if node.get('node_type', '') == 'biocatdb':
+            if 'biocatdb' in node.get('node_type', ''):
                 biocatdb_nodes.append(node)
             else:
                 other_nodes.append(node)
 
-        return biocatdb_nodes + other_nodes
+        return other_nodes + biocatdb_nodes
 
     @staticmethod
     def _get_sequence_object(enzyme_name):
@@ -358,6 +377,10 @@ if __name__ == '__main__':
     nodes, edges = aad_ssn.visualise()
     print(nodes)
 
+
+
+# 1. Start at high alignment score - 500
+# 2. Find clusters
 
 
 

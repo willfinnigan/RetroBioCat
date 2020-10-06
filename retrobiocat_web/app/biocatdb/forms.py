@@ -133,7 +133,8 @@ class SubstrateScopeForm(FlaskForm):
 
 class SSN_Form(FlaskForm):
     enzyme_type = SelectField('Enzyme name')
-    alignment_score = IntegerField('Alignment score cut-off', default=50, validators=[NumberRange(min=1, max=500)])
+    alignment_score = IntegerField('Alignment score cut-off', default=300, validators=[NumberRange(min=1, max=500)])
+    combine_mutants = BooleanField('Combine mutants with parents', default=True)
     submit = SubmitField('Submit')
 
     def set_choices(self):
