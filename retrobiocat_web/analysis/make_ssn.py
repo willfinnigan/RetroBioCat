@@ -126,7 +126,10 @@ class SSN(object):
 
         # Get a list of all sequence objects of enzyme type
         t0 = time.time()
-        sequences = Sequence.objects(enzyme_type=self.enzyme_type)
+        sequences = Sequence.objects(db.Q(enzyme_type=self.enzyme_type) &
+                                     db.Q(sequence__ne="") &
+                                     db.Q(sequence__ne=None) &
+                                     db.Q(sequence_unavailable__ne=True))
         if only_biocatdb is True:
             seq_objects = list(sequences)
         else:
@@ -137,7 +140,9 @@ class SSN(object):
         not_in_nodes = []
         for seq_obj in seq_objects:
             if seq_obj.enzyme_name not in list(self.graph.nodes):
-                not_in_nodes.append(seq_obj)
+                if seq_obj.sequence != None:
+                    if len(seq_obj.sequence) > 12:
+                        not_in_nodes.append(seq_obj)
 
         # Return only up to the maximum number of sequences
         if max_num != None:
@@ -251,7 +256,7 @@ class SSN(object):
             node_type = 'uniref'
         else:
             border = 'darkred'
-            border_width = 4
+            border_width = 2
             node_type = 'biocatdb'
 
         metadata = self.node_metadata.get(node_name, {})

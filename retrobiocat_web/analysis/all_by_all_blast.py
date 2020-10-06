@@ -51,10 +51,14 @@ class AllByAllBlaster(object):
         """ Get the alignments for a given sequence object (either Sequence or UniRef90)"""
 
         self.log(f" - Getting alignments for sequence: {seq_obj.enzyme_name}..")
-        blast_record = self._blast_seq(seq_obj)
-        alignment_names, alignment_scores = self._process_blast_record(seq_obj, blast_record)
-        self.log(f"{len(alignment_names)} made.")
-        return alignment_names, alignment_scores
+        if (seq_obj.sequence != None):
+            if len(seq_obj.sequence) > 12:
+                blast_record = self._blast_seq(seq_obj)
+                alignment_names, alignment_scores = self._process_blast_record(seq_obj, blast_record)
+                self.log(f"{len(alignment_names)} made.")
+                return alignment_names, alignment_scores
+
+        return [], []
 
     def get_clusters(self, identity):
 
@@ -119,7 +123,10 @@ class AllByAllBlaster(object):
     def _make_db_fasta(self):
         """ Create a fasta file containing all the sequences of an enzyme type """
 
-        seqs = Sequence.objects(db.Q(enzyme_type=self.enzyme_type) & db.Q(sequence__ne=""))
+        seqs = Sequence.objects(db.Q(enzyme_type=self.enzyme_type) &
+                                db.Q(sequence__ne="") &
+                                db.Q(sequence__ne=None) &
+                                db.Q(sequence_unavailable__ne=True))
         bioinf_seqs = UniRef50.objects(db.Q(enzyme_type=self.enzyme_type_obj))
 
         with open(f"{self.directory}/{self.enzyme_type}.fasta", 'w') as file:
