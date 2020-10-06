@@ -14,9 +14,7 @@ from bson.binary import Binary
 
 class SSN(object):
 
-    def __init__(self, enzyme_type, aba_blaster=None,
-                 include_mutants=True, only_biocatdb=False,
-                 print_log=False):
+    def __init__(self, enzyme_type, aba_blaster=None, print_log=False):
 
         self.graph = nx.Graph()
 
@@ -31,11 +29,6 @@ class SSN(object):
         self.node_metadata = {}
 
         self.print_log = print_log
-
-        if include_mutants is True:
-            self._filter_out_mutants()
-        if only_biocatdb is True:
-            self._filer_out_uniref()
 
         self.save_path = str(Path(__file__).parents[0]) + f'/analysis_data/ssn/{self.enzyme_type}'
         if not os.path.exists(self.save_path):
@@ -61,7 +54,7 @@ class SSN(object):
         t1 = time.time()
         self.log(f"Saved SSN to Mongo, for {self.enzyme_type}, in {round(t1 - t0, 1)} seconds")
 
-    def load(self):
+    def load(self, include_mutants=True, only_biocatdb=False,):
 
         t0 = time.time()
         if self.db_ssn.graph_data is None:
@@ -79,6 +72,11 @@ class SSN(object):
 
         t1 = time.time()
         self.log(f"Loaded SSN for {self.enzyme_type} in {round(t1 - t0, 1)} seconds")
+
+        if include_mutants is False:
+            self._filter_out_mutants()
+        if only_biocatdb is True:
+            self._filer_out_uniref()
 
     def add_protein(self, seq_obj):
         """ Add the protein to the graph, along with any proteins which have alignments """
@@ -196,8 +194,8 @@ class SSN(object):
     def _filter_out_mutants(self):
         t0 = time.time()
         mutants = Sequence.objects(db.Q(enzyme_type=self.enzyme_type) & db.Q(mutant_of=''))
-        for mutant in mutants:
-            if mutant.enzyme_name in self.graph.nodes:
+        for mutant in list(mutants):
+            if mutant in self.graph.nodes:
                 self.graph.remove_node(mutant)
 
         t1 = time.time()
@@ -205,7 +203,7 @@ class SSN(object):
 
     def _filer_out_uniref(self):
         t0 = time.time()
-        for node in self.graph.nodes:
+        for node in list(self.graph.nodes):
             if 'UniRef50' in node:
                 self.graph.remove_node(node)
 
@@ -241,7 +239,6 @@ class SSN(object):
     def _add_alignment_edge(self, node_name, alignment_node_name, alignment_score):
         if node_name != alignment_node_name:
             self.graph.add_edge(node_name, alignment_node_name, weight=alignment_score)
-
 
     def log(self, msg):
         if self.print_log == True:

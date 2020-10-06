@@ -28,8 +28,10 @@ def task_get_ssn(enzyme_type, min_score, combine_mutants, only_biocatdb):
     job.meta['progress'] = 'started'
     job.save_meta()
 
-    ssn = SSN(enzyme_type, include_mutants=not combine_mutants, only_biocatdb=only_biocatdb, print_log=True)
-    ssn.load()
+    print(only_biocatdb)
+
+    ssn = SSN(enzyme_type, print_log=True)
+    ssn.load(include_mutants=not combine_mutants, only_biocatdb=only_biocatdb)
 
     nodes, edges = ssn.visualise(min_score=min_score)
 

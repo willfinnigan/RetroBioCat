@@ -35,6 +35,13 @@
                                 {{ form.combine_mutants.label(class="custom-control-label") }}
                             </div>
 
+                            <div class="custom-control custom-checkbox">
+                                {{ form.only_biocatdb(type='checkbox', form="main_form", class="custom-control-input") }}
+                                {{ form.only_biocatdb.label(class="custom-control-label") }}
+                            </div>
+
+
+
                             <div class="form-group mt-4">
                                 {{ form.submit(class="btn-lg btn-block btn-success") }}
                             </div>
