@@ -36,12 +36,23 @@
     jscolor.presets.default = {
         format:'rgba', previewSize:64
     };
+    function change_cluster_colour(cluster_id) {
+
+    }
+
 
     function change_colour() {
         var colour = document.getElementById("colour_picker").value
         var selected_nodes = network.getSelectedNodes()
         selected_nodes.forEach(function (node_id, i) {
-            data['nodes'].update({id: node_id, color: {background: colour}})
+            if (network.isCluster(node_id) !== true) {
+                data['nodes'].update({id: node_id, color: {background: colour}})
+            } else {
+                network.updateClusteredNode(node_id, {color: {background: colour}})
+                network.getNodesInCluster(node_id).forEach(function (clustered_node_id, j) {
+                    data['nodes'].update({id: clustered_node_id, color: {background: colour}})
+                })
+            }
         })
         response_msg("Colours updated", 'success', [], "edit_nodes_response")
     }
@@ -49,10 +60,6 @@
     function edit_nodes_modal_launched() {
         var selected_nodes = network.getSelectedNodes()
         document.getElementById("num_selected_nodes").innerHTML = selected_nodes.length
-
-        if (selected_nodes.length !== 0) {
-            document.getElementById("colour_picker").value = data['nodes'].get(selected_nodes[0]).color.background
-        }
     }
 
     $('#edit_selected_nodes_modal').on('shown.bs.modal', function (e) {
@@ -74,7 +81,15 @@
 
     function delete_nodes() {
         var selected_nodes = network.getSelectedNodes()
-        data['nodes'].remove(selected_nodes)
+        selected_nodes.forEach(function (node_id, i) {
+            if (network.isCluster(node_id) === true) {
+                var cluster_nodes = network.getNodesInCluster(node_id)
+                network.openCluster(node_id)
+                data['nodes'].remove(cluster_nodes)
+            } else {
+                data['nodes'].remove(selected_nodes[i])
+            }
+        })
         response_msg("Nodes deleted", 'success', [], "edit_nodes_response")
     }
 

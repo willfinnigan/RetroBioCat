@@ -27,13 +27,15 @@
 
         var edges_options = {'smooth': false}
 
-        var physics_options = {'stabilization': {'enabled': true,
+        var physics_options = {'stabilization': {'enabled': false,
                                                  'iterations': 50},
                                 "repulsion": {
-                                   "centralGravity": 0.1,
-                                   "nodeDistance": 500
+                                      "centralGravity": 0.1,
+                                      "springLength": 860,
+                                      "nodeDistance": 860,
+                                      "damping": 0.5
                                 },
-                                "maxVelocity": 49,
+                                "maxVelocity": 100,
                                 "minVelocity": 0.75,
                                 "solver": "repulsion",
                                 "timestep": 0.75}
@@ -41,24 +43,28 @@
         var interaction_options = {'tooltipDelay': 0,
                                    'hideEdgesOnDrag': true}
 
-
-        var options = {edges: edges_options,
-                       physics: physics_options,
-                       interaction: interaction_options,
-                       configure: {filter: function (option, path) {
+        var configure_options = {filter: function (option, path) {
                                     if (path.indexOf("physics") !== -1) {
                                         return true;}
                                     if (path.indexOf("smooth") !== -1 || option === "smooth") {
                                         return true;
                                     }
                                     return false;},
-                                    container: document.getElementById("ssn_network_config")},
+                                    container: document.getElementById("ssn_network_config")}
+
+
+        var options = {edges: edges_options,
+                       physics: physics_options,
+                       interaction: interaction_options,
+                       configure: configure_options,
                       };
 
         function edgesFilter(edge) {
             return (edge.weight >= document.getElementById("alignment_score").value);
         }
 
+        const max_nodes = {{max_nodes}}
+        const cluster_nodes_array = {{cluster_nodes|tojson}}
         const edges = new vis.DataSet({{edges|tojson}})
         const nodes = new vis.DataSet({{nodes|tojson}})
         const edgesView = new vis.DataView(edges, { filter: edgesFilter });
@@ -68,26 +74,25 @@
 
         var network = new vis.Network(container, data, options);
 
-        var cluster_options = {
-          joinCondition:function(parentNodeOptions, childNodeOptions) {
-              var passed = true
-              if (parentNodeOptions.node_type === 'biocatdb') {
-                  passed = false
-              }
-              if (parentNodeOptions.node_type === 'cluster') {
-                  passed = false
-              }
-              if (childNodeOptions.node_type === 'biocatdb') {
-                  passed = false
-              }
-              if (childNodeOptions.node_type === 'cluster') {
-                  passed = false
-              }
+        function parent_child_join_condition(parentNodeOptions, childNodeOptions) {
+            var passed = true
+            if (parentNodeOptions.node_type === 'biocatdb') {
+                passed = false
+            }
+            if (parentNodeOptions.node_type === 'cluster') {
+                passed = false
+            }
+            if (childNodeOptions.node_type === 'biocatdb') {
+                passed = false
+            }
+            if (childNodeOptions.node_type === 'cluster') {
+                passed = false
+            }
 
-              return passed;
-          },
-          processProperties: function (clusterOptions,
-            childNodes, childEdges) {
+            return passed;
+        }
+
+        function cluster_process_props(clusterOptions, childNodes, childEdges) {
               size = 35
               num_nodes = childNodes.length
 
@@ -115,14 +120,20 @@
               clusterOptions.clustered_nodes = num_nodes
               clusterOptions.color.background = childNodes[0].color.background
               return clusterOptions
-          },
-          clusterNodeProperties: {
+          }
+
+          var default_cluster_props = {
               'borderWidth': 2,
               'borderWidthSelected': 3,
               'color': {'border': 'darkgrey'},
               'shape': 'dot',
               'node_type': 'cluster',
           }
+
+        var cluster_by_connection_options = {
+          joinCondition: parent_child_join_condition,
+          processProperties: cluster_process_props,
+          clusterNodeProperties: default_cluster_props
         }
 
 
@@ -132,7 +143,7 @@
                 if (network.isCluster(params.nodes[0]) === true) {
                     network.openCluster(params.nodes[0]);
                 } else {
-                    network.clustering.clusterByConnection(params.nodes[0], cluster_options)
+                    network.clustering.clusterByConnection(params.nodes[0], cluster_by_connection_options)
                 }
             }
         });
@@ -171,6 +182,28 @@
             network.selectNodes(selected_nodes)
         }
 
+        function cluster_join_condition(nodeOptions) {
+
+            }
+
+        function cluster_nodes(central_node) {
+            var cluster_options = {
+                joinCondition: function(nodeOptions) {
+                    if (nodeOptions.cluster_group === ''+central_node) {
+                        return true
+                    }
+                    return false
+                },
+                processProperties: cluster_process_props,
+                clusterNodeProperties: default_cluster_props
+            }
+            network.cluster(cluster_options)
+        }
+
+        while ((max_nodes > network.body.nodes.length) || (cluster_nodes_array.length !== 0)) {
+            cluster_nodes(cluster_nodes_array[0])
+            cluster_nodes_array.shift()
+        }
 
     </script>
 

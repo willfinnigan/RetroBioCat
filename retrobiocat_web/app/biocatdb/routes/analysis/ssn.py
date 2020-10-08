@@ -21,22 +21,25 @@ def ssn_page(task_id):
     return render_template('ssn/ssn.html',
                            nodes=result['nodes'],
                            edges=result['edges'],
-                           alignment_score=result['alignment_score'])
+                           alignment_score=result['alignment_score'],
+                           max_nodes=result['max_nodes'],
+                           cluster_nodes=result['cluster_nodes'])
 
-def task_get_ssn(enzyme_type, min_score, combine_mutants, only_biocatdb):
+def task_get_ssn(enzyme_type, min_score, combine_mutants, only_biocatdb, max_nodes):
     job = get_current_job()
     job.meta['progress'] = 'started'
     job.save_meta()
 
-    print(only_biocatdb)
-
     ssn = SSN(enzyme_type, print_log=True)
     ssn.load(include_mutants=not combine_mutants, only_biocatdb=only_biocatdb)
+    cluster_nodes = ssn.get_nodes_to_cluster_on(starting_score=300, step=-2, min_edges=6)
 
     nodes, edges = ssn.visualise(min_score=min_score)
 
     result = {'nodes': nodes,
               'edges': edges,
+              'max_nodes': max_nodes,
+              'cluster_nodes': cluster_nodes,
               'alignment_score': min_score}
     return result
 
@@ -79,7 +82,9 @@ def ssn_form():
         min_score = form.data['alignment_score']
         combine_mutants = form.data['combine_mutants']
         only_biocatdb = form.data['only_biocatdb']
-        task = current_app.network_queue.enqueue(task_get_ssn, enzyme_type, min_score, combine_mutants, only_biocatdb)
+        max_nodes = form.data['max_nodes']
+        task = current_app.network_queue.enqueue(task_get_ssn,
+                                                 enzyme_type, min_score, combine_mutants, only_biocatdb, max_nodes)
 
         if old_task_id != None:
             try:

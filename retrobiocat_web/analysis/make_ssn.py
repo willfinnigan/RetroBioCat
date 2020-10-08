@@ -185,16 +185,54 @@ class SSN(object):
 
         return nodes, edges
 
-    def get_graph_filtered_edges(self, min_weight=50):
+    def get_graph_filtered_edges(self, min_weight):
         t0 = time.time()
-        graph = self.graph.copy()
-        for edge in graph:
-            weight = graph.get_edge_data(edge[0], edge[1], default={'weight': 0})['weight']
-            if weight < min_weight:
-                graph.remove_edge(edge[0], edge[1])
+        sub_graph = nx.Graph([(u, v, d) for u, v, d in self.graph.edges(data=True) if d['weight'] >= min_weight])
         t1 = time.time()
         self.log(f"Created new graph with edges less than {min_weight} removed, in {round(t1-t0,1)} seconds")
-        return graph
+        return sub_graph
+
+    def get_nodes_to_cluster_on(self, starting_score=300, step=-2, min_edges=6):
+
+        t0 = time.time()
+        nodes_to_cluster_on = []
+        nodes_in_clusters = set([])
+
+        for score in range(starting_score, 0, step):
+            graph = self.get_graph_filtered_edges(score)
+            edges_dict = {}
+            for node in graph.nodes:
+                edges = graph.edges(node)
+                num_edges = len(edges)
+
+                for edge in edges:
+                    # only want edges to and from uniref nodes
+                    if ('UniRef' not in edge[0]) or ('UniRef' not in edge[1]):
+                        num_edges -= 1
+
+                    # dont count multiple edges to a cluster
+                    elif (edge[0] in nodes_in_clusters) or (edge[1] in nodes_in_clusters):
+                        num_edges -= 1
+
+                if num_edges >= min_edges:
+                    edges_dict[node] = num_edges
+
+            # sort edges dict by number of edges
+            sorted_nodes = {nodes: num_edges for nodes, num_edges in
+                            sorted(edges_dict.items(), key=lambda item: item[1], reverse=True)}
+
+            for node in sorted_nodes:
+                if node not in nodes_in_clusters:
+                    cluster = list(graph.neighbors(node)) + [node]
+                    for cluster_node in cluster:
+                        if ('UniRef50' in cluster_node) and (cluster_node not in nodes_in_clusters):
+                            self.graph.nodes[cluster_node]['cluster_group'] = node
+                    nodes_to_cluster_on.append(node)
+                    nodes_in_clusters.update(cluster)
+
+        t1 = time.time()
+        self.log(f"Found {len(nodes_to_cluster_on)} nodes to cluster on with minimum {min_edges} edges in {round(t1-t0,1)} seconds")
+        return nodes_to_cluster_on
 
     def _filter_out_mutants(self):
         t0 = time.time()
@@ -278,7 +316,8 @@ class SSN(object):
                 'title': label,
                 'shape': 'dot',
                 'node_type': node_type,
-                'metadata': metadata}
+                'metadata': metadata,
+                'cluster_group': self.graph.nodes[node_name].get('cluster_group', '')}
 
         if pos_dict is not None:
             x, y = tuple(pos_dict.get(node_name, (0, 0)))
@@ -374,26 +413,28 @@ def new_expand_ssn_job(enzyme_type):
     if job_name not in active_process_jobs:
         current_app.alignment_queue.enqueue(task_expand_ssn, enzyme_type, job_id=job_name)
 
+def return_cluster_group(vis_nodes, cluster_group):
+    in_group = []
+    for node_dict in vis_nodes:
+        if node_dict['cluster_group'] == cluster_group:
+            in_group.append(node_dict['id'])
+    return in_group
 
 if __name__ == '__main__':
     from retrobiocat_web.mongo.default_connection import make_default_connection
     make_default_connection()
 
-    SeqSimNet.drop_collection()
-
     aad_ssn = SSN('AAD', print_log=True)
     aad_ssn.load()
 
-    biocatdb_seqs = aad_ssn.nodes_not_present(only_biocatdb=True, max_num=10)
-    aad_ssn.add_multiple_proteins(biocatdb_seqs)
-
-    need_alignments = aad_ssn.nodes_need_alignments(max_num=10)
-    aad_ssn.add_multiple_proteins(need_alignments)
-
-    aad_ssn.filter_edges()
-
+    cluster_nodes = aad_ssn.get_nodes_to_cluster_on(starting_score=300, step=-2, min_edges=6)
     nodes, edges = aad_ssn.visualise()
-    print(nodes)
+
+    print()
+    print()
+    print()
+    print(cluster_nodes[0])
+    print(return_cluster_group(nodes, cluster_nodes[0]))
 
 
 
