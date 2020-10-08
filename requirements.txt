@@ -33,3 +33,5 @@ requests
 Keras>=2.2.4,<3.0.0
 tables>=3.6.1,<4.0.0
 
+pydot
+
