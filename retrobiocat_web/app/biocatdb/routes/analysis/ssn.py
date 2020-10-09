@@ -31,7 +31,7 @@ def task_get_ssn(enzyme_type, min_score, combine_mutants, only_biocatdb):
     ssn = SSN(enzyme_type)
     ssn.load(include_mutants=not combine_mutants, only_biocatdb=only_biocatdb)
 
-    vis = SSN_Visualiser('AAD', log_level=1)
+    vis = SSN_Visualiser(enzyme_type, log_level=1)
     nodes, edges = vis.visualise(ssn, min_score)
 
     result = {'nodes': nodes,

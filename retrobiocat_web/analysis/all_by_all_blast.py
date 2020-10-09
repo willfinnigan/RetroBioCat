@@ -17,7 +17,7 @@ from decimal import Decimal
 class AllByAllBlaster(object):
     """ For performing all by all blasts for a given enzyme type """
 
-    def __init__(self, enzyme_type, print_log=False, num_threads=2):
+    def __init__(self, enzyme_type, log_level=0, num_threads=2):
         self.enzyme_type = enzyme_type
         self.enzyme_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
 
@@ -32,7 +32,7 @@ class AllByAllBlaster(object):
         self.min_coverage = 0.8
         self.min_identity = 0.3
 
-        self.print_log = print_log
+        self.log_level = log_level
 
     def make_blast_db(self):
         """ Create a blast database for a single enzyme type """
@@ -137,9 +137,9 @@ class AllByAllBlaster(object):
                 file.write(f'>{name}\n')
                 file.write(f"{seq}\n")
 
-    def log(self, msg):
-        if self.print_log == True:
-            print("ABA_Blaster: " + msg)
+    def log(self, msg, level=1):
+        if self.log_level >= level:
+            print(f"ABA_Blaster ({self.enzyme_type}): {msg}")
 
     @staticmethod
     def _calc_alignment_score(bitscore, query_length, subject_length):
@@ -155,7 +155,7 @@ if __name__ == '__main__':
 
 
     seq_obj = Sequence.objects(enzyme_type='AAD')[0]
-    etb = AllByAllBlaster('AAD', print_log=True)
+    etb = AllByAllBlaster('AAD', log_level=1)
     etb.make_blast_db()
     alignment_names, alignment_scores = etb.get_alignments(seq_obj)
 

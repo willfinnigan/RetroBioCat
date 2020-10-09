@@ -13,189 +13,8 @@ from bson.binary import Binary
 from collections import Counter
 import random
 import numpy as np
+import palettable
 
-
-class RndColGen(object):
-
-    def __init__(self, pastel_factor=1, existing_colours=None):
-        if existing_colours is None:
-            self.existing_colours = []
-        else:
-            self.existing_colours = existing_colours
-
-    @staticmethod
-    def get_random_color(pastel_factor):
-        return [(x+pastel_factor)/(1.0+pastel_factor) for x in [random.randint(0, 256) for i in [1,2,3]]]
-
-    @staticmethod
-    def colour_distance(c1,c2):
-        return sum([abs(x[0]-x[1]) for x in zip(c1,c2)])
-
-    def generate_new_colour(self, pastel_factor=0.9):
-        max_distance = None
-        best_color = None
-        for i in range(0,100):
-            colour = self.get_random_color(pastel_factor)
-            if len(self.existing_colours) == 0:
-                return colour
-            best_distance = min([self.colour_distance(colour, c) for c in self.existing_colours])
-            if not max_distance or best_distance > max_distance:
-                max_distance = best_distance
-                best_color = colour
-        return best_color
-
-class SSN_Clusterer(object):
-
-    def __init__(self, enzyme_type, ssn, cluster_min_nodes=8, initial_alignment_score=400, log_level=0):
-        self.enzyme_type = enzyme_type
-        self.enzyme_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
-
-        self.cluster_min_nodes = cluster_min_nodes
-        self.initial_alignment_score = initial_alignment_score
-        self.step = -5
-        self.end_score = 0
-
-        self.log_level = log_level
-
-        self.ssn = ssn
-        self.visualiser = SSN_Visualiser(enzyme_type, log_level=log_level)
-        self.rndcolgen = RndColGen()
-        self.space_per_node = 2
-
-    def make_visualisations(self):
-        clusters_dict, graphs_dict = self.make_cluster_dict()
-        node_colours = self.get_node_colours(clusters_dict)
-
-        vis_dict = {}
-        for score, clusters in clusters_dict.items():
-            self.log(f"Getting vis nodes at score {score}")
-            vis_dict[score] = [[], []]
-            num_clusters = len(clusters)
-            rows = int(np.sqrt(num_clusters))
-            center = [0, 0]
-            v_move = 0
-            for i, cluster in enumerate(clusters):
-                move = self._cluster_box_move(cluster)
-                center, v_move = self._move(i, center, v_move, move, rows)
-                nodes, edges = self.get_cluster_visualisation(graphs_dict[score], cluster, center, node_colours)
-                vis_dict[score][0] += nodes
-                vis_dict[score][1] += edges
-                center, v_move = self._move(i, center, v_move, move, rows)
-
-        return vis_dict
-
-    def get_cluster_visualisation(self, graph, cluster, center, node_colours):
-        sub_graph = graph.subgraph(cluster)
-        nodes, edges = self.visualiser.visualise(sub_graph, colour_dict=node_colours, center=center)
-        return nodes, edges
-
-    def make_cluster_dict(self):
-        cluster_dict = {}
-        graphs_dict = {}
-        num_clusters = 0
-
-        # default is starting at 400, decreasing in steps of -5, all the way to 0
-        for score in range(self.initial_alignment_score, self.end_score, self.step):
-            graph = self.ssn.get_graph_filtered_edges(score)
-            components = nx.connected_components(graph)
-            clusters = self._get_clusters(components)
-            if len(clusters) != num_clusters:
-                cluster_dict[score] = clusters
-                graphs_dict[score] = graph
-                num_clusters = len(clusters)
-
-        return cluster_dict, graphs_dict
-
-    def get_node_colours(self, clusters_dict):
-        groups = self._number_clusters(clusters_dict)
-        colours = self._get_group_colours(groups)
-        node_colours = {}
-        for node, group in groups.items():
-            node_colours[node] = colours[str(group)]
-        return node_colours
-
-    @staticmethod
-    def _number_clusters(cluster_dict):
-
-        cluster_groups_dict = {}
-        group_num = 1
-        for score, clusters in cluster_dict.items():
-            for cluster in clusters:
-                cluster_groups = []
-                nodes_to_assign = []
-                for node in cluster:
-                    # Generate list of groups in the cluster
-                    if node in cluster_groups_dict:
-                        if type(cluster_groups_dict.get(node)) is int:
-                            cluster_groups.append(cluster_groups_dict.get(node))
-                    else:
-                        nodes_to_assign.append(node)
-
-                if len(cluster_groups) == 0:
-                    group = group_num
-                    group_num += 1
-                elif len(set(cluster_groups)) == 1:
-                    group = cluster_groups[0]
-                else:
-                    group = set(cluster_groups)
-
-                for node in cluster:
-                    if node not in cluster_groups_dict:
-                        cluster_groups_dict[node] = group
-        return cluster_groups_dict
-
-    def _get_group_colours(self, groups):
-        group_colours = {}
-        group_names = groups.values()
-        for group in group_names:
-            name = str(group)
-            if type(group) is int and name not in group_colours:
-                colour = self.rndcolgen.generate_new_colour()
-                group_colours[name] = colour
-
-        for group in group_names:
-            name = str(group)
-            if type(group) is set and name not in group_colours:
-                colours_to_avg = []
-                for shared_group in group:
-                    colours_to_avg.append(group_colours[str(shared_group)])
-                colour = self.rndcolgen.average_colour(colours_to_avg)
-                group_colours[name] = colour
-
-        return group_colours
-
-    def _get_clusters(self, components):
-        clusters = []
-        for comp in components:
-            if len(comp) >= self.cluster_min_nodes:
-                clusters.append(list(comp))
-
-        clusters.sort(key=len, reverse=True)
-        return list(clusters)
-
-    def _cluster_box_move(self, cluster):
-        num_nodes = len(cluster)
-        space = num_nodes * self.space_per_node
-        return space/2
-
-    @staticmethod
-    def _move(i, center, v_move, move, rows):
-        if move > v_move:
-            v_move = move
-
-        i += 1
-        if i % rows == 0 and i != 1:
-            center[1] -= v_move
-            center[0] = 0
-            v_move = 0
-        else:
-            center[0] += move
-
-        return center, v_move
-
-    def log(self, msg, level=1):
-        if level >= self.log_level:
-            print(f"SSN_Cluster: {msg}")
 
 class ClusterPositioner(object):
 
@@ -230,7 +49,6 @@ class ClusterPositioner(object):
 
         return new_pos_dict
 
-
 class SSN_Visualiser(object):
 
     def __init__(self, enzyme_type, log_level=0):
@@ -238,19 +56,20 @@ class SSN_Visualiser(object):
         self.enzyme_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
         self.node_metadata = self._find_uniref_metadata()
 
-        self.edge_colour = {'color': 'darkgrey', 'opacity': 0.5}
+        self.edge_colour = {'color': 'lightgrey', 'opacity': 0.8}
         self.edge_width = 0.4
         self.uniref_border_width = 1
         self.uniref_border_colour = 'black'
         self.biocatdb_border_width = 3
         self.biocatdb_border_colour = 'darkred'
         self.border_width_selected = 4
-        self.node_colour = 'rgba(5, 5, 168, 0.95)'
-        self.node_size = 40
+        self.opacity = 0.9
+        self.luminosity = 'bright'
+        self.node_colour = f'rgba(5, 5, 168, {self.opacity})'
+        self.node_size = 100
         self.node_shape = 'dot'
 
         self.log_level = log_level
-        self.rnd_col_gen = RndColGen()
         self.cluster_positioner = ClusterPositioner()
 
     def visualise(self, ssn, alignment_score):
@@ -258,6 +77,7 @@ class SSN_Visualiser(object):
         clusters = list(nx.connected_components(graph))
         clusters.sort(key=len, reverse=True)
 
+        graph = self._add_cluster_node_colours(graph, clusters)
         pos_dict = self._get_cluster_positions(graph, clusters)
 
         nodes, edges = self._get_nodes_and_edges(graph, pos_dict)
@@ -286,14 +106,23 @@ class SSN_Visualiser(object):
 
         return pos_dict
 
-    def _get_nodes_and_edges(self, graph, pos_dict, colour_dict=None):
+    def _add_cluster_node_colours(self, graph, clusters):
+        self.log(f"Colouring clusters.. (opacity={self.opacity})")
+        colours = palettable.cartocolors.qualitative.Vivid_10.mpl_colors
+        for i, cluster in enumerate(clusters):
+            c = colours.pop(0)
+            colours.append(c)
+            cc = f"rgba({int(c[0]*255)},{int(c[1]*255)},{int(c[2]*255)},{self.opacity})"
+            for node in cluster:
+                graph.nodes[node]['colour'] = cc
+
+        return graph
+
+    def _get_nodes_and_edges(self, graph, pos_dict):
         nodes = []
         edges = []
         for name in graph.nodes:
-            if colour_dict is None:
-                colour = None
-            else:
-                colour = colour_dict[name]
+            colour = graph.nodes[name].get('colour', None)
             nodes.append(self._get_vis_node(name, pos_dict=pos_dict, colour=colour))
 
         for edge in graph.edges:
@@ -333,6 +162,7 @@ class SSN_Visualiser(object):
                           'border': border,
                           'highlight': {'border': border}},
                 'title': title,
+                'label': '',
                 'shape': self.node_shape,
                 'node_type': node_type,
                 'metadata': metadata}
@@ -370,11 +200,11 @@ class SSN_Visualiser(object):
 
     def _find_uniref_metadata(self):
         node_metadata = {}
-
         unirefs = UniRef50.objects(enzyme_type=self.enzyme_type_obj).exclude('id', 'enzyme_type', 'sequence', "result_of_blasts_for")
 
         for seq_obj in unirefs:
             node_metadata[seq_obj.enzyme_name] = json.loads(seq_obj.to_json())
+
         return node_metadata
 
     def log(self, msg, level=1):
@@ -391,11 +221,7 @@ class SSN(object):
         self.enzyme_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
 
         if aba_blaster is None:
-            if log_level > 0:
-                print_log = True
-            else:
-                print_log = False
-            self.aba_blaster = AllByAllBlaster(enzyme_type, print_log=print_log)
+            self.aba_blaster = AllByAllBlaster(enzyme_type, log_level=log_level)
         else:
             self.aba_blaster = aba_blaster
 
@@ -616,13 +442,13 @@ class SSN(object):
 
 
 
-def task_expand_ssn(enzyme_type, print_log=True, max_num=200):
+def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
     current_app.app_context().push()
 
-    aba_blaster = AllByAllBlaster(enzyme_type, print_log=print_log)
+    aba_blaster = AllByAllBlaster(enzyme_type, log_level=log_level)
     aba_blaster.make_blast_db()
 
-    ssn = SSN(enzyme_type, aba_blaster=aba_blaster, print_log=print_log)
+    ssn = SSN(enzyme_type, aba_blaster=aba_blaster, log_level=log_level)
     ssn.load()
     ssn.remove_nonexisting_seqs()
 
@@ -671,8 +497,6 @@ if __name__ == '__main__':
 
     aad_vis = SSN_Visualiser('AAD', log_level=1)
     nodes, edges = aad_vis.visualise(aad_ssn, 75)
-
-    print(nodes)
 
     # 1. Set minimum number of nodes for a cluster
     # 2. Move down alignment score.  For each score where there is a different number of scores, visualise this.
