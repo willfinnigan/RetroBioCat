@@ -136,8 +136,6 @@ class SSN_Form(FlaskForm):
     alignment_score = IntegerField('Alignment score cut-off', default=300, validators=[NumberRange(min=1, max=500)])
     combine_mutants = BooleanField('Combine mutants with parents', default=True)
     only_biocatdb = BooleanField('Only BioCatDB Sequences', default=False)
-    max_nodes = IntegerField('Max nodes', default=1000, validators=[NumberRange(min=10, max=2000)])
-    edges_to_cluster_on = IntegerField('Edges for clusters', default=10, validators=[NumberRange(min=5, max=30)])
     submit = SubmitField('Submit')
 
     def set_choices(self):

@@ -44,11 +44,6 @@ class RndColGen(object):
                 best_color = colour
         return best_color
 
-    def average_colour(self, list_colours):
-        new_colour = list(np.mean(list_colours, axis=0, dtype=int))
-        self.existing_colours.append(new_colour)
-        return new_colour
-
 class SSN_Clusterer(object):
 
     def __init__(self, enzyme_type, ssn, cluster_min_nodes=8, initial_alignment_score=400, log_level=0):
@@ -202,6 +197,40 @@ class SSN_Clusterer(object):
         if level >= self.log_level:
             print(f"SSN_Cluster: {msg}")
 
+class ClusterPositioner(object):
+
+    def __init__(self, max_width=20):
+
+        self.scale = 1000
+        self.move = 0
+        self.h_move = 0
+        self.center = [0, 0]
+        self.max_width = max_width * self.scale
+        self.node_space = 200 * self.scale
+
+    def measure_cluster(self, cluster):
+        cluster_size = len(cluster) * self.node_space
+        self.move = int(np.sqrt(cluster_size))
+        if self.move > self.h_move:
+            self.h_move = self.move
+
+    def move_horizontal(self):
+        self.center[0] += self.move
+
+    def move_vertical(self):
+        if self.center[0] > self.max_width:
+            self.center[0] = 0
+            self.center[1] += self.h_move*1.25
+            self.h_move = 0
+
+    def move_pos_dict(self, pos_dict):
+        new_pos_dict = {}
+        for key in pos_dict:
+            new_pos_dict[key] = [pos_dict[key][0] + self.center[0], pos_dict[key][1] + self.center[1]]
+
+        return new_pos_dict
+
+
 class SSN_Visualiser(object):
 
     def __init__(self, enzyme_type, log_level=0):
@@ -213,18 +242,51 @@ class SSN_Visualiser(object):
         self.edge_width = 0.4
         self.uniref_border_width = 1
         self.uniref_border_colour = 'black'
-        self.biocatdb_border_width = 2
+        self.biocatdb_border_width = 3
         self.biocatdb_border_colour = 'darkred'
-        self.border_width_selected = 3
+        self.border_width_selected = 4
         self.node_colour = 'rgba(5, 5, 168, 0.95)'
         self.node_size = 40
         self.node_shape = 'dot'
 
         self.log_level = log_level
+        self.rnd_col_gen = RndColGen()
+        self.cluster_positioner = ClusterPositioner()
 
-    def visualise(self, graph, colour_dict=None, center=None):
-        pos_dict = nx.kamada_kawai_layout(graph, scale=5000, center=center)
+    def visualise(self, ssn, alignment_score):
+        graph = ssn.get_graph_filtered_edges(alignment_score)
+        clusters = list(nx.connected_components(graph))
+        clusters.sort(key=len, reverse=True)
 
+        pos_dict = self._get_cluster_positions(graph, clusters)
+
+        nodes, edges = self._get_nodes_and_edges(graph, pos_dict)
+        return nodes, edges
+
+    def _get_cluster_positions(self, graph, clusters):
+
+        pos_dict = {}
+        for i, cluster in enumerate(clusters):
+            self.log(f"Getting layout for cluster {i+1} of {len(clusters)}")
+            self.cluster_positioner.measure_cluster(cluster)
+            self.cluster_positioner.move_horizontal()
+            sub_graph = graph.subgraph(cluster)
+            scale = 100+(35*len(cluster))
+
+            if len(cluster) < 6:
+                cluster_positions = nx.spring_layout(sub_graph, k=2, iterations=200, weight=None)
+            else:
+                cluster_positions = nx.nx_pydot.pydot_layout(sub_graph, prog="neato")
+
+            cluster_positions = nx.rescale_layout_dict(cluster_positions, scale=scale)
+            cluster_positions = self.cluster_positioner.move_pos_dict(cluster_positions)
+            pos_dict.update(cluster_positions)
+            self.cluster_positioner.move_horizontal()
+            self.cluster_positioner.move_vertical()
+
+        return pos_dict
+
+    def _get_nodes_and_edges(self, graph, pos_dict, colour_dict=None):
         nodes = []
         edges = []
         for name in graph.nodes:
@@ -480,56 +542,18 @@ class SSN(object):
         t1 = time.time()
         self.log(f"Identified {count} sequences which were in SSN but not in database, in {round(t1-t0,1)} seconds")
 
-    def get_graph_filtered_edges(self, min_weight):
-        sub_graph = nx.Graph([(u, v, d) for u, v, d in self.graph.edges(data=True) if d['weight'] >= min_weight])
+    def get_graph_filtered_edges(self, alignment_score):
+        sub_graph = nx.Graph([(u, v, d) for u, v, d in self.graph.edges(data=True) if d['weight'] >= alignment_score])
+        for node in self.graph.nodes:
+            if node not in sub_graph.nodes:
+                sub_graph.add_node(node)
+
         return sub_graph
-
-    def get_nodes_to_cluster_on(self, starting_score=300, step=-2, min_edges=6):
-
-        t0 = time.time()
-        nodes_to_cluster_on = []
-        nodes_in_clusters = set([])
-
-        for score in range(starting_score, 0, step):
-            graph = self.get_graph_filtered_edges(score)
-            edges_dict = {}
-            for node in graph.nodes:
-                edges = graph.edges(node)
-                num_edges = len(edges)
-
-                for edge in edges:
-                    # only want edges to and from uniref nodes
-                    if ('UniRef' not in edge[0]) or ('UniRef' not in edge[1]):
-                        num_edges -= 1
-
-                    # dont count multiple edges to a cluster
-                    elif (edge[0] in nodes_in_clusters) or (edge[1] in nodes_in_clusters):
-                        num_edges -= 1
-
-                if num_edges >= min_edges:
-                    edges_dict[node] = num_edges
-
-            # sort edges dict by number of edges
-            sorted_nodes = {nodes: num_edges for nodes, num_edges in
-                            sorted(edges_dict.items(), key=lambda item: item[1], reverse=True)}
-
-            for node in sorted_nodes:
-                if node not in nodes_in_clusters:
-                    cluster = list(graph.neighbors(node)) + [node]
-                    for cluster_node in cluster:
-                        if ('UniRef50' in cluster_node) and (cluster_node not in nodes_in_clusters):
-                            self.graph.nodes[cluster_node]['cluster_group'] = node
-                    nodes_to_cluster_on.append(node)
-                    nodes_in_clusters.update(cluster)
-
-        t1 = time.time()
-        self.log(f"Found {len(nodes_to_cluster_on)} nodes to cluster on with minimum {min_edges} edges in {round(t1-t0,1)} seconds")
-        return nodes_to_cluster_on
 
     def filter_out_mutants(self):
         t0 = time.time()
         mutants = Sequence.objects(db.Q(enzyme_type=self.enzyme_type) &
-                                   (db.Q(mutant_of='') | db.Q(mutant_of=None))).distinct('enzyme_name')
+                                   (db.Q(mutant_of__ne='') & db.Q(mutant_of__ne=None))).distinct('enzyme_name')
 
         for mutant in list(mutants):
             if mutant in self.graph.nodes:
@@ -590,6 +614,8 @@ class SSN(object):
         else:
             return Sequence.objects(enzyme_name=enzyme_name)[0]
 
+
+
 def task_expand_ssn(enzyme_type, print_log=True, max_num=200):
     current_app.app_context().push()
 
@@ -643,12 +669,10 @@ if __name__ == '__main__':
     aad_ssn = SSN('AAD', log_level=1)
     aad_ssn.load()
 
-    aad_c = SSN_Clusterer('AAD', aad_ssn, cluster_min_nodes=10, log_level=1)
-    vis_dict = aad_c.make_visualisations()
+    aad_vis = SSN_Visualiser('AAD', log_level=1)
+    nodes, edges = aad_vis.visualise(aad_ssn, 75)
 
-    for score, nodes_and_edges in vis_dict.items():
-        print(f"--- Alignment score {score} ---")
-        print(nodes_and_edges[0])
+    print(nodes)
 
     # 1. Set minimum number of nodes for a cluster
     # 2. Move down alignment score.  For each score where there is a different number of scores, visualise this.

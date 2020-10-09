@@ -8,7 +8,7 @@ import datetime
 import mongoengine as db
 from rq.job import Job
 from rq import get_current_job
-from retrobiocat_web.analysis.make_ssn import SSN, SSN_Clusterer
+from retrobiocat_web.analysis.make_ssn import SSN, SSN_Visualiser
 from retrobiocat_web.app.biocatdb.forms import SSN_Form
 import json
 
@@ -30,19 +30,14 @@ def task_get_ssn(enzyme_type, min_score, combine_mutants, only_biocatdb):
 
     ssn = SSN(enzyme_type)
     ssn.load(include_mutants=not combine_mutants, only_biocatdb=only_biocatdb)
-    #cluster_nodes = ssn.get_nodes_to_cluster_on(starting_score=300, step=-2, min_edges=edges_to_cluster_on)
 
-    c = SSN_Clusterer(enzyme_type, ssn, cluster_min_nodes=10, log_level=1)
-    vis_dict = c.make_visualisations()
-    nodes_and_edges = vis_dict[list(vis_dict.keys())[4]]
-    nodes = nodes_and_edges[0]
-    edges = nodes_and_edges[1]
-
-    print(nodes)
+    vis = SSN_Visualiser('AAD', log_level=1)
+    nodes, edges = vis.visualise(ssn, min_score)
 
     result = {'nodes': nodes,
               'edges': edges,
               'alignment_score': min_score}
+
     return result
 
 @bp.route("/ssn_status/<task_id>", methods=["GET"])
@@ -84,10 +79,7 @@ def ssn_form():
         min_score = form.data['alignment_score']
         combine_mutants = form.data['combine_mutants']
         only_biocatdb = form.data['only_biocatdb']
-        max_nodes = form.data['max_nodes']
-        edges_to_cluster_on = form.data['edges_to_cluster_on']
-        task = current_app.network_queue.enqueue(task_get_ssn,
-                                                 enzyme_type, min_score, combine_mutants, only_biocatdb)
+        task = current_app.network_queue.enqueue(task_get_ssn, enzyme_type, min_score, combine_mutants, only_biocatdb)
 
         if old_task_id != None:
             try:
