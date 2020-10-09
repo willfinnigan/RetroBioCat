@@ -20,7 +20,7 @@ class ClusterPositioner(object):
 
     def __init__(self, max_width=20):
 
-        self.scale = 1000
+        self.scale = 2000
         self.move = 0
         self.h_move = 0
         self.center = [0, 0]
@@ -39,7 +39,7 @@ class ClusterPositioner(object):
     def move_vertical(self):
         if self.center[0] > self.max_width:
             self.center[0] = 0
-            self.center[1] += self.h_move*1.25
+            self.center[1] += self.h_move*1.5
             self.h_move = 0
 
     def move_pos_dict(self, pos_dict):
@@ -56,8 +56,8 @@ class SSN_Visualiser(object):
         self.enzyme_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
         self.node_metadata = self._find_uniref_metadata()
 
-        self.edge_colour = {'color': 'lightgrey', 'opacity': 0.8}
-        self.edge_width = 0.4
+        self.edge_colour = {'color': 'black'}
+        self.edge_width = 2
         self.uniref_border_width = 1
         self.uniref_border_colour = 'black'
         self.biocatdb_border_width = 3
@@ -92,16 +92,16 @@ class SSN_Visualiser(object):
             self.cluster_positioner.measure_cluster(cluster)
             self.cluster_positioner.move_horizontal()
             sub_graph = graph.subgraph(cluster)
-            scale = 100+(35*len(cluster))
+            scale = 1000+(15*len(cluster))
 
-            if len(cluster) > 200:
-                cluster_positions = nx.nx_pydot.pydot_layout(sub_graph, prog="sfdp")
-            elif len(cluster) > 10:
-                cluster_positions = nx.nx_pydot.pydot_layout(sub_graph, prog="neato")
-            else:
-                cluster_positions = nx.spring_layout(sub_graph, k=2, iterations=200, weight=None)
+            #if len(cluster) > 200:
+            #    cluster_positions = nx.nx_pydot.pydot_layout(sub_graph, prog="sfdp")
+            #elif len(cluster) > 10:
+            #    cluster_positions = nx.nx_pydot.pydot_layout(sub_graph, prog="neato")
+            #else:
+            cluster_positions = nx.spring_layout(sub_graph, k=3, iterations=200, scale=scale, weight=None)
 
-            cluster_positions = nx.rescale_layout_dict(cluster_positions, scale=scale)
+            #cluster_positions = nx.rescale_layout_dict(cluster_positions, scale=scale)
             cluster_positions = self.cluster_positioner.move_pos_dict(cluster_positions)
             pos_dict.update(cluster_positions)
             self.cluster_positioner.move_horizontal()
@@ -186,6 +186,7 @@ class SSN_Visualiser(object):
         edge = {'id': f"from {edge_one} to {edge_two}",
                 'from': edge_one,
                 'to': edge_two,
+                'hidden': True,
                 'weight': weight,
                 'width': self.edge_width,
                 'color': self.edge_colour}

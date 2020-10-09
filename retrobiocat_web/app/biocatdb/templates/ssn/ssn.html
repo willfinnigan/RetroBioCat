@@ -41,7 +41,9 @@
                                 "timestep": 0.75}
 
         var interaction_options = {'tooltipDelay': 0,
-                                   'hideEdgesOnDrag': true}
+                                   'hover': false,
+                                   'hoverConnectedEdges': false,
+                                   'selectConnectedEdges': false}
 
         var configure_options = {filter: function (option, path) {
                                     if (path.indexOf("physics") !== -1) {
@@ -57,6 +59,7 @@
                        physics: false,
                        interaction: interaction_options,
                        configure: configure_options,
+                       nodes: {shapeProperties: {interpolation: false}}
                       };
 
         function edgesFilter(edge) {
@@ -70,6 +73,38 @@
         var data = {'nodes': nodes, 'edges': edges};
 
         var network = new vis.Network(container, data, options);
+
+        var shown_edges = []
+
+        function show_hide_edges(array_edges, hidden) {
+            var update_array = []
+            array_edges.forEach(function (edge, i) {
+                var update_edge = {'id': edge, 'hidden': hidden}
+                update_array.push(update_edge)
+                if (hidden === false) {
+                    shown_edges.push(edge)
+                }
+            })
+            data['edges'].update(update_array)
+        }
+
+        network.on("selectNode", function(params) {
+            var connected_edges = network.getConnectedEdges(params.nodes[0])
+            show_hide_edges(connected_edges, false)
+        })
+
+        network.on("deselectNode", function(params) {
+            show_hide_edges(shown_edges, true)
+            shown_edges = []
+        })
+
+
+
+
+
+
+
+
 
         function get_new_connected_nodes(nodes_array, selected_nodes) {
             var new_connected_nodes = []
