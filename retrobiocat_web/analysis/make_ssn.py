@@ -503,6 +503,7 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
     ssn.set_status('Complete')
     enz_type_obj.save()
     ssn.save()
+    print(f'- SSN CONSTRUCTION FOR {enzyme_type} IS COMPLETE -')
 
 def new_expand_ssn_job(enzyme_type):
     time.sleep(3)
