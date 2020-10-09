@@ -1,4 +1,4 @@
-from retrobiocat_web.mongo.models.biocatdb_models import Sequence, EnzymeType, UniRef50, SeqSimNet
+from retrobiocat_web.mongo.models.biocatdb_models import Sequence, EnzymeType, UniRef50, SSN_record
 from retrobiocat_web.analysis.all_by_all_blast import AllByAllBlaster
 from flask import render_template, flash, redirect, url_for, request, jsonify, session, current_app
 import mongoengine as db
@@ -72,7 +72,7 @@ class SSN_Visualiser(object):
         self.log_level = log_level
         self.cluster_positioner = ClusterPositioner()
 
-    def visualise(self, ssn, alignment_score):
+    def visualise(self, ssn, alignment_score, include_all_edges=True):
         graph = ssn.get_graph_filtered_edges(alignment_score)
         clusters = list(nx.connected_components(graph))
         clusters.sort(key=len, reverse=True)
@@ -80,7 +80,10 @@ class SSN_Visualiser(object):
         graph = self._add_cluster_node_colours(graph, clusters)
         pos_dict = self._get_cluster_positions(graph, clusters)
 
-        nodes, edges = self._get_nodes_and_edges(graph, pos_dict)
+        if include_all_edges == True:
+            nodes, edges = self._get_nodes_and_edges(graph, pos_dict, full_graph=ssn.graph)
+        else:
+            nodes, edges = self._get_nodes_and_edges(graph, pos_dict)
         return nodes, edges
 
     def _get_cluster_positions(self, graph, clusters):
@@ -118,16 +121,21 @@ class SSN_Visualiser(object):
 
         return graph
 
-    def _get_nodes_and_edges(self, graph, pos_dict):
+    def _get_nodes_and_edges(self, graph, pos_dict, full_graph=None):
         nodes = []
         edges = []
         for name in graph.nodes:
             colour = graph.nodes[name].get('colour', None)
             nodes.append(self._get_vis_node(name, pos_dict=pos_dict, colour=colour))
 
-        for edge in graph.edges:
-            weight = graph.get_edge_data(edge[0], edge[1], default={'weight': 0})['weight']
-            edges.append(self._get_vis_edge(edge[0], edge[1], weight))
+        if full_graph is None:
+            for edge in graph.edges:
+                weight = graph.get_edge_data(edge[0], edge[1], default={'weight': 0})['weight']
+                edges.append(self._get_vis_edge(edge[0], edge[1], weight))
+        else:
+            for edge in full_graph.edges:
+                weight = full_graph.get_edge_data(edge[0], edge[1], default={'weight': 0})['weight']
+                edges.append(self._get_vis_edge(edge[0], edge[1], weight))
 
         nodes = self._sort_biocatdb_nodes_to_front(nodes)
 
@@ -233,49 +241,55 @@ class SSN(object):
         if not os.path.exists(self.save_path):
             os.mkdir(self.save_path)
 
+        self.db_object = self._get_db_object()
+
         self.log(f"SSN object initialised for {enzyme_type}")
 
-        self.db_ssn = self._get_db_object()
-
     def save(self):
+
         t0 = time.time()
 
-        graph_data = nx.to_dict_of_dicts(self.graph)
+        df_graph = nx.to_pandas_edgelist(self.graph)
 
         att_dict = {}
         for node in list(self.graph):
             att_dict[node] = self.graph.nodes[node]
 
-        self.db_ssn.graph_data.update(graph_data)
-        self.db_ssn.node_attributes.update(att_dict)
-        self.db_ssn.save()
+        df_graph.to_csv(f"{self.save_path}/graph.csv")
+
+        with open(f'{self.save_path}/attributes.json', 'wb') as outfile:
+            outfile.write(json.dumps(att_dict).encode("utf-8"))
 
         t1 = time.time()
-        self.log(f"Saved SSN to Mongo, for {self.enzyme_type}, in {round(t1 - t0, 1)} seconds")
 
-    def load(self, include_mutants=True, only_biocatdb=False,):
+        self.log(f"Saved SSN for {self.enzyme_type} in {round(t1 - t0, 1)} seconds")
+
+    def load(self, include_mutants=True, only_biocatdb=False):
 
         t0 = time.time()
-        if self.db_ssn.graph_data is None:
-            self.log(f"No data saved for {self.enzyme_type} SSN, could not load")
+        if not os.path.exists(f"{self.save_path}/graph.csv") or not os.path.exists(f"{self.save_path}/attributes.json"):
+            self.log(f"No saved SSN found for {self.enzyme_type}, could not load")
             return False
 
-        self.graph = nx.from_dict_of_dicts(self.db_ssn.graph_data)
+        df_graph = pd.read_csv(f"{self.save_path}/graph.csv")
+        att_dict = json.load(open(f'{self.save_path}/attributes.json'))
+
+        self.graph = nx.from_pandas_edgelist(df_graph, edge_attr=['weight'])
 
         # Nodes with no edges are not in edge list..
-        for node in self.db_ssn.node_attributes:
+        for node in att_dict:
             if node not in self.graph.nodes:
                 self._add_protein_node(node)
-
-        nx.set_node_attributes(self.graph, self.db_ssn.node_attributes)
-
-        t1 = time.time()
-        self.log(f"Loaded SSN for {self.enzyme_type} in {round(t1 - t0, 1)} seconds")
 
         if include_mutants is False:
             self.filter_out_mutants()
         if only_biocatdb is True:
             self.filer_out_uniref()
+
+        nx.set_node_attributes(self.graph, att_dict)
+
+        t1 = time.time()
+        self.log(f"Loaded SSN for {self.enzyme_type} in {round(t1 - t0, 1)} seconds")
 
     def add_protein(self, seq_obj):
         """ Add the protein to the graph, along with any proteins which have alignments """
@@ -418,17 +432,6 @@ class SSN(object):
         if node_name != alignment_node_name:
             self.graph.add_edge(node_name, alignment_node_name, weight=alignment_score)
 
-    def _get_db_object(self):
-        """ Either finds existing db entry for ssn of enzyme type, or makes a new one """
-
-        query = SeqSimNet.objects(enzyme_type=self.enzyme_type_obj)
-        if len(query) == 0:
-            db_ssn = SeqSimNet(enzyme_type=self.enzyme_type_obj)
-        else:
-            db_ssn = query[0]
-
-        return db_ssn
-
     def log(self, msg, level=10):
         if level >= self.log_level:
             print("SSN: " + msg)
@@ -440,6 +443,22 @@ class SSN(object):
         else:
             return Sequence.objects(enzyme_name=enzyme_name)[0]
 
+    def _get_db_object(self):
+        """ Either finds existing db entry for ssn of enzyme type, or makes a new one """
+
+        query = SSN_record.objects(enzyme_type=self.enzyme_type_obj)
+        if len(query) == 0:
+            db_ssn = SSN_record(enzyme_type=self.enzyme_type_obj)
+        else:
+            db_ssn = query[0]
+
+        return db_ssn
+
+    def set_status(self, status):
+        self.db_object.status = status
+        self.db_object.save()
+
+
 
 
 def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
@@ -450,10 +469,12 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
 
     ssn = SSN(enzyme_type, aba_blaster=aba_blaster, log_level=log_level)
     ssn.load()
+    ssn.set_status('Chekcing SSN')
     ssn.remove_nonexisting_seqs()
 
     biocatdb_seqs = ssn.nodes_not_present(only_biocatdb=True, max_num=max_num)
     if len(biocatdb_seqs) != 0:
+        ssn.set_status('Adding and aligning BioCatDB sequences')
         ssn.add_multiple_proteins(biocatdb_seqs)
         ssn.save()
         current_app.alignment_queue.enqueue(new_expand_ssn_job, enzyme_type)
@@ -461,6 +482,7 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
 
     need_alignments = ssn.nodes_need_alignments(max_num=max_num)
     if len(need_alignments) != 0:
+        ssn.set_status('Aligning sequences in SSN')
         ssn.add_multiple_proteins(need_alignments)
         ssn.save()
         current_app.alignment_queue.enqueue(new_expand_ssn_job, enzyme_type)
@@ -468,6 +490,7 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
 
     not_present = ssn.nodes_not_present(max_num=max_num)
     if len(not_present) != 0:
+        ssn.set_status('Adding UniRef sequences which are not yet present')
         ssn.add_multiple_proteins(not_present)
         ssn.save()
         current_app.alignment_queue.enqueue(new_expand_ssn_job, enzyme_type)
@@ -475,8 +498,9 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
         return
 
     enz_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
-    enz_type_obj.bioinformatics_status = 'Idle'
+    ssn.set_status('Complete')
     enz_type_obj.save()
+    ssn.save()
 
 def new_expand_ssn_job(enzyme_type):
 

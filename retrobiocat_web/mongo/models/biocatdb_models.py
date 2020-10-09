@@ -174,10 +174,14 @@ class UniRef90(db.DynamicDocument):
 class Alignment(db.DynamicDocument):
     pass
 
-class SeqSimNet(db.Document):
+class SeqSimNet(db.DynamicDocument):
+    pass
+
+class SSN_record(db.Document):
     enzyme_type = db.ReferenceField(EnzymeType)
-    graph_data = db.DictField()
-    node_attributes = db.DictField()
+    status = db.StringField(default='Newly created')
+
+
 
 
 

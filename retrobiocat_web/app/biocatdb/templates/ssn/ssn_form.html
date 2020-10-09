@@ -16,7 +16,8 @@
 
                             <div class="form-group">
                                 <label for="enzyme_type">Enzyme type</label>
-                                {{ form.enzyme_type(type='select', class="form-control custom-select w-50") }}
+                                {{ form.enzyme_type(type='select', id='enzyme_type', class="form-control custom-select w-50") }}
+                                <br/><small><strong>SSN status: </strong><span id="ssn_object_status"></span></small>
                                 {% for error in form.enzyme_type.errors %}
                                     <span style="color: red;">[{{ error }}]</span>
                                 {% endfor %}
@@ -94,6 +95,20 @@
             document.getElementById("progressbar").style = "width: 33%"
             document.getElementById("progressbar").innerText = "Queuing"
         }
+
+        document.getElementById("enzyme_type").onchange = function(){
+            get_ssn_object_status()
+        }
+
+        function get_ssn_object_status() {
+            $.post('/_ssn_object_status', {
+                enzyme_type: document.getElementById("enzyme_type").value
+                }).done(function(data) {
+                    document.getElementById("ssn_object_status").innerHTML = data.result.status
+                })
+        }
+
+        get_ssn_object_status()
     </script>
 
 {% endblock %}

@@ -1,7 +1,7 @@
 from retrobiocat_web.app.biocatdb import bp
 from flask import render_template, flash, redirect, url_for, request, jsonify, session, current_app
 from flask_security import roles_required, current_user
-from retrobiocat_web.mongo.models.biocatdb_models import Paper, Activity, Sequence, Molecule, Tag, EnzymeType
+from retrobiocat_web.mongo.models.biocatdb_models import Paper, Activity, Sequence, Molecule, Tag, EnzymeType, SSN_record
 from retrobiocat_web.analysis import embl_restfull, all_by_all_blast, make_ssn
 from rq.registry import StartedJobRegistry
 import datetime
@@ -92,5 +92,14 @@ def ssn_form():
         session['ssn_task_id'] = task_id
 
     return render_template('ssn/ssn_form.html', form=form, task_id=task_id)
+
+@bp.route("/_ssn_object_status", methods=["POST"])
+def ssn_object_status():
+    enzyme_type = request.form['enzyme_type']
+    enzyme_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
+    ssn_obj = SSN_record.objects(enzyme_type=enzyme_type_obj)[0]
+    result = {'status': ssn_obj.status}
+    return jsonify(result=result)
+
 
 
