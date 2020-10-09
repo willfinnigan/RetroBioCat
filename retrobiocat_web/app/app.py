@@ -110,10 +110,6 @@ def create_app(config_class=Config, use_talisman=True):
                                               confirmed_at=datetime.datetime.now())
             user_datastore.add_role_to_user(user, admin)
 
-        biocatdb_models.UniRef90.drop_collection()
-        biocatdb_models.Alignment.drop_collection()
-        biocatdb_models.SeqSimNet.drop_collection()
-
         print("done")
 
     @app.context_processor

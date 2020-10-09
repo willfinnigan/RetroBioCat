@@ -96,10 +96,12 @@ class SSN_Visualiser(object):
             sub_graph = graph.subgraph(cluster)
             scale = 100+(35*len(cluster))
 
-            if len(cluster) < 6:
-                cluster_positions = nx.spring_layout(sub_graph, k=2, iterations=200, weight=None)
-            else:
+            if len(cluster) > 100:
+                cluster_positions = nx.nx_pydot.pydot_layout(sub_graph, prog="sfdp")
+            elif len(cluster) > 10:
                 cluster_positions = nx.nx_pydot.pydot_layout(sub_graph, prog="neato")
+            else:
+                cluster_positions = nx.spring_layout(sub_graph, k=2, iterations=200, weight=None)
 
             cluster_positions = nx.rescale_layout_dict(cluster_positions, scale=scale)
             cluster_positions = self.cluster_positioner.move_pos_dict(cluster_positions)
@@ -503,7 +505,7 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
     ssn.save()
 
 def new_expand_ssn_job(enzyme_type):
-
+    time.sleep(3)
     active_process_jobs = list(StartedJobRegistry(queue=current_app.alignment_queue).get_job_ids())
     active_process_jobs.extend(current_app.alignment_queue.job_ids)
 
