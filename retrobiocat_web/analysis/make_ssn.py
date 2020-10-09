@@ -72,7 +72,7 @@ class SSN_Visualiser(object):
         self.log_level = log_level
         self.cluster_positioner = ClusterPositioner()
 
-    def visualise(self, ssn, alignment_score, include_all_edges=True):
+    def visualise(self, ssn, alignment_score):
         graph = ssn.get_graph_filtered_edges(alignment_score)
         clusters = list(nx.connected_components(graph))
         clusters.sort(key=len, reverse=True)
@@ -80,10 +80,8 @@ class SSN_Visualiser(object):
         graph = self._add_cluster_node_colours(graph, clusters)
         pos_dict = self._get_cluster_positions(graph, clusters)
 
-        if include_all_edges == True:
-            nodes, edges = self._get_nodes_and_edges(graph, pos_dict, full_graph=ssn.graph)
-        else:
-            nodes, edges = self._get_nodes_and_edges(graph, pos_dict)
+        nodes, edges = self._get_nodes_and_edges(graph, pos_dict)
+
         return nodes, edges
 
     def _get_cluster_positions(self, graph, clusters):
@@ -96,7 +94,7 @@ class SSN_Visualiser(object):
             sub_graph = graph.subgraph(cluster)
             scale = 100+(35*len(cluster))
 
-            if len(cluster) > 100:
+            if len(cluster) > 200:
                 cluster_positions = nx.nx_pydot.pydot_layout(sub_graph, prog="sfdp")
             elif len(cluster) > 10:
                 cluster_positions = nx.nx_pydot.pydot_layout(sub_graph, prog="neato")
@@ -174,8 +172,7 @@ class SSN_Visualiser(object):
                 'title': title,
                 'label': '',
                 'shape': self.node_shape,
-                'node_type': node_type,
-                'metadata': metadata}
+                'node_type': node_type}
 
         if pos_dict is not None:
             x, y = tuple(pos_dict.get(node_name, (0, 0)))

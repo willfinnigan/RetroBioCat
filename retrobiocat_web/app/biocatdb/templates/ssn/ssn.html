@@ -66,18 +66,10 @@
 
         const edges = new vis.DataSet({{edges|tojson}})
         const nodes = new vis.DataSet({{nodes|tojson}})
-        const edgesView = new vis.DataView(edges, { filter: edgesFilter });
-        edgesView.refresh();
 
-        var data = {'nodes': nodes, 'edges': edgesView};
+        var data = {'nodes': nodes, 'edges': edges};
 
         var network = new vis.Network(container, data, options);
-
-
-        document.getElementById("alignment_score").onchange = function(){
-            edgesView.refresh()
-        }
-
 
         function get_new_connected_nodes(nodes_array, selected_nodes) {
             var new_connected_nodes = []
