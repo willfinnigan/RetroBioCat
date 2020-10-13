@@ -13,6 +13,7 @@ def sanitise_string(text):
 def sanitise_sequence(seq_string):
     seq_string = seq_string.replace('\n', '')
     seq_string = seq_string.replace(' ', '')
+    seq_string = seq_string.upper()
     return seq_string
 
 

@@ -118,7 +118,6 @@ class Sequence(db.Document):
 
     def update_sequence(self, seq_string):
         seq_string = sequence_functions.sanitise_sequence(seq_string)
-
         bad_chars = sequence_functions.sequence_check(seq_string)
         if len(bad_chars) != 0:
             return False, f'Invalid sequence chars: {bad_chars}'
@@ -126,6 +125,7 @@ class Sequence(db.Document):
         self.sequence = seq_string
         self.blast = None
         self.save()
+        return True, 'Sequence updated'
 
     def __unicode__(self):
         return self.enzyme_name
