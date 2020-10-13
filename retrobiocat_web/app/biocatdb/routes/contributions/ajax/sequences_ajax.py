@@ -43,24 +43,7 @@ def get_sequences_of_type():
 
     return jsonify(result=result)
 
-def sequence_check(sequence):
-    amino_acids_list = ['X', 'V', 'G', 'F', 'E', 'N', 'P', 'Q', 'M', 'K', 'T', 'S', 'W', 'A', 'R', 'D', 'L', 'Y', 'H',
-                        'I', 'C', '*']
 
-    aa_check = True
-    bad_chars = []
-    for letter in sequence:
-        if letter.upper() not in amino_acids_list:
-            aa_check = False
-            bad_chars.append(letter)
-
-    return bad_chars
-
-def name_check(name):
-    for char in name:
-        if char in INVALID_NAME_CHARS:
-            return False
-    return True
 
 
 @bp.route('/_save_edited_sequence', methods=['GET', 'POST'])
@@ -88,14 +71,24 @@ def save_edited_sequence():
     seq = Sequence.objects(enzyme_name=original_name)[0]
     user = user_datastore.get_user(current_user.id)
 
-    if (seq.enzyme_type != enzyme_type) or (original_name != enzyme_name):
-        acts = Activity.objects(enzyme_name=original_name)
-        for act in acts:
-            act.enzyme_name = enzyme_name
-            act.enzyme_type = enzyme_type
-            act.save()
+    if not check_permission.check_seq_permissions(current_user.id, seq):
+        issues.append('User does not have access to edit this sequence')
 
-    seq.enzyme_type = enzyme_type
+    if original_name != enzyme_name:
+        success, msg = seq.update_name(enzyme_name)
+        if success is False:
+            issues.append(msg)
+
+    if seq.enzyme_type != enzyme_type:
+        success, msg = seq.update_type(enzyme_type)
+        if success is False:
+            issues.append(msg)
+
+    if seq.sequence != sequence:
+        success, msg = seq.update_sequence(sequence)
+        if success is False:
+            issues.append(msg)
+
     seq.sequence_unavailable = sequence_unavailable
     seq.n_tag = n_tag
     seq.c_tag = c_tag
@@ -106,56 +99,19 @@ def save_edited_sequence():
     seq.mutant_of = mutant_of
     seq.other_names = other_names.split(', ')
     seq.bioinformatics_ignore = bioinformatics_ignore
-
-    if seq.added_by is None:
-        seq.added_by = user
-    elif user not in seq.edits_by:
-        seq.edits_by.append(user)
-
-    if original_name != enzyme_name:
-        if len(Sequence.objects(enzyme_name=enzyme_name)) == 0:
-            seq.enzyme_name = enzyme_name
-        else:
-            status = 'danger'
-            msg = 'Could not update sequence'
-            issues.append('New name is already a sequence')
+    seq.save()
 
     self_assigned = bool(strtobool(request.form['self_assigned']))
-
     if self_assigned == True:
         seq.owner = user
     elif self_assigned == False and seq.owner == user:
         seq.owner = None
 
-    sequence = sequence.replace('\n', '')
-    sequence = sequence.replace(' ', '')
+    update_seq_papers_status(seq.enzyme_name)
 
-    if sequence != seq.sequence:
-        seq.blast = None
-
-    if name_check(enzyme_name) == False:
+    if len(issues) != 0:
         status = 'danger'
-        msg = 'Could not update name'
-        issues.append('Invalid character in name')
-        issues.append(f'Cannot include f{INVALID_NAME_CHARS}')
-
-    bad_chars = sequence_check(sequence)
-    if len(bad_chars) != 0:
-        status = 'danger'
-        msg = 'Could not update sequence'
-        issues.append('Protein sequence contains non amino acid characters')
-        issues.append(f"Bad characters = {bad_chars}")
-    else:
-        seq.sequence = sequence
-
-    if not check_permission.check_seq_permissions(current_user.id, seq):
-        status = 'danger'
-        msg = 'Could not update sequence'
-        issues.append('User does not have access to edit this sequence')
-
-    if status == 'success':
-        seq.save()
-        update_seq_papers_status(seq.enzyme_name)
+        msg = 'Issues updating sequence'
 
     result = {'status': status,
               'msg': msg,

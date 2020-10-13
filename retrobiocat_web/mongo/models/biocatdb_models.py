@@ -69,17 +69,21 @@ class Sequence(db.Document):
     edits_by = db.ListField(db.ReferenceField(User))
     papers = db.ListField(db.ReferenceField(Paper))
 
-    blast = db.DateTimeField()
+    blast = db.DateTimeField(default=None)
     alignments_made = db.DateTimeField()
+
+    objects_to_update = []
 
     def update_name(self, new_name):
         new_name = sequence_functions.sanitise_string(new_name)
         q = Sequence.objects(enzyme_name=new_name)
         if len(q) != 0:
             return False, 'Name already exists'
+        else:
+            print(f"Updating sequence name: {new_name}")
 
         # update mutants_of
-        mutants = Sequence.objects(mutants_of=self.enzyme_name)
+        mutants = Sequence.objects(mutant_of=self.enzyme_name)
         for mut in mutants:
             mut.enzyme_name = new_name
             mut.save()
@@ -91,6 +95,36 @@ class Sequence(db.Document):
             act.save()
 
         self.enzyme_name = new_name
+        self.save()
+
+        return True, 'Update successful'
+
+    def update_type(self, new_type):
+        q = EnzymeType(enzyme_type=new_type)
+        if len(q) == 0:
+            return False, 'Enzyme type not found'
+
+        # update activity
+        acts = Activity.objects(enzyme_name=self.enzyme_name)
+        for act in acts:
+            act.enzyme_type = new_type
+            act.save()
+
+        self.enzyme_type = new_type
+        self.blast = None
+        self.save()
+
+        return True, 'Update successful'
+
+    def update_sequence(self, seq_string):
+        seq_string = sequence_functions.sanitise_sequence(seq_string)
+
+        bad_chars = sequence_functions.sequence_check(seq_string)
+        if len(bad_chars) != 0:
+            return False, f'Invalid sequence chars: {bad_chars}'
+
+        self.sequence = seq_string
+        self.blast = None
         self.save()
 
     def __unicode__(self):

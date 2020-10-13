@@ -325,48 +325,15 @@ def clear_all_redis_jobs():
     return jsonify(result=result)
 
 
-def task_remove_chars():
+def task_ensure_correct_sequence_naming():
     seqs = Sequence.objects()
-
-    count = 0
     for seq in seqs:
-        char_replaced = False
-        for char in seq.enzyme_name:
-            if char in INVALID_NAME_CHARS:
-                seq.enzyme_name = seq.enzyme_name.replace(char, '')
-                char_replaced = True
+        seq.update_name(seq.enzyme_name)
 
-        if char_replaced == True:
-            seq.save()
-            count += 1
-
-            muts = Sequence.objects(mutant_of=seq.enzyme_name)
-            for mut in muts:
-                mut.mutant_of = seq.enzyme_name
-                mut.save()
-
-    acts = Activity.objects()
-    for act in acts:
-        char_replaced = False
-        if act.enzyme_name is not None:
-            for char in act.enzyme_name:
-                if char in INVALID_NAME_CHARS:
-                    act.enzyme_name = act.enzyme_name.replace(char, '')
-                    char_replaced = True
-
-        if char_replaced == True:
-            print(f"Edited {act.enzyme_name}")
-            act.save()
-            count += 1
-            muts = Sequence.objects(mutant_of=act.enzyme_name)
-            for mut in muts:
-                mut.mutant_of = act.enzyme_name
-                mut.save()
-
-@bp.route('/_remove_invalide_seq_name_chars', methods=['GET', 'POST'])
+@bp.route('/_ensure_correct_sequence_naming', methods=['GET', 'POST'])
 @roles_required('admin')
-def remove_invalide_seq_name_chars():
-    current_app.db_queue.enqueue(task_remove_chars)
+def ensure_correct_sequence_naming():
+    current_app.db_queue.enqueue(task_ensure_correct_sequence_naming)
 
     result = {'status': 'success',
               'msg': f'Removing invalid chars sequences',
