@@ -12,6 +12,8 @@ import numpy as np
 from distutils.util import strtobool
 from retrobiocat_web.app.biocatdb.functions import check_permission
 
+INVALID_NAME_CHARS = [".", "(", ")", "'", "/"]
+
 def seqs_of_type(enzyme_type):
     if enzyme_type == 'All':
         sequences = Sequence.objects().distinct('enzyme_name')
@@ -46,11 +48,19 @@ def sequence_check(sequence):
                         'I', 'C', '*']
 
     aa_check = True
+    bad_chars = []
     for letter in sequence:
         if letter.upper() not in amino_acids_list:
             aa_check = False
+            bad_chars.append(letter)
 
-    return aa_check
+    return bad_chars
+
+def name_check(name):
+    for char in name:
+        if char in INVALID_NAME_CHARS:
+            return False
+    return True
 
 
 @bp.route('/_save_edited_sequence', methods=['GET', 'POST'])
@@ -118,14 +128,23 @@ def save_edited_sequence():
         seq.owner = None
 
     sequence = sequence.replace('\n', '')
+    sequence = sequence.replace(' ', '')
 
     if sequence != seq.sequence:
         seq.blast = None
 
-    if sequence_check(sequence) == False:
+    if name_check(enzyme_name) == False:
+        status = 'danger'
+        msg = 'Could not update name'
+        issues.append('Invalid character in name')
+        issues.append(f'Cannot include f{INVALID_NAME_CHARS}')
+
+    bad_chars = sequence_check(sequence)
+    if len(bad_chars) != 0:
         status = 'danger'
         msg = 'Could not update sequence'
         issues.append('Protein sequence contains non amino acid characters')
+        issues.append(f"Bad characters = {bad_chars}")
     else:
         seq.sequence = sequence
 

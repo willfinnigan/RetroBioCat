@@ -18,7 +18,8 @@
                         <button class="btn btn-warning" onclick="orphan_enzymes()" id="orphan_enzymes_id">Find orphan enzymes</button>
                         <button class="btn btn-success" onclick="find_tags()">Find tags</button>
                         <button class="btn btn-primary" onclick="convert_to_pdb_schema()">convert_to_pdb_schema</button>
-                        <button class="btn btn-primary" onclick="clear_all_redis_jobs()">Clear all redis jobs</button>
+                        <button class="btn btn-info" onclick="clear_all_redis_jobs()">Clear all redis jobs</button>
+                        <button class="btn btn-success" onclick="seq_invalid_chars()">Remove invalid chars from sequence names</button>
 
                     </div>
                 </div>
@@ -66,6 +67,13 @@
 
         function clear_all_redis_jobs() {
             $.post('/_clear_all_redis_jobs', {
+                }).done(function(data) {
+                    response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+                })
+            }
+
+        function seq_invalid_chars() {
+            $.post('/_remove_invalide_seq_name_chars', {
                 }).done(function(data) {
                     response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
                 })

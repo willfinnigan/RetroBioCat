@@ -1,0 +1,183 @@
+{
+  "_from": "vis-network",
+  "_id": "vis-network@8.3.3",
+  "_inBundle": false,
+  "_integrity": "sha512-zXSJnAZoOCzp4NQyT9I2w+h5tFy/pDzBcRKZ2BPPGzJGFGnvWQG812R768X59UltKWQlbYSOQ3BGV4Z6RYsheA==",
+  "_location": "/vis-network",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "vis-network",
+    "name": "vis-network",
+    "escapedName": "vis-network",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/vis-network/-/vis-network-8.3.3.tgz",
+  "_shasum": "7fc8d574283160d4a7e8c16829b44ebacbf936ce",
+  "_spec": "vis-network",
+  "_where": "/Users/Will",
+  "browser": "peer/umd/vis-network.min.js",
+  "bugs": {
+    "url": "https://github.com/visjs/vis-network/issues"
+  },
+  "bundleDependencies": false,
+  "collective": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/visjs"
+  },
+  "config": {
+    "snap-shot-it": {
+      "sortSnapshots": true,
+      "useRelativePath": true
+    }
+  },
+  "dependency": {
+    "opencollective": "1.0.3"
+  },
+  "deprecated": false,
+  "description": "A dynamic, browser-based visualization library.",
+  "devDependencies": {
+    "@egjs/hammerjs": "2.0.17",
+    "@mdi/font": "5.6.55",
+    "@semantic-release/commit-analyzer": "8.0.1",
+    "@semantic-release/github": "7.1.1",
+    "@semantic-release/npm": "7.0.6",
+    "@semantic-release/release-notes-generator": "9.0.1",
+    "@types/chai": "4.2.13",
+    "@types/mocha": "8.0.3",
+    "@types/sinon": "9.0.8",
+    "@types/timsort": "0.3.0",
+    "@types/uuid": "8.3.0",
+    "chai": "4.2.0",
+    "compare-versions": "3.6.0",
+    "component-emitter": "1.3.0",
+    "cpy-cli": "3.1.1",
+    "cypress": "5.3.0",
+    "cypress-visual-regression": "1.5.1",
+    "eslint": "7.10.0",
+    "gh-pages": "3.1.0",
+    "husky": "4.3.0",
+    "jsdom": "16.4.0",
+    "jsdom-global": "3.0.2",
+    "keycharm": "0.4.0",
+    "lint-staged": "10.4.0",
+    "mocha": "8.1.3",
+    "nyc": "15.1.0",
+    "prettier": "2.1.2",
+    "rimraf": "3.0.2",
+    "rollup": "2.29.0",
+    "rollup-plugin-commonjs": "10.1.0",
+    "rollup-plugin-node-resolve": "5.2.0",
+    "rollup-plugin-terser": "7.0.2",
+    "sazerac": "2.0.0",
+    "semantic-release": "17.1.2",
+    "serve": "11.3.2",
+    "sinon": "9.2.0",
+    "snap-shot-it": "7.9.3",
+    "start-server-and-test": "1.11.5",
+    "timsort": "0.3.0",
+    "typescript": "4.0.3",
+    "uuid": "8.3.1",
+    "vis-data": "7.0.0",
+    "vis-dev-utils": "2.7.11",
+    "vis-util": "4.3.4"
+  },
+  "files": [
+    "LICENSE*",
+    "declarations",
+    "dist",
+    "esnext",
+    "peer",
+    "standalone",
+    "styles"
+  ],
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/visjs"
+  },
+  "homepage": "https://visjs.github.io/vis-network/",
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "jsnext": "esnext/esm/vis-network.js",
+  "keywords": [
+    "vis",
+    "visualization",
+    "web based",
+    "browser based",
+    "typescript",
+    "javascript",
+    "chart",
+    "graph",
+    "network",
+    "browser"
+  ],
+  "license": "(Apache-2.0 OR MIT)",
+  "lint-staged": {
+    "*.{js,ts,css,html,json,md,yml,yaml}": "prettier --write",
+    "*.{js,ts}": "eslint --fix",
+    ".*.{js,ts,css,html,json,md,yml,yaml}": "prettier --write",
+    ".*.{js,ts}": "eslint --fix"
+  },
+  "main": "peer/umd/vis-network.js",
+  "module": "peer/esm/vis-network.js",
+  "name": "vis-network",
+  "peerDependencies": {
+    "@egjs/hammerjs": "^2.0.0",
+    "component-emitter": "^1.3.0",
+    "keycharm": "^0.2.0 || ^0.3.0 || ^0.4.0",
+    "timsort": "^0.3.0",
+    "uuid": "^3.4.0 || ^7.0.0 || ^8.0.0",
+    "vis-data": "^7.0.0",
+    "vis-util": "^3.0.0 || ^4.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/visjs/vis-network.git"
+  },
+  "scripts": {
+    "build": "npm run build:declarations && npm run build:code && npm run build:legacy:types && npm run build:legacy:code && npm run build:legacy:images",
+    "build:code": "rollup --config rollup.build.js",
+    "build:declarations": "cpy --cwd=types --parents \"**/*\" ../declarations && tsc -p tsconfig.declarations.json",
+    "build:legacy:code": "rollup --config rollup.config.js",
+    "build:legacy:images": "cpy \"lib/assets/*\" dist/img/network",
+    "build:legacy:types": "cpy --parents \"types/**/*\" dist && tsc -p tsconfig.types.json",
+    "build:watch": "rollup --watch --config rollup.build.js",
+    "clean": "rimraf \"declarations\" \"dist\" \"examples/index.html\" \"examples/static/*\" \"peer\" \"standalone\" \"styles\" \"vis-network*\" \"cypress/{fixtures,integration,pages,support}/**/*.js{,.map}\" \"cypress/snapshots/{actual,diff}/*\"",
+    "generate-examples-index": "generate-examples-index --config generate-examples-index.json",
+    "lint": "eslint --ext .js,.ts .",
+    "lint-fix": "eslint --fix --ext .js,.ts .",
+    "postinstall": "opencollective postinstall || exit 0",
+    "prepublishOnly": "npm run build",
+    "serve": "serve -l tcp://localhost:58253",
+    "style": "prettier --check .",
+    "style-fix": "prettier --write .",
+    "test": "npm run test:unit && npm run test:e2e:functional && npm run test:e2e:visual",
+    "test:e2e:functional": "CYPRESS_FUNCTIONAL=true npm run test:e2e:headless",
+    "test:e2e:gui": "start-server-and-test test:e2e:transpile-watch-and-serve :58253 \"cypress open\"",
+    "test:e2e:headless": "start-server-and-test test:e2e:transpile-and-serve :58253 \"cypress run\"",
+    "test:e2e:transpile": "tsc --project cypress",
+    "test:e2e:transpile-and-serve": "npm run test:e2e:transpile && npm run serve",
+    "test:e2e:transpile-and-watch": "npm run test:e2e:transpile -- --watch",
+    "test:e2e:transpile-watch-and-serve": "npm run test:e2e:transpile && start-server-and-test serve :58253 test:e2e:transpile-and-watch",
+    "test:e2e:visual": "npm run test:e2e:visual:update:latest && npm run test:e2e:visual:verify:head",
+    "test:e2e:visual:update:base": "rimraf \"cypress/snapshots/*\" && CYPRESS_VISUAL=true CYPRESS_UPDATE=true npm run test:e2e:headless",
+    "test:e2e:visual:update:head": "npm run test:e2e:visual:update:base",
+    "test:e2e:visual:update:latest": "CYPRESS_VIS_NETWORK_TAG=latest npm run test:e2e:visual:update:base",
+    "test:e2e:visual:verify:base": "CYPRESS_VISUAL=true npm run test:e2e:headless",
+    "test:e2e:visual:verify:head": "npm run test:e2e:visual:verify:base",
+    "test:e2e:visual:verify:latest": "CYPRESS_VIS_NETWORK_TAG=latest npm run test:e2e:visual:verify:base",
+    "test:unit": "BABEL_ENV=test-cov nyc mocha --exit"
+  },
+  "types": "declarations/index.d.ts",
+  "version": "8.3.3"
+}

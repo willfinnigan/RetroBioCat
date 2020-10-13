@@ -21,6 +21,8 @@ import datetime
 from pathlib import Path
 from retrobiocat_web.retro.evaluation.starting_material import StartingMaterialEvaluator
 
+from retrobiocat_web.app.biocatdb.routes.contributions.ajax.sequences_ajax import INVALID_NAME_CHARS
+
 
 class InitDB(FlaskForm):
     rxns = FileField("Reactions")
@@ -319,6 +321,33 @@ def clear_all_redis_jobs():
     result = {'status': 'success',
               'msg': 'Cleared all redis jobs',
               'issues': []}
+
+    return jsonify(result=result)
+
+
+@bp.route('/_remove_invalide_seq_name_chars', methods=['GET', 'POST'])
+@roles_required('admin')
+def remove_invalide_seq_name_chars():
+
+    seqs = Sequence.objects()
+
+    count = 0
+    edited = []
+    for seq in seqs:
+        char_replaced = False
+        for char in seq.enzyme_name:
+            if char in INVALID_NAME_CHARS:
+                seq.enzyme_name = seq.enzyme_name.replace(char, '')
+                char_replaced = True
+
+        if char_replaced == True:
+            seq.save()
+            count += 1
+            edited.append(f"Edited: {seq.enzyme_name}")
+
+    result = {'status': 'success',
+              'msg': f'Removed invalid chars in {count} sequences',
+              'issues': edited}
 
     return jsonify(result=result)
 
