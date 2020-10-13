@@ -1,5 +1,6 @@
 import mongoengine as db
 from rdkit import Chem
+from retrobiocat_web.mongo.functions import sequence_functions
 
 class EnzymeType(db.Document):
     enzyme_type = db.StringField(max_length=120, unique=True, required=True)
@@ -70,6 +71,28 @@ class Sequence(db.Document):
 
     blast = db.DateTimeField()
     alignments_made = db.DateTimeField()
+
+
+    def update_name(self, new_name):
+        new_name = sequence_functions.sanitise_string(new_name)
+        q = Sequence.objects(enzyme_name=new_name)
+        if len(q) != 0:
+            return False, 'Name already exists'
+
+        # update mutants_of
+        mutants = Sequence.objects(mutants_of=self.enzyme_name)
+        for mut in mutants:
+            mut.enzyme_name = new_name
+            mut.save()
+
+        # update activity
+        acts = Activity.objects(enzyme_name=self.enzyme_name)
+        for act in acts:
+            act.enzyme_name = new_name
+            act.save()
+
+        self.enzyme_name = new_name
+        self.save()
 
     def __unicode__(self):
         return self.enzyme_name

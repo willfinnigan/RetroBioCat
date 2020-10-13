@@ -23,17 +23,13 @@
                                         <div class="progress">
                                             <div class="progress-bar" role="progressbar" style="width: {{blasted_enz_types[enz_type]}}%"></div>
                                         </div>
-
+                                        <p>BLAST status: <span id="{{enz_type}}_blast_status">{{biostat[enz_type]}}</span></p>
+                                        <p>SSN status: <span id="{{enz_type}}_ssn_status">{{ssn[enz_type]}}</span></p>
                                         <p>BioCatDB sequences: {{enzyme_numbers[enz_type]['biocatdb']}}</p>
                                         <p>UniRef50 sequences: {{enzyme_numbers[enz_type]['uniref']}}</p>
 
-                                        {% if enzyme_bioinformatics_status[enz_type] == 'Idle' %}
-                                            {% set button_disable = '' %}
-                                        {% else %}
-                                            {% set button_disable = '' %}
-                                        {% endif %}
-                                        <button class="btn btn-sm btn-outline-primary {{button_disable}}" onclick="queue_blast_search('{{enz_type}}')" {{button_disable}}>Queue blasts for {{enz_type}}</button>
-                                        <button class="btn btn-sm btn-outline-info {{button_disable}}" onclick="expand_ssn('{{enz_type}}')" {{button_disable}}>Expand SSN for {{enz_type}}</button>
+                                        <button class="btn btn-sm btn-outline-primary" id="{{enz_type}}_blast" onclick="queue_blast_search('{{enz_type}}')" {{button_disable}}>Queue blasts for {{enz_type}}</button>
+                                        <button class="btn btn-sm btn-outline-info" id="{{enz_type}}_ssn" onclick="expand_ssn('{{enz_type}}')" {{button_disable}}>Expand SSN for {{enz_type}}</button>
                                     </div>
                                 {% endfor %}
 
@@ -56,18 +52,21 @@
             $.post('/_find_homologs', {
                 enzyme_type: enzyme_type
                 }).done(function(data) {
+                    document.getElementById(enzyme_type+'_blast').disabled = true
+                    document.getElementById(enzyme_type+'_blast').classList.add('disabled')
+                    document.getElementById(enzyme_type+'_blast_status').innerHTML = 'Started'
                     response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
-                    location.reload()
                 })
         }
-
 
         function expand_ssn(enzyme_type) {
             $.post('/_expand_ssn', {
                 enzyme_type: enzyme_type
                 }).done(function(data) {
+                    document.getElementById(enzyme_type+'_ssn').disabled = true
+                    document.getElementById(enzyme_type+'_ssn').classList.add('disabled')
+                    document.getElementById(enzyme_type+'_ssn_status').innerHTML = 'Started'
                     response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
-                    location.reload()
                 })
         }
 
@@ -75,7 +74,6 @@
             $.post('/_clear_all_bioinformatics_data', {
                 }).done(function(data) {
                     response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
-                    location.reload()
                 })
         }
 

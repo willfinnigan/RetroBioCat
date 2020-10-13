@@ -1,7 +1,7 @@
 from retrobiocat_web.app.biocatdb import bp
 from flask import render_template, flash, redirect, url_for, request, jsonify, session, current_app
 from flask_security import roles_required, current_user
-from retrobiocat_web.mongo.models.biocatdb_models import Paper, Activity, Sequence, Molecule, Tag, EnzymeType, UniRef90, UniRef50, Alignment, SeqSimNet
+from retrobiocat_web.mongo.models.biocatdb_models import Paper, Activity, Sequence, Molecule, Tag, EnzymeType, UniRef90, UniRef50, Alignment, SeqSimNet, SSN_record
 from retrobiocat_web.analysis import embl_restfull, all_by_all_blast, make_ssn
 from rq.registry import StartedJobRegistry
 import datetime
@@ -84,10 +84,16 @@ def expand_ssn():
 def bioinformatics_admin_page():
     enzyme_types = EnzymeType.objects().order_by('enzyme_type')
 
-    enzyme_bioinformatics_status = {}
+    biostat = {}
+    ssn = {}
     for enz_type_obj in enzyme_types:
         enz_type = enz_type_obj.enzyme_type
-        enzyme_bioinformatics_status[enz_type] = enz_type_obj.bioinformatics_status
+        biostat[enz_type] = enz_type_obj.bioinformatics_status
+        q = SSN_record.objects(enzyme_type=enz_type_obj)
+        if len(q) != 0:
+            ssn[enz_type] = q[0].status
+        else:
+            ssn[enz_type] = 'None'
 
     enzyme_numbers = {}
     for enz_type_obj in enzyme_types:
@@ -113,7 +119,8 @@ def bioinformatics_admin_page():
 
     return render_template('bioinformatics/bioinformatics_admin.html',
                            blasted_enz_types=enz_type_dict,
-                           enzyme_bioinformatics_status=enzyme_bioinformatics_status,
+                           biostat=biostat,
+                           ssn=ssn,
                            num_jobs=num_jobs,
                            enzyme_numbers=enzyme_numbers)
 

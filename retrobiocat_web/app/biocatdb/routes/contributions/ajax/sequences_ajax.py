@@ -530,9 +530,8 @@ def save_or_add_seqs(data_list, paper):
     return issues
 
 
-
-
-
+if __name__ == '__main__':
+    print(remove_non_ascii("Sr\ufeffR-IRED"))
 
 
 
