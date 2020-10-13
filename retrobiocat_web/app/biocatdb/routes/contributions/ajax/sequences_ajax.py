@@ -11,6 +11,7 @@ import pandas as pd
 import numpy as np
 from distutils.util import strtobool
 from retrobiocat_web.app.biocatdb.functions import check_permission
+from retrobiocat_web.mongo.functions.sequence_functions import sequence_check
 
 INVALID_NAME_CHARS = [".", "(", ")", "'", "/"]
 
@@ -378,7 +379,6 @@ def upload_sequence_excel():
               'issues': issues}
     return jsonify(result=result)
 
-
 def process_uploaded_excel(df):
     cols = ['enzyme_type', 'enzyme_name', 'other_names', 'sequence',
             'sequence_unavailable', 'accession', 'structure',
@@ -398,7 +398,6 @@ def process_uploaded_excel(df):
 
 
     return data_list
-
 
 def save_or_add_seqs(data_list, paper):
     # Used by upload excel
@@ -486,8 +485,7 @@ def save_or_add_seqs(data_list, paper):
     return issues
 
 
-if __name__ == '__main__':
-    print(remove_non_ascii("Sr\ufeffR-IRED"))
+
 
 
 
