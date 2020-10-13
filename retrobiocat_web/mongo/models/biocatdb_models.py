@@ -72,7 +72,6 @@ class Sequence(db.Document):
     blast = db.DateTimeField()
     alignments_made = db.DateTimeField()
 
-
     def update_name(self, new_name):
         new_name = sequence_functions.sanitise_string(new_name)
         q = Sequence.objects(enzyme_name=new_name)
