@@ -340,6 +340,11 @@ def task_remove_chars():
             seq.save()
             count += 1
 
+            muts = Sequence.objects(mutant_of=seq.enzyme_name)
+            for mut in muts:
+                mut.mutant_of = seq.enzyme_name
+                mut.save()
+
     acts = Activity.objects()
     for act in acts:
         char_replaced = False
@@ -353,6 +358,10 @@ def task_remove_chars():
             print(f"Edited {act.enzyme_name}")
             act.save()
             count += 1
+            muts = Sequence.objects(mutant_of=act.enzyme_name)
+            for mut in muts:
+                mut.mutant_of = act.enzyme_name
+                mut.save()
 
 @bp.route('/_remove_invalide_seq_name_chars', methods=['GET', 'POST'])
 @roles_required('admin')
