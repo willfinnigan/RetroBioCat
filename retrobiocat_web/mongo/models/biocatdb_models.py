@@ -85,7 +85,7 @@ class Sequence(db.Document):
         # update mutants_of
         mutants = Sequence.objects(mutant_of=self.enzyme_name)
         for mut in mutants:
-            mut.enzyme_name = new_name
+            mut.mutant_of = new_name
             mut.save()
 
         # update activity
