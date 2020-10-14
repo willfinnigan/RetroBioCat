@@ -76,6 +76,10 @@ class Sequence(db.Document):
 
     def update_name(self, new_name):
         new_name = sequence_functions.sanitise_string(new_name)
+        old_name = self.enzyme_name
+        if old_name == new_name:
+            return False, 'Name already exists'
+
         q = Sequence.objects(enzyme_name=new_name)
         if len(q) != 0:
             return False, 'Name already exists'
