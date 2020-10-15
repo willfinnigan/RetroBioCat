@@ -121,13 +121,17 @@ class SSN_Visualiser(object):
         self.log_level = log_level
         self.cluster_positioner = ClusterPositioner()
 
-    def visualise(self, ssn, alignment_score):
+    def visualise(self, ssn, alignment_score, precalc_pos=None):
         graph = ssn.get_graph_filtered_edges(alignment_score)
         clusters = list(nx.connected_components(graph))
         clusters.sort(key=len, reverse=True)
 
         graph = self._add_cluster_node_colours(graph, clusters)
-        pos_dict = self._get_cluster_positions(graph, clusters)
+
+        if precalc_pos is None:
+            pos_dict = self._get_cluster_positions(graph, clusters)
+        else:
+            pos_dict = precalc_pos
 
         nodes, edges = self._get_nodes_and_edges(graph, pos_dict)
 
@@ -547,13 +551,9 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
     print(f'- SSN CONSTRUCTION FOR {enzyme_type} IS COMPLETE -')
 
 def new_expand_ssn_job(enzyme_type):
-    time.sleep(3)
-    active_process_jobs = list(StartedJobRegistry(queue=current_app.alignment_queue).get_job_ids())
-    active_process_jobs.extend(current_app.alignment_queue.job_ids)
-
-    job_name = f"{enzyme_type}_expand_ssn"
-    if job_name not in active_process_jobs:
-        current_app.alignment_queue.enqueue(task_expand_ssn, enzyme_type, job_id=job_name)
+    ssn = SSN(enzyme_type)
+    if ssn.db_object.status != 'Complete':
+        current_app.alignment_queue.enqueue(task_expand_ssn, enzyme_type)
 
 
 if __name__ == '__main__':

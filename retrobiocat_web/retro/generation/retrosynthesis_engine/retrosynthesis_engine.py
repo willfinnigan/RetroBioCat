@@ -491,6 +491,7 @@ class RetrosynthesisEngine():
 
         rxnsSubstratesDict = self.ruleApplication.run(smile, rxns, graph)
         listProducts, listReactions = self.graphManipulator.add_nodes_to_graph(rxnsSubstratesDict, smile, graph, rxn_type)
+        self.network.get_node_types()
         listProducts, listReactions = self.reactionSelector.remove_disallowed_products(disallowedProducts, listProducts,listReactions)
         if rxn_mode == 'complexity':
             listProducts, listReactions = self.reactionSelector.select_best_by_complexity(listProducts, listReactions, self.network.settings['max_reactions'])
@@ -505,6 +506,7 @@ class RetrosynthesisEngine():
 
         rxnsSubstratesDict, metadata = self.aizynth_rule_application.run(smile, graph)
         listProducts, listReactions = self.graphManipulator.add_nodes_to_graph(rxnsSubstratesDict, smile, graph, rxn_type, metadata=metadata)
+        self.network.get_node_types()
         listProducts, listReactions = self.reactionSelector.remove_disallowed_products(disallowedProducts, listProducts, listReactions)
 
         if rxn_mode == 'complexity':
