@@ -43,7 +43,6 @@ def find_homologs():
               'msg': f"Started job to blast all {enzyme_type}'s",
               'issues': []}
 
-    flash(f"Started job to blast all {enzyme_type}'s", "success")
 
     return jsonify(result=result)
 
@@ -60,8 +59,6 @@ def find_allhomologs():
               'msg': f"Started job to blast all enzyme_type's",
               'issues': []}
 
-    flash(f"Started job to blast all enzyme_type's", "success")
-
     return jsonify(result=result)
 
 @bp.route('/_expand_ssn', methods=['GET', 'POST'])
@@ -76,7 +73,6 @@ def expand_ssn():
               'msg': f"Launched expand ssn for {enzyme_type}'s",
               'issues': []}
 
-    flash(f"Launched expand ssn for {enzyme_type}'s", "success")
     return jsonify(result=result)
 
 @bp.route('/bioinformatics_admin_page', methods=['GET', 'POST'])
@@ -148,7 +144,6 @@ def clear_all_bioinformatics_data():
               'msg': f"Done",
               'issues': []}
 
-    flash(f"Done", "success")
     return jsonify(result=result)
 
 
