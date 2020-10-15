@@ -21,33 +21,82 @@ class ClusterPositioner(object):
     def __init__(self, max_width=20):
 
         self.scale = 2000
-        self.move = 0
-        self.h_move = 0
-        self.center = [0, 0]
+        self.v_move = 0
+        self.v_move_factor = 1.1
         self.max_width = max_width * self.scale
-        self.node_space = 200 * self.scale
+        self.gutter = 4000
+        self.current_location = [0, 0]
 
-    def measure_cluster(self, cluster):
-        cluster_size = len(cluster) * self.node_space
-        self.move = int(np.sqrt(cluster_size))
-        if self.move > self.h_move:
-            self.h_move = self.move
+    def get_cluster_dimensions(self, pos_dict):
+        min_x, max_x = 0, 0
+        min_y, max_y = 0, 0
 
-    def move_horizontal(self):
-        self.center[0] += self.move
+        for node, pos in pos_dict.items():
+            if pos[0] < min_x:
+                min_x = pos[0]
+            if pos[0] > max_x:
+                max_x = pos[0]
+            if pos[1] < min_y:
+                min_y = pos[1]
+            if pos[1] > max_y:
+                max_y = pos[1]
 
-    def move_vertical(self):
-        if self.center[0] > self.max_width:
-            self.center[0] = 0
-            self.center[1] += self.h_move*1.5
-            self.h_move = 0
+        h_dim = max_x - min_x
+        v_dim = max_y - min_y
+        v_dim_move = 0
+        if v_dim*0.8 > self.v_move:
+            self.v_move = v_dim * 0.8
+            v_dim_move = v_dim * 0.2
 
-    def move_pos_dict(self, pos_dict):
+        return h_dim, v_dim_move
+
+    @staticmethod
+    def move(pos_dict, move):
         new_pos_dict = {}
         for key in pos_dict:
-            new_pos_dict[key] = [pos_dict[key][0] + self.center[0], pos_dict[key][1] + self.center[1]]
+            new_pos_dict[key] = [pos_dict[key][0] + move[0], pos_dict[key][1] + move[1]]
+        return new_pos_dict
+
+    @staticmethod
+    def make_coords_positive(pos_dict):
+        new_pos_dict = {}
+        move_x, move_y = 0, 0
+        for key, value in pos_dict.items():
+            x, y = value[0], value[1]
+            if x > move_x:
+                move_x = x
+            if y > move_y:
+                move_y = y
+
+        for key, value in pos_dict.items():
+            x, y = value[0], value[1]
+            x += move_x
+            y += move_y
+            new_pos_dict[key] = [x, y]
 
         return new_pos_dict
+
+    def check_max_width(self):
+        if self.current_location[0] > self.max_width:
+            self.current_location[0] = 0
+            self.current_location[1] += (self.v_move * self.v_move_factor) + self.gutter
+            self.v_move = 0
+            return True
+        return False
+
+    def position(self, pos_dict):
+
+        h_dim, v_dim = self.get_cluster_dimensions(pos_dict)
+
+        pos_dict = self.make_coords_positive(pos_dict)
+        pos_dict = self.move(pos_dict, self.current_location)
+
+        if self.check_max_width() == False:
+            self.current_location[0] += self.gutter + h_dim
+            self.current_location[1] += v_dim
+
+        return pos_dict
+
 
 class SSN_Visualiser(object):
 
@@ -89,23 +138,17 @@ class SSN_Visualiser(object):
         pos_dict = {}
         for i, cluster in enumerate(clusters):
             self.log(f"Getting layout for cluster {i+1} of {len(clusters)}")
-            self.cluster_positioner.measure_cluster(cluster)
-            self.cluster_positioner.move_horizontal()
             sub_graph = graph.subgraph(cluster)
-            scale = 1000+(15*len(cluster))
+            scale = 750+(20*len(cluster))
 
             #if len(cluster) > 200:
             #    cluster_positions = nx.nx_pydot.pydot_layout(sub_graph, prog="sfdp")
             #elif len(cluster) > 10:
             #    cluster_positions = nx.nx_pydot.pydot_layout(sub_graph, prog="neato")
             #else:
-            cluster_positions = nx.spring_layout(sub_graph, k=3, iterations=200, scale=scale, weight=None)
-
-            #cluster_positions = nx.rescale_layout_dict(cluster_positions, scale=scale)
-            cluster_positions = self.cluster_positioner.move_pos_dict(cluster_positions)
+            cluster_positions = nx.spring_layout(sub_graph, k=1, iterations=200, scale=scale, weight=None)
+            cluster_positions = self.cluster_positioner.position(cluster_positions)
             pos_dict.update(cluster_positions)
-            self.cluster_positioner.move_horizontal()
-            self.cluster_positioner.move_vertical()
 
         return pos_dict
 

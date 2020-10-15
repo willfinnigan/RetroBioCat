@@ -12,8 +12,6 @@
             <div class="modal-body">
                 <div id="edit_nodes_response"></div>
                 <p><span id="num_selected_nodes"></span> nodes selected</p>
-                <button class="btn btn-success" onclick="fix_positions()">Fix positions</button>
-                <button class="btn btn-primary" onclick="fix_positions(fix=false)">Un-Fix positions</button>
                 <button class="btn btn-danger" onclick="delete_nodes()">Delete nodes</button>
 
                 <br/>
@@ -41,20 +39,18 @@
     }
 
 
-    function change_colour() {
+    async function change_colour() {
+        response_msg("Colours are being updated", 'success', [], "edit_nodes_response")
         var colour = document.getElementById("colour_picker").value
         var selected_nodes = network.getSelectedNodes()
+        var to_update = []
+
         selected_nodes.forEach(function (node_id, i) {
-            if (network.isCluster(node_id) !== true) {
-                data['nodes'].update({id: node_id, color: {background: colour}})
-            } else {
-                network.updateClusteredNode(node_id, {color: {background: colour}})
-                network.getNodesInCluster(node_id).forEach(function (clustered_node_id, j) {
-                    data['nodes'].update({id: clustered_node_id, color: {background: colour}})
-                })
-            }
+            var update_dict = {'id': node_id, 'color': {background: colour}}
+            to_update.push(update_dict)
         })
-        response_msg("Colours updated", 'success', [], "edit_nodes_response")
+
+        data['nodes'].update(to_update)
     }
 
     function edit_nodes_modal_launched() {
@@ -66,31 +62,10 @@
         edit_nodes_modal_launched()
     })
 
-    function fix_positions(fix=true) {
+    async function delete_nodes() {
+        response_msg("Nodes are being deleted", 'success', [], "edit_nodes_response")
         var selected_nodes = network.getSelectedNodes()
-        selected_nodes.forEach(function (node_id, i) {
-            data['nodes'].update({id: node_id, fixed: fix})
-        })
-
-        if (fix === true) {
-            response_msg("Node positions fixed", 'success', [], "edit_nodes_response")
-        } else {
-            response_msg("Node positions Un-fixed", 'success', [], "edit_nodes_response")
-        }
-    }
-
-    function delete_nodes() {
-        var selected_nodes = network.getSelectedNodes()
-        selected_nodes.forEach(function (node_id, i) {
-            if (network.isCluster(node_id) === true) {
-                var cluster_nodes = network.getNodesInCluster(node_id)
-                network.openCluster(node_id)
-                data['nodes'].remove(cluster_nodes)
-            } else {
-                data['nodes'].remove(selected_nodes[i])
-            }
-        })
-        response_msg("Nodes deleted", 'success', [], "edit_nodes_response")
+        data['nodes'].remove(selected_nodes)
     }
 
 

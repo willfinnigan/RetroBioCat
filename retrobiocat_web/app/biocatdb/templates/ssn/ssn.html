@@ -119,15 +119,21 @@
             return new_connected_nodes
         }
 
-        function select_connected_nodes() {
+        function select_all_connected_nodes() {
             var selected_nodes = network.getSelectedNodes()
             var new_nodes_array = network.getSelectedNodes()
             while (new_nodes_array.length !== 0) {
                 new_nodes_array = get_new_connected_nodes(new_nodes_array, selected_nodes)
                 selected_nodes = selected_nodes.concat(new_nodes_array)
-                console.log('selected_nodes:')
-                console.log(selected_nodes)
             }
+            network.selectNodes(selected_nodes)
+        }
+
+        function select_connected_nodes() {
+            var selected_nodes = network.getSelectedNodes()
+            var new_nodes_array = network.getSelectedNodes()
+            new_nodes_array = get_new_connected_nodes(new_nodes_array, selected_nodes)
+            selected_nodes = selected_nodes.concat(new_nodes_array)
             network.selectNodes(selected_nodes)
         }
 

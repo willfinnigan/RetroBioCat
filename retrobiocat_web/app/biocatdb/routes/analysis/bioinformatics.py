@@ -151,3 +151,5 @@ def clear_all_bioinformatics_data():
     flash(f"Done", "success")
     return jsonify(result=result)
 
+
+

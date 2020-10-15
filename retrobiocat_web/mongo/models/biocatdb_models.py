@@ -240,14 +240,3 @@ class SeqSimNet(db.DynamicDocument):
 class SSN_record(db.Document):
     enzyme_type = db.ReferenceField(EnzymeType)
     status = db.StringField(default='Newly created')
-
-
-
-
-
-
-
-
-
-
-
