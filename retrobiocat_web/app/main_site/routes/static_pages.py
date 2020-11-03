@@ -6,7 +6,7 @@ __version__ = datetime.date.today().strftime("%d%m%y")
 
 @bp.route('/', methods=['GET'])
 def home():
-    version = f"{website_version} - {datetime.date.today().strftime('%d%m%y')}"
+    version = f"{website_version}"
     return render_template('home.html',
                            rbc_version=version)
 
