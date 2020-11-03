@@ -11,6 +11,9 @@
         {% if current_user.has_role('admin') %}
             <a class="dropdown-item" href="{{url_for('biocatdb.init_db') }}">Initialise Database</a>
         {% endif %}
+        {% if not current_user.has_role('contributor') %}
+            <a class="dropdown-item" href="{{url_for('biocatdb.contributor_sign_up')}}">Become a database contributor</a>
+        {% endif %}
     </div>
 </li>
 

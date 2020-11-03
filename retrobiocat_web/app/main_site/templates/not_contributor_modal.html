@@ -1,0 +1,32 @@
+<!-- Main modal -->
+<div class="modal fade" id="not_contributor_modal" tabindex="-1" role="dialog" aria-labelledby="not_contributor_modalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Remove contributor status?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <button type="button" onclick="remove_contributor()" data-toggle="collapse" data-target="#collapseSubstrate" class="btn btn-danger">
+                    Remove contributor status
+                </button>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function remove_contributor() {
+        console.log('Remove contributor')
+        $.post(Flask.url_for("main_site.remove_contributor"), {
+        }).done(function(data) {
+            location.assign(Flask.url_for("main_site.user_profile"));
+        })
+    }
+</script>

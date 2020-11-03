@@ -1,8 +1,9 @@
 from retrobiocat_web.app.user_model_forms import UserProfileForm
-from flask import render_template, redirect, url_for, request, jsonify
+from flask import render_template, redirect, url_for, request, jsonify, flash
 from retrobiocat_web.app.main_site import bp
 from retrobiocat_web.app.app import user_datastore, db
 from flask_security import current_user, login_required
+from retrobiocat_web.mongo.models.user_models import User, Role
 
 @bp.route('/user_profile', methods=['GET', 'POST'])
 @login_required
@@ -39,3 +40,26 @@ def delete_account():
         return jsonify({'result':'done'})
     else:
         return jsonify({'result':'failed'})
+
+
+@bp.route('/remove_contributor', methods=['GET', 'POST'])
+@login_required
+def remove_contributor():
+    user = user_datastore.get_user(current_user.id)
+    contributor_role = Role.objects(name='contributor')[0]
+    if contributor_role in user.roles:
+        user.roles.remove(contributor_role)
+        user.save()
+
+        result = {'status': 'success',
+                  'msg': 'Contributor status removed',
+                  'issues': []}
+        flash('Contributor status removed', 'success')
+
+    else:
+        result = {'status': 'danger',
+                  'msg': 'User does not have contributor status',
+                  'issues': []}
+        flash('User does not have contributor status', 'danger')
+    return jsonify(result=result)
+

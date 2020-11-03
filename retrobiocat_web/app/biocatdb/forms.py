@@ -141,3 +141,5 @@ class SSN_Form(FlaskForm):
     def set_choices(self):
         self.enzyme_type.choices = [(c, c) for c in (list(SSN_record.objects().distinct('enzyme_type')))]
 
+class ContributorSignup(FlaskForm):
+    submit = SubmitField('Become a contributor')

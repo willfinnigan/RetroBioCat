@@ -47,6 +47,9 @@
                     <a class="dropdown-item" href="{{url_for('biocatdb.enzyme_teams')}}">Enzyme teams</a>
                     <a class="dropdown-item" href="{{url_for('biocatdb.paper_progress')}}">Database completion</a>
                     <a class="dropdown-item" href="{{url_for('biocatdb.leaderboard')}}">Contributors</a>
+                    {% if not current_user.has_role('contributor') %}
+                        <a class="dropdown-item text-success" href="{{url_for('biocatdb.contributor_sign_up')}}">Become a database contributor</a>
+                    {% endif %}
                     <p class="no_margin"><strong>Other</strong></p>
                     <a class="dropdown-item" href="https://github.com/willfinnigan/RetroBioCat/issues" target="_blank">Report a bug</a>
                     <a class="dropdown-item" href="https://groups.google.com/g/retrobiocat" target="_blank">Forum</a>

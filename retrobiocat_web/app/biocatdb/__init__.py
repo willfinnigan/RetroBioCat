@@ -7,7 +7,7 @@ bp = Blueprint('biocatdb',
                static_url_path='/biocatdb/static'
                )
 
-from retrobiocat_web.app.biocatdb.routes.contributions import data_submission, seq_tables, paper_tables, add_new_paper, progress
+from retrobiocat_web.app.biocatdb.routes.contributions import data_submission, seq_tables, paper_tables, add_new_paper, progress, contributor_sign_up
 from retrobiocat_web.app.biocatdb.routes.contributions.ajax import sequences_ajax, activity_ajax, papers_ajax, enzyme_types_ajax, paper_admin_ajax
 from retrobiocat_web.app.biocatdb.routes.contributions.admin import add_or_edit_enzyme_type, download_data, edit_rxn_rules, init_mongodb
 

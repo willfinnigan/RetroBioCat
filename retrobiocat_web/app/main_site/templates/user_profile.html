@@ -39,6 +39,12 @@
                                 Delete my account
                             </button>
 
+                            {% if current_user.has_role('contributor') %}
+                                <button type="button" data-toggle="modal" data-target="#not_contributor_modal"class="btn btn-warning btn-sm">
+                                    I don't want to be a database contributor
+                                </button>
+                            {% endif %}
+
                         </div>
                     </div>
                 </div>
@@ -46,4 +52,6 @@
     </div>
 
     {% include 'delete_account_modal.html' %}
+    {% include 'not_contributor_modal.html' %}
+
 {% endblock %}
