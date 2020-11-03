@@ -23,13 +23,13 @@ def ssn_page(task_id):
                            edges=result['edges'],
                            alignment_score=result['alignment_score'])
 
-def task_get_ssn(enzyme_type, min_score, combine_mutants, only_biocatdb):
+def task_get_ssn(enzyme_type, min_score, include_mutants, only_biocatdb):
     job = get_current_job()
     job.meta['progress'] = 'started'
     job.save_meta()
 
     ssn = SSN(enzyme_type)
-    ssn.load(include_mutants=not combine_mutants, only_biocatdb=only_biocatdb)
+    ssn.load(include_mutants=include_mutants, only_biocatdb=only_biocatdb)
 
     vis = SSN_Visualiser(enzyme_type, log_level=1)
     nodes, edges = vis.visualise(ssn, min_score)
@@ -77,9 +77,9 @@ def ssn_form():
     if form.validate_on_submit() == True:
         enzyme_type = form.data['enzyme_type']
         min_score = form.data['alignment_score']
-        combine_mutants = form.data['combine_mutants']
+        include_mutants = form.data['include_mutants']
         only_biocatdb = form.data['only_biocatdb']
-        task = current_app.network_queue.enqueue(task_get_ssn, enzyme_type, min_score, combine_mutants, only_biocatdb)
+        task = current_app.network_queue.enqueue(task_get_ssn, enzyme_type, min_score, include_mutants, only_biocatdb)
 
         if old_task_id != None:
             try:
@@ -98,7 +98,28 @@ def ssn_object_status():
     enzyme_type = request.form['enzyme_type']
     enzyme_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
     ssn_obj = SSN_record.objects(enzyme_type=enzyme_type_obj)[0]
-    result = {'status': ssn_obj.status}
+
+    alignment_cluster_data = []
+    max_clusters = 0
+    max_alignment = 0
+    min_alignment = 300
+    if ssn_obj.num_at_alignment_score is not None:
+        for score_string, num_clusters in ssn_obj.num_at_alignment_score.items():
+            score = int(score_string)
+            data = {'alignment_score': score, 'num_clusters': int(num_clusters)}
+            alignment_cluster_data.append(data)
+            if score > max_alignment:
+                max_alignment = score
+            if score < min_alignment:
+                min_alignment = score
+            if num_clusters > max_clusters:
+                max_clusters = num_clusters
+
+    result = {'status': ssn_obj.status,
+              'alignment_cluster_data': alignment_cluster_data,
+              'max_clusters': max_clusters + 1,
+              'max_alignment': max_alignment + 5,
+              'min_alignment': min_alignment - 5}
     return jsonify(result=result)
 
 

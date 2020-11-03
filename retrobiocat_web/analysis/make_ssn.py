@@ -16,6 +16,46 @@ import numpy as np
 import palettable
 
 
+class SSN_Cluster_Precalculator(object):
+
+    def __init__(self, ssn, log_level=1):
+        self.ssn = ssn
+        self.visualiser = SSN_Visualiser(ssn.enzyme_type, log_level=0)
+
+        self.start = 300
+        self.end = 20
+        self.step = -5
+        self.min_cluster_size = 6
+
+        self.log_level = log_level
+
+    def precalulate(self):
+        pos_at_alignment_score = {}
+        num_at_alignment_score = {}
+        current_num_clusters = 0
+        for alignment_score in range(self.start, self.end, self.step):
+            clusters, graph = self.visualiser.get_clusters_and_subgraph(self.ssn, alignment_score)
+            num_clusters = self._get_num_clusters(clusters)
+            if (num_clusters != current_num_clusters) and (num_clusters != 0):
+                self.log(f"Adding new set of {num_clusters} clusters at alignment score {alignment_score}")
+                current_num_clusters = num_clusters
+                num_at_alignment_score[str(alignment_score)] = num_clusters
+                pos_dict = self.visualiser.get_cluster_positions(graph, clusters)
+                pos_at_alignment_score[str(alignment_score)] = pos_dict
+
+        return num_at_alignment_score, pos_at_alignment_score
+
+    def _get_num_clusters(self, clusters):
+        num = 0
+        for cluster in clusters:
+            if len(cluster) >= self.min_cluster_size:
+                num += 1
+        return num
+
+    def log(self, msg, level=1):
+        if self.log_level >= level:
+            print(f"Cluster_Precalc({self.ssn.enzyme_type}): {msg}")
+
 class ClusterPositioner(object):
 
     def __init__(self, max_width=20):
@@ -97,7 +137,6 @@ class ClusterPositioner(object):
 
         return pos_dict
 
-
 class SSN_Visualiser(object):
 
     def __init__(self, enzyme_type, log_level=0):
@@ -122,14 +161,10 @@ class SSN_Visualiser(object):
         self.cluster_positioner = ClusterPositioner()
 
     def visualise(self, ssn, alignment_score, precalc_pos=None):
-        graph = ssn.get_graph_filtered_edges(alignment_score)
-        clusters = list(nx.connected_components(graph))
-        clusters.sort(key=len, reverse=True)
-
-        graph = self._add_cluster_node_colours(graph, clusters)
+        clusters, graph = self.get_clusters_and_subgraph(ssn, alignment_score)
 
         if precalc_pos is None:
-            pos_dict = self._get_cluster_positions(graph, clusters)
+            pos_dict = self.get_cluster_positions(graph, clusters)
         else:
             pos_dict = precalc_pos
 
@@ -137,7 +172,7 @@ class SSN_Visualiser(object):
 
         return nodes, edges
 
-    def _get_cluster_positions(self, graph, clusters):
+    def get_cluster_positions(self, graph, clusters):
 
         pos_dict = {}
         for i, cluster in enumerate(clusters):
@@ -155,6 +190,15 @@ class SSN_Visualiser(object):
             pos_dict.update(cluster_positions)
 
         return pos_dict
+
+    def get_clusters_and_subgraph(self, ssn, alignment_score):
+        graph = ssn.get_graph_filtered_edges(alignment_score)
+        clusters = list(nx.connected_components(graph))
+        clusters.sort(key=len, reverse=True)
+        graph = self._add_cluster_node_colours(graph, clusters)
+
+        return clusters, graph
+
 
     def _add_cluster_node_colours(self, graph, clusters):
         self.log(f"Colouring clusters.. (opacity={self.opacity})")
@@ -263,7 +307,7 @@ class SSN_Visualiser(object):
         return node_metadata
 
     def log(self, msg, level=1):
-        if level >= self.log_level:
+        if self.log_level >= level:
             print(f"SSN_Visualiser: {msg}")
 
 class SSN(object):
@@ -507,7 +551,6 @@ class SSN(object):
 
 
 
-
 def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
     current_app.app_context().push()
 
@@ -544,9 +587,15 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
 
         return
 
-    enz_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
+    ssn.set_status('Precalculating cluster positions')
+    ssn_precalc = SSN_Cluster_Precalculator(ssn)
+    num_at_alignment_score, pos_at_alignment_score = ssn_precalc.precalulate()
+
+    ssn.db_object.num_at_alignment_score = num_at_alignment_score
+    ssn.db_object.pos_at_alignment_score = pos_at_alignment_score
+    ssn.db_object.save()
+
     ssn.set_status('Complete')
-    enz_type_obj.save()
     ssn.save()
     print(f'- SSN CONSTRUCTION FOR {enzyme_type} IS COMPLETE -')
 

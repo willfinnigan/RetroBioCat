@@ -76,7 +76,7 @@
 
         var shown_edges = []
 
-        function show_hide_edges(array_edges, hidden) {
+        async function show_hide_edges(array_edges, hidden) {
             var update_array = []
             array_edges.forEach(function (edge, i) {
                 var update_edge = {'id': edge, 'hidden': hidden}
@@ -98,13 +98,8 @@
             shown_edges = []
         })
 
-
-
-
-
-
-
-
+        network.moveTo({position: {x:20000, y:20000},
+                        scale: 0.01})
 
         function get_new_connected_nodes(nodes_array, selected_nodes) {
             var new_connected_nodes = []

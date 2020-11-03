@@ -18,7 +18,7 @@ from mongoengine import Q
 
 csrf = CSRFProtect()
 jsglue = JSGlue()
-limiter = Limiter(key_func=get_remote_address, default_limits=["3200/hour"])
+limiter = Limiter(key_func=get_remote_address, default_limits=["3200/hour", "10/5second"])
 talisman = Talisman(content_security_policy=False)
 mail = Mail()
 admin_ext = Admin()

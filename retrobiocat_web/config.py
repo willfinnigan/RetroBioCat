@@ -46,3 +46,5 @@ class Config(object):
     SESSION_REDIS = redis.from_url(REDIS_URL)
     SESSION_USE_SIGNER = True
 
+
+

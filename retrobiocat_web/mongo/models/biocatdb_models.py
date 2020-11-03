@@ -240,3 +240,5 @@ class SeqSimNet(db.DynamicDocument):
 class SSN_record(db.Document):
     enzyme_type = db.ReferenceField(EnzymeType)
     status = db.StringField(default='Newly created')
+    num_at_alignment_score = db.DictField()
+    pos_at_alignment_score = db.DictField()
