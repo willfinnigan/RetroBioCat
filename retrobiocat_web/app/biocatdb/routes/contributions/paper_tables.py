@@ -33,9 +33,13 @@ def my_papers():
     papers_data = list(Paper.objects(owner=user).only(*papers_table.PAPERS_TABLE_FIELDS).order_by('-status').as_pymongo())
     papers_data = papers_table.process_papers_dict(papers_data)
 
+    papers_button_columns = ['edit']
+    if user.has_role('paper_adder'):
+        papers_button_columns.append('delete')
+
     return render_template('edit_tables/edit_papers.html',
                            papers_data=papers_data, papers_table_height='80vh',
-                           papers_button_columns=['delete', 'edit'],
+                           papers_button_columns=papers_button_columns,
                            show_owner=True,
                            title=f"Papers assigned to {user.first_name} {user.last_name}",
                            row_click_modal=False)
