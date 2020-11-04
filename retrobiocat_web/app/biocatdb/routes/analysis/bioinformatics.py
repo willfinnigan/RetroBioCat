@@ -33,6 +33,8 @@ def set_blast_jobs(enzyme_type):
             seq.blast = datetime.datetime.now()
         seq.save()
 
+    current_app.task_queue.enqueue(embl_restfull.check_blast_status, enzyme_type)
+
 @bp.route('/_find_homologs', methods=['GET', 'POST'])
 @roles_required('admin')
 def find_homologs():
@@ -67,7 +69,6 @@ def expand_ssn():
     enzyme_type = request.form['enzyme_type']
     job_name = f"{enzyme_type}_expand_ssn"
     current_app.alignment_queue.enqueue(make_ssn.task_expand_ssn, enzyme_type, job_id=job_name)
-    set_bioinformatics_status(enzyme_type, 'Making SSN')
 
     result = {'status': 'success',
               'msg': f"Launched expand ssn for {enzyme_type}'s",

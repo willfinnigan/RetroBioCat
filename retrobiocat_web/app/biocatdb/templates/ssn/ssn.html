@@ -98,7 +98,7 @@
             shown_edges = []
         })
 
-        network.moveTo({position: {x:20000, y:20000},
+        network.moveTo({position: {{start_pos|safe}},
                         scale: 0.01})
 
         function get_new_connected_nodes(nodes_array, selected_nodes) {

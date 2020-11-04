@@ -12,18 +12,20 @@ from retrobiocat_web.analysis.make_ssn import SSN, SSN_Visualiser
 from retrobiocat_web.app.biocatdb.forms import SSN_Form
 import json
 
-
 @bp.route('/ssn_page/<task_id>/', methods=['GET'])
 def ssn_page(task_id):
     task = current_app.network_queue.fetch_job(task_id)
     result = task.result
+    node_one = result['nodes'][0]
+    start_pos = {'x': node_one['x'], 'y': node_one['y']}
 
     return render_template('ssn/ssn.html',
                            nodes=result['nodes'],
                            edges=result['edges'],
-                           alignment_score=result['alignment_score'])
+                           alignment_score=result['alignment_score'],
+                           start_pos=start_pos)
 
-def task_get_ssn(enzyme_type, min_score, include_mutants, only_biocatdb):
+def task_get_ssn(enzyme_type, score, include_mutants, only_biocatdb):
     job = get_current_job()
     job.meta['progress'] = 'started'
     job.save_meta()
@@ -31,12 +33,19 @@ def task_get_ssn(enzyme_type, min_score, include_mutants, only_biocatdb):
     ssn = SSN(enzyme_type)
     ssn.load(include_mutants=include_mutants, only_biocatdb=only_biocatdb)
 
+    if str(score) in ssn.db_object.pos_at_alignment_score:
+        precalc_pos = ssn.db_object.pos_at_alignment_score[str(score)]
+    else:
+        precalc_pos = None
+
     vis = SSN_Visualiser(enzyme_type, log_level=1)
-    nodes, edges = vis.visualise(ssn, min_score)
+    nodes, edges = vis.visualise(ssn, score, precalc_pos=precalc_pos)
+
+
 
     result = {'nodes': nodes,
               'edges': edges,
-              'alignment_score': min_score}
+              'alignment_score': score}
 
     return result
 
@@ -115,8 +124,20 @@ def ssn_object_status():
             if num_clusters > max_clusters:
                 max_clusters = num_clusters
 
+    alignment_identity_data = []
+    if ssn_obj.identity_at_alignment_score is not None:
+        for score_string, identity_data in ssn_obj.identity_at_alignment_score.items():
+            score = int(score_string)
+            if score > max_alignment:
+                max_alignment = score
+            data = {'alignment_score': score,
+                    'i_avg': identity_data[0],
+                    'i_stdev': identity_data[1]}
+            alignment_identity_data.append(data)
+
     result = {'status': ssn_obj.status,
               'alignment_cluster_data': alignment_cluster_data,
+              'alignment_identity_data': alignment_identity_data,
               'max_clusters': max_clusters + 1,
               'max_alignment': max_alignment + 5,
               'min_alignment': min_alignment - 5}

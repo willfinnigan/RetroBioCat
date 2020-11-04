@@ -14,17 +14,18 @@ from collections import Counter
 import random
 import numpy as np
 import palettable
+import statistics
+
 
 
 class SSN_Cluster_Precalculator(object):
 
     def __init__(self, ssn, log_level=1):
         self.ssn = ssn
-        self.visualiser = SSN_Visualiser(ssn.enzyme_type, log_level=0)
 
-        self.start = 300
-        self.end = 20
-        self.step = -5
+        self.start = 10
+        self.end = 300
+        self.step = 5
         self.min_cluster_size = 6
 
         self.log_level = log_level
@@ -34,16 +35,31 @@ class SSN_Cluster_Precalculator(object):
         num_at_alignment_score = {}
         current_num_clusters = 0
         for alignment_score in range(self.start, self.end, self.step):
-            clusters, graph = self.visualiser.get_clusters_and_subgraph(self.ssn, alignment_score)
+            visualiser = SSN_Visualiser(self.ssn.enzyme_type, log_level=0)
+            clusters, graph = visualiser.get_clusters_and_subgraph(self.ssn, alignment_score)
             num_clusters = self._get_num_clusters(clusters)
-            if (num_clusters != current_num_clusters) and (num_clusters != 0):
+            if (num_clusters > current_num_clusters) and (num_clusters != 0):
                 self.log(f"Adding new set of {num_clusters} clusters at alignment score {alignment_score}")
                 current_num_clusters = num_clusters
                 num_at_alignment_score[str(alignment_score)] = num_clusters
-                pos_dict = self.visualiser.get_cluster_positions(graph, clusters)
+                pos_dict = visualiser.get_cluster_positions(graph, clusters)
                 pos_at_alignment_score[str(alignment_score)] = pos_dict
 
         return num_at_alignment_score, pos_at_alignment_score
+
+    def precalculate_identity_at_alignment(self):
+        identity_at_alignment_score = {}
+        for alignment_score in range(self.start, self.end, self.step):
+            graph = self.ssn.get_graph_filtered_edges(alignment_score)
+            identities = []
+            for edge in list(graph.edges(data=True)):
+                identities.append(edge[2]['i'])
+
+            if len(identities) >= 2:
+                identity_at_alignment_score[str(alignment_score)] = [round(statistics.mean(identities), 2),
+                                                                     round(statistics.stdev(identities, statistics.mean(identities)),2)]
+
+        return identity_at_alignment_score
 
     def _get_num_clusters(self, clusters):
         num = 0
@@ -166,7 +182,9 @@ class SSN_Visualiser(object):
         if precalc_pos is None:
             pos_dict = self.get_cluster_positions(graph, clusters)
         else:
+            self.log("Using precalculated positions")
             pos_dict = precalc_pos
+
 
         nodes, edges = self._get_nodes_and_edges(graph, pos_dict)
 
@@ -365,7 +383,7 @@ class SSN(object):
         df_graph = pd.read_csv(f"{self.save_path}/graph.csv")
         att_dict = json.load(open(f'{self.save_path}/attributes.json'))
 
-        self.graph = nx.from_pandas_edgelist(df_graph, edge_attr=['weight'])
+        self.graph = nx.from_pandas_edgelist(df_graph, edge_attr=['weight', 'i', 'c'])
 
         # Nodes with no edges are not in edge list..
         for node in att_dict:
@@ -390,13 +408,13 @@ class SSN(object):
 
         name = seq_obj.enzyme_name
         self._add_protein_node(name, alignments_made=True)
-        alignment_names, alignment_scores = self.aba_blaster.get_alignments(seq_obj)
+        alignment_names, alignment_scores, identities, coverages = self.aba_blaster.get_alignments(seq_obj)
         #self.graph.nodes[name]['attributes']['alignments_made'] = True
 
         count = 0
         for i, protein_name in enumerate(alignment_names):
             count += self._add_protein_node(protein_name)
-            self._add_alignment_edge(seq_obj.enzyme_name, protein_name, alignment_scores[i])
+            self._add_alignment_edge(seq_obj.enzyme_name, protein_name, alignment_scores[i], identities[i], coverages[i])
 
         t1 = time.time()
         self.log(f"{count} new nodes made for alignments, with {len(alignment_names)} edges added")
@@ -519,9 +537,9 @@ class SSN(object):
 
         return 0
 
-    def _add_alignment_edge(self, node_name, alignment_node_name, alignment_score):
+    def _add_alignment_edge(self, node_name, alignment_node_name, alignment_score, i, c):
         if node_name != alignment_node_name:
-            self.graph.add_edge(node_name, alignment_node_name, weight=alignment_score)
+            self.graph.add_edge(node_name, alignment_node_name, weight=alignment_score, i=i, c=c)
 
     def log(self, msg, level=10):
         if level >= self.log_level:
@@ -549,6 +567,14 @@ class SSN(object):
         self.db_object.status = status
         self.db_object.save()
 
+    def clear_position_information(self):
+        self.log(f"Clearing old node position information", level=1)
+        if self.db_object.num_at_alignment_score != {}:
+            self.db_object.num_at_alignment_score = {}
+            self.db_object.pos_at_alignment_score = {}
+            self.db_object.identity_at_alignment_score = {}
+            self.db_object.save()
+
 
 
 def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
@@ -559,12 +585,13 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
 
     ssn = SSN(enzyme_type, aba_blaster=aba_blaster, log_level=log_level)
     ssn.load()
-    ssn.set_status('Chekcing SSN')
+    ssn.set_status('Checking SSN')
     ssn.remove_nonexisting_seqs()
 
     biocatdb_seqs = ssn.nodes_not_present(only_biocatdb=True, max_num=max_num)
     if len(biocatdb_seqs) != 0:
         ssn.set_status('Adding and aligning BioCatDB sequences')
+        ssn.clear_position_information()
         ssn.add_multiple_proteins(biocatdb_seqs)
         ssn.save()
         current_app.alignment_queue.enqueue(new_expand_ssn_job, enzyme_type)
@@ -573,6 +600,7 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
     need_alignments = ssn.nodes_need_alignments(max_num=max_num)
     if len(need_alignments) != 0:
         ssn.set_status('Aligning sequences in SSN')
+        ssn.clear_position_information()
         ssn.add_multiple_proteins(need_alignments)
         ssn.save()
         current_app.alignment_queue.enqueue(new_expand_ssn_job, enzyme_type)
@@ -581,16 +609,21 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
     not_present = ssn.nodes_not_present(max_num=max_num)
     if len(not_present) != 0:
         ssn.set_status('Adding UniRef sequences which are not yet present')
+        ssn.clear_position_information()
         ssn.add_multiple_proteins(not_present)
         ssn.save()
         current_app.alignment_queue.enqueue(new_expand_ssn_job, enzyme_type)
 
         return
 
+
+    #if ssn.db_object.pos_at_alignment_score == {}:
     ssn.set_status('Precalculating cluster positions')
     ssn_precalc = SSN_Cluster_Precalculator(ssn)
     num_at_alignment_score, pos_at_alignment_score = ssn_precalc.precalulate()
+    identity_at_alignment_score = ssn_precalc.precalculate_identity_at_alignment()
 
+    ssn.db_object.identity_at_alignment_score = identity_at_alignment_score
     ssn.db_object.num_at_alignment_score = num_at_alignment_score
     ssn.db_object.pos_at_alignment_score = pos_at_alignment_score
     ssn.db_object.save()

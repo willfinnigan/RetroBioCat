@@ -54,11 +54,11 @@ class AllByAllBlaster(object):
         if (seq_obj.sequence != None):
             if len(seq_obj.sequence) > 12:
                 blast_record = self._blast_seq(seq_obj)
-                alignment_names, alignment_scores = self._process_blast_record(seq_obj, blast_record)
+                alignment_names, alignment_scores, identities, coverage = self._process_blast_record(seq_obj, blast_record)
                 self.log(f"{len(alignment_names)} made.")
-                return alignment_names, alignment_scores
+                return alignment_names, alignment_scores, identities, coverage
 
-        return [], []
+        return [], [], [], []
 
     def get_clusters(self, identity):
 
@@ -100,25 +100,26 @@ class AllByAllBlaster(object):
         t0 = time.time()
         query_length = len(query_object.sequence)
 
-        alignment_names = []
-        alignment_scores = []
+        alignment_names, alignment_scores, identities, coverages = [], [], [], []
         for alignment in blast_record.alignments:
             if len(alignment.hsps) == 1:
                 hsp = alignment.hsps[0]
 
                 subject_name = alignment.title.replace(f"{alignment.hit_id} ", "")
 
-                coverage = hsp.align_length / query_length
-                identity = hsp.identities / hsp.align_length
+                coverage = round((hsp.align_length / query_length),2)
+                identity = round((hsp.identities / hsp.align_length),2)
 
                 if (subject_name != query_object.enzyme_name) and (identity >= self.min_identity) and (coverage >= self.min_coverage):
                     score = self._calc_alignment_score(hsp.bits, query_length, hsp.align_length)
                     alignment_names.append(subject_name)
                     alignment_scores.append(score)
+                    identities.append(identity)
+                    coverages.append(coverage)
         t1 = time.time()
         self.log(f"processed alignments in {round(t1-t0,0)} seconds")
 
-        return alignment_names, alignment_scores
+        return alignment_names, alignment_scores, identities, coverages
 
     def _make_db_fasta(self):
         """ Create a fasta file containing all the sequences of an enzyme type """
