@@ -54,9 +54,13 @@ def create_app(config_class=Config, use_talisman=True):
     app.blast_queue = rq.Queue('blast', connection=app.redis, default_timeout=1*60*60, result_ttl=1)
     app.process_blasts_queue = rq.Queue('process_blasts', connection=app.redis, default_timeout=2*60*60, result_ttl=1)
     app.alignment_queue = rq.Queue('alignment', connection=app.redis, default_timeout=12 * 60 * 60, result_ttl=1)
-
+    app.preprocess_queue = rq.Queue('preprocess', connection=app.redis, default_timeout=12 * 60 * 60, result_ttl=1)
+    app.auto_jobs = rq.Queue('auto_jobs', connection=app.redis, default_timeout=600, result_ttl=1)
     app.redis_queues = [app.task_queue, app.network_queue, app.pathway_queue, app.retrorules_queue,
-                        app.db_queue, app.blast_queue, app.alignment_queue, app.process_blasts_queue]
+                        app.db_queue, app.blast_queue, app.alignment_queue, app.process_blasts_queue,
+                        app.preprocess_queue, app.auto_jobs ]
+
+    app.auto_jobs.delete()
 
     print("Init addons...")
     if use_talisman == True:

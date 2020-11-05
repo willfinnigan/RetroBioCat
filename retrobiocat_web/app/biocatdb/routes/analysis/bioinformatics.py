@@ -2,7 +2,7 @@ from retrobiocat_web.app.biocatdb import bp
 from flask import render_template, flash, redirect, url_for, request, jsonify, session, current_app
 from flask_security import roles_required, current_user
 from retrobiocat_web.mongo.models.biocatdb_models import Paper, Activity, Sequence, Molecule, Tag, EnzymeType, UniRef90, UniRef50, Alignment, SeqSimNet, SSN_record
-from retrobiocat_web.analysis import embl_restfull, all_by_all_blast, make_ssn
+from retrobiocat_web.analysis import embl_restfull, all_by_all_blast, make_ssn, ssn_tasks
 from rq.registry import StartedJobRegistry
 import datetime
 import mongoengine as db
@@ -20,7 +20,6 @@ def set_blast_jobs(enzyme_type):
 
     seqs = Sequence.objects(db.Q(enzyme_type=enzyme_type) & db.Q(bioinformatics_ignore__ne=True))
     for seq in seqs:
-        print(seq.enzyme_name)
         if seq.sequence != '' and seq.sequence is not None and seq.blast is None:
             if len(seq.sequence) > 50:
                 name = str(seq.enzyme_name)
@@ -68,7 +67,7 @@ def find_allhomologs():
 def expand_ssn():
     enzyme_type = request.form['enzyme_type']
     job_name = f"{enzyme_type}_expand_ssn"
-    current_app.alignment_queue.enqueue(make_ssn.task_expand_ssn, enzyme_type, job_id=job_name)
+    current_app.alignment_queue.enqueue(ssn_tasks.task_expand_ssn, enzyme_type, job_id=job_name)
 
     result = {'status': 'success',
               'msg': f"Launched expand ssn for {enzyme_type}'s",

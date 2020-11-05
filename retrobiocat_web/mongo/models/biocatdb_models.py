@@ -70,7 +70,7 @@ class Sequence(db.Document):
     papers = db.ListField(db.ReferenceField(Paper))
 
     blast = db.DateTimeField(default=None)
-    alignments_made = db.DateTimeField()
+    alignments_made = db.BooleanField(default=False)
 
     objects_to_update = []
 
@@ -101,10 +101,15 @@ class Sequence(db.Document):
         self.enzyme_name = new_name
         self.save()
 
+        self.mark_bioinformatics_for_updating()
+
         return True, 'Update successful'
 
     def update_type(self, new_type):
-        q = EnzymeType(enzyme_type=new_type)
+
+        self.mark_bioinformatics_for_updating()
+        old_type = self.enzyme_type
+        q = EnzymeType.objects(enzyme_type=new_type)
         if len(q) == 0:
             return False, 'Enzyme type not found'
 
@@ -129,7 +134,19 @@ class Sequence(db.Document):
         self.sequence = seq_string
         self.blast = None
         self.save()
+        self.mark_bioinformatics_for_updating()
         return True, 'Sequence updated'
+
+    def mark_bioinformatics_for_updating(self):
+        enz_type_obj = EnzymeType.objects(enzyme_type=self.enzyme_type)[0]
+        ssn_record = SSN_record.objects(enzyme_type=enz_type_obj)[0]
+        ssn_record.status = 'Queued for update'
+        ssn_record.save()
+        enz_type_obj.bioinformatics_status = 'Queued for update'
+        enz_type_obj.save()
+
+        self.alignments_made = False
+        self.blast = None
 
     def __unicode__(self):
         return self.enzyme_name
@@ -214,7 +231,7 @@ class UniRef50(db.Document):
     result_of_blasts_for = db.ListField(db.ReferenceField(Sequence))
     seq_match = db.ReferenceField(Sequence)
     blast_round = db.IntField()
-    alignments_made = db.DateTimeField()
+    alignments_made = db.BooleanField(default=False)
 
     protein_name = db.StringField()
     tax = db.StringField()

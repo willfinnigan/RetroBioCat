@@ -212,7 +212,6 @@ def check_blast_status(enzyme_type):
     for seq in seqs:
         if seq.blast is None:
             all_complete = False
-            print(f"{seq.name} has not been blasted")
 
     if all_complete == True:
         enz_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]

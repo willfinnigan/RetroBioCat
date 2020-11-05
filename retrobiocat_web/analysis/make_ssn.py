@@ -1,22 +1,15 @@
 from retrobiocat_web.mongo.models.biocatdb_models import Sequence, EnzymeType, UniRef50, SSN_record
 from retrobiocat_web.analysis.all_by_all_blast import AllByAllBlaster
-from flask import render_template, flash, redirect, url_for, request, jsonify, session, current_app
+from flask import current_app
 import mongoengine as db
 import networkx as nx
 import time
 import json
-from rq.registry import StartedJobRegistry
 from pathlib import Path
 import os
 import pandas as pd
-from bson.binary import Binary
-from collections import Counter
-import random
-import numpy as np
 import palettable
 import statistics
-
-
 
 class SSN_Cluster_Precalculator(object):
 
@@ -30,20 +23,24 @@ class SSN_Cluster_Precalculator(object):
 
         self.log_level = log_level
 
-    def precalulate(self):
+    def precalulate(self, num=5, current_num_clusters=0):
         pos_at_alignment_score = {}
         num_at_alignment_score = {}
-        current_num_clusters = 0
+        count = 0
         for alignment_score in range(self.start, self.end, self.step):
             visualiser = SSN_Visualiser(self.ssn.enzyme_type, log_level=0)
             clusters, graph = visualiser.get_clusters_and_subgraph(self.ssn, alignment_score)
             num_clusters = self._get_num_clusters(clusters)
             if (num_clusters > current_num_clusters) and (num_clusters != 0):
+                count += 1
                 self.log(f"Adding new set of {num_clusters} clusters at alignment score {alignment_score}")
                 current_num_clusters = num_clusters
                 num_at_alignment_score[str(alignment_score)] = num_clusters
                 pos_dict = visualiser.get_cluster_positions(graph, clusters)
                 pos_at_alignment_score[str(alignment_score)] = pos_dict
+
+            if count == num:
+                return num_at_alignment_score, pos_at_alignment_score
 
         return num_at_alignment_score, pos_at_alignment_score
 
@@ -57,7 +54,8 @@ class SSN_Cluster_Precalculator(object):
 
             if len(identities) >= 2:
                 identity_at_alignment_score[str(alignment_score)] = [round(statistics.mean(identities), 2),
-                                                                     round(statistics.stdev(identities, statistics.mean(identities)),2)]
+                                                                     round(statistics.stdev(identities, statistics.mean(
+                                                                         identities)), 2)]
 
         return identity_at_alignment_score
 
@@ -100,7 +98,7 @@ class ClusterPositioner(object):
         h_dim = max_x - min_x
         v_dim = max_y - min_y
         v_dim_move = 0
-        if v_dim*0.8 > self.v_move:
+        if v_dim * 0.8 > self.v_move:
             self.v_move = v_dim * 0.8
             v_dim_move = v_dim * 0.2
 
@@ -153,6 +151,13 @@ class ClusterPositioner(object):
 
         return pos_dict
 
+    def round_positions(self, pos_dict, round_to=2):
+        rounded_pos_dict = {}
+        for key in pos_dict:
+            rounded_pos_dict[key] = [round(pos_dict[key][0], round_to),
+                                     round(pos_dict[key][1], round_to)]
+        return rounded_pos_dict
+
 class SSN_Visualiser(object):
 
     def __init__(self, enzyme_type, log_level=0):
@@ -185,7 +190,6 @@ class SSN_Visualiser(object):
             self.log("Using precalculated positions")
             pos_dict = precalc_pos
 
-
         nodes, edges = self._get_nodes_and_edges(graph, pos_dict)
 
         return nodes, edges
@@ -194,17 +198,18 @@ class SSN_Visualiser(object):
 
         pos_dict = {}
         for i, cluster in enumerate(clusters):
-            self.log(f"Getting layout for cluster {i+1} of {len(clusters)}")
+            self.log(f"Getting layout for cluster {i + 1} of {len(clusters)}")
             sub_graph = graph.subgraph(cluster)
-            scale = 750+(20*len(cluster))
+            scale = 750 + (20 * len(cluster))
 
-            #if len(cluster) > 200:
+            # if len(cluster) > 200:
             #    cluster_positions = nx.nx_pydot.pydot_layout(sub_graph, prog="sfdp")
-            #elif len(cluster) > 10:
+            # elif len(cluster) > 10:
             #    cluster_positions = nx.nx_pydot.pydot_layout(sub_graph, prog="neato")
-            #else:
+            # else:
             cluster_positions = nx.spring_layout(sub_graph, k=1, iterations=200, scale=scale, weight=None)
             cluster_positions = self.cluster_positioner.position(cluster_positions)
+            cluster_positions = self.cluster_positioner.round_positions(cluster_positions, round_to=0)
             pos_dict.update(cluster_positions)
 
         return pos_dict
@@ -217,14 +222,13 @@ class SSN_Visualiser(object):
 
         return clusters, graph
 
-
     def _add_cluster_node_colours(self, graph, clusters):
         self.log(f"Colouring clusters.. (opacity={self.opacity})")
         colours = palettable.cartocolors.qualitative.Vivid_10.mpl_colors
         for i, cluster in enumerate(clusters):
             c = colours.pop(0)
             colours.append(c)
-            cc = f"rgba({int(c[0]*255)},{int(c[1]*255)},{int(c[2]*255)},{self.opacity})"
+            cc = f"rgba({int(c[0] * 255)},{int(c[1] * 255)},{int(c[2] * 255)},{self.opacity})"
             for node in cluster:
                 graph.nodes[node]['colour'] = cc
 
@@ -291,7 +295,7 @@ class SSN_Visualiser(object):
         return node
 
     def _get_vis_edge(self, edge_one, edge_two, weight):
-        #weight = self.graph.get_edge_data(edge_one, edge_two, default={'weight': 0})['weight']
+        # weight = self.graph.get_edge_data(edge_one, edge_two, default={'weight': 0})['weight']
         edge = {'id': f"from {edge_one} to {edge_two}",
                 'from': edge_one,
                 'to': edge_two,
@@ -317,7 +321,8 @@ class SSN_Visualiser(object):
 
     def _find_uniref_metadata(self):
         node_metadata = {}
-        unirefs = UniRef50.objects(enzyme_type=self.enzyme_type_obj).exclude('id', 'enzyme_type', 'sequence', "result_of_blasts_for")
+        unirefs = UniRef50.objects(enzyme_type=self.enzyme_type_obj).exclude('id', 'enzyme_type', 'sequence',
+                                                                             "result_of_blasts_for")
 
         for seq_obj in unirefs:
             node_metadata[seq_obj.enzyme_name] = json.loads(seq_obj.to_json())
@@ -409,16 +414,20 @@ class SSN(object):
         name = seq_obj.enzyme_name
         self._add_protein_node(name, alignments_made=True)
         alignment_names, alignment_scores, identities, coverages = self.aba_blaster.get_alignments(seq_obj)
-        #self.graph.nodes[name]['attributes']['alignments_made'] = True
+        # self.graph.nodes[name]['attributes']['alignments_made'] = True
 
         count = 0
         for i, protein_name in enumerate(alignment_names):
             count += self._add_protein_node(protein_name)
-            self._add_alignment_edge(seq_obj.enzyme_name, protein_name, alignment_scores[i], identities[i], coverages[i])
+            self._add_alignment_edge(seq_obj.enzyme_name, protein_name, alignment_scores[i], identities[i],
+                                     coverages[i])
 
         t1 = time.time()
+        seq_obj.alignments_made = True
+        seq_obj.save()
+
         self.log(f"{count} new nodes made for alignments, with {len(alignment_names)} edges added")
-        self.log(f"Protein {seq_obj.enzyme_name} processed in {round(t1-t0,0)} seconds")
+        self.log(f"Protein {seq_obj.enzyme_name} processed in {round(t1 - t0, 0)} seconds")
 
     def add_multiple_proteins(self, list_seq_obj):
         for seq_obj in list_seq_obj:
@@ -439,7 +448,7 @@ class SSN(object):
                     break
 
         t1 = time.time()
-        self.log(f"Identified {count} nodes which need alignments making in {round(t1-t0,1)} seconds")
+        self.log(f"Identified {count} nodes which need alignments making in {round(t1 - t0, 1)} seconds")
 
         return need_alignments
 
@@ -472,7 +481,8 @@ class SSN(object):
                 not_in_nodes = not_in_nodes[0:max_num]
 
         t1 = time.time()
-        self.log(f"Identified {len(not_in_nodes)} {self.enzyme_type} proteins which need adding, in {round(t1 - t0, 1)} seconds")
+        self.log(
+            f"Identified {len(not_in_nodes)} {self.enzyme_type} proteins which need adding, in {round(t1 - t0, 1)} seconds")
         return not_in_nodes
 
     def remove_nonexisting_seqs(self):
@@ -489,7 +499,24 @@ class SSN(object):
                 count += 1
 
         t1 = time.time()
-        self.log(f"Identified {count} sequences which were in SSN but not in database, in {round(t1-t0,1)} seconds")
+        self.log(f"Identified {count} sequences which were in SSN but not in database, in {round(t1 - t0, 1)} seconds")
+
+    def remove_seqs_marked_with_no_alignments(self):
+
+        t0 = time.time()
+        enz_type_q = db.Q(enzyme_type=self.enzyme_type)
+        align_q = db.Q(alignments_made__ne=True)
+        protein_names = Sequence.objects(enz_type_q & align_q).distinct('enzyme_name')
+
+        count = 0
+        for node in list(self.graph.nodes):
+            if node in protein_names:
+                self.log(f"Node: {node} marked as having no alignments made - removing")
+                self.graph.remove_node(node)
+                count += 1
+
+        t1 = time.time()
+        self.log(f"Identified {count} sequences which were in SSN but not are marked has not having their alignments made, in {round(t1 - t0, 1)} seconds")
 
     def get_graph_filtered_edges(self, alignment_score):
         sub_graph = nx.Graph([(u, v, d) for u, v, d in self.graph.edges(data=True) if d['weight'] >= alignment_score])
@@ -509,7 +536,7 @@ class SSN(object):
                 self.graph.remove_node(mutant)
 
         t1 = time.time()
-        self.log(f'Filtered mutants from graph in {round(t1-t0,1)} seconds')
+        self.log(f'Filtered mutants from graph in {round(t1 - t0, 1)} seconds')
 
     def filer_out_uniref(self):
         t0 = time.time()
@@ -577,79 +604,18 @@ class SSN(object):
 
 
 
-def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
-    current_app.app_context().push()
-
-    aba_blaster = AllByAllBlaster(enzyme_type, log_level=log_level)
-    aba_blaster.make_blast_db()
-
-    ssn = SSN(enzyme_type, aba_blaster=aba_blaster, log_level=log_level)
-    ssn.load()
-    ssn.set_status('Checking SSN')
-    ssn.remove_nonexisting_seqs()
-
-    biocatdb_seqs = ssn.nodes_not_present(only_biocatdb=True, max_num=max_num)
-    if len(biocatdb_seqs) != 0:
-        ssn.set_status('Adding and aligning BioCatDB sequences')
-        ssn.clear_position_information()
-        ssn.add_multiple_proteins(biocatdb_seqs)
-        ssn.save()
-        current_app.alignment_queue.enqueue(new_expand_ssn_job, enzyme_type)
-        return
-
-    need_alignments = ssn.nodes_need_alignments(max_num=max_num)
-    if len(need_alignments) != 0:
-        ssn.set_status('Aligning sequences in SSN')
-        ssn.clear_position_information()
-        ssn.add_multiple_proteins(need_alignments)
-        ssn.save()
-        current_app.alignment_queue.enqueue(new_expand_ssn_job, enzyme_type)
-        return
-
-    not_present = ssn.nodes_not_present(max_num=max_num)
-    if len(not_present) != 0:
-        ssn.set_status('Adding UniRef sequences which are not yet present')
-        ssn.clear_position_information()
-        ssn.add_multiple_proteins(not_present)
-        ssn.save()
-        current_app.alignment_queue.enqueue(new_expand_ssn_job, enzyme_type)
-
-        return
-
-
-    #if ssn.db_object.pos_at_alignment_score == {}:
-    ssn.set_status('Precalculating cluster positions')
-    ssn_precalc = SSN_Cluster_Precalculator(ssn)
-    num_at_alignment_score, pos_at_alignment_score = ssn_precalc.precalulate()
-    identity_at_alignment_score = ssn_precalc.precalculate_identity_at_alignment()
-
-    ssn.db_object.identity_at_alignment_score = identity_at_alignment_score
-    ssn.db_object.num_at_alignment_score = num_at_alignment_score
-    ssn.db_object.pos_at_alignment_score = pos_at_alignment_score
-    ssn.db_object.save()
-
-    ssn.set_status('Complete')
-    ssn.save()
-    print(f'- SSN CONSTRUCTION FOR {enzyme_type} IS COMPLETE -')
-
-def new_expand_ssn_job(enzyme_type):
-    ssn = SSN(enzyme_type)
-    if ssn.db_object.status != 'Complete':
-        current_app.alignment_queue.enqueue(task_expand_ssn, enzyme_type)
 
 
 if __name__ == '__main__':
     from retrobiocat_web.mongo.default_connection import make_default_connection
+
     make_default_connection()
 
-    aad_ssn = SSN('AAD', log_level=1)
+    aad_ssn = SSN('CAR', log_level=1)
     aad_ssn.load()
 
-    aad_vis = SSN_Visualiser('AAD', log_level=1)
+    aad_vis = SSN_Visualiser('CAR', log_level=1)
     nodes, edges = aad_vis.visualise(aad_ssn, 75)
 
     # 1. Set minimum number of nodes for a cluster
     # 2. Move down alignment score.  For each score where there is a different number of scores, visualise this.
-
-
-

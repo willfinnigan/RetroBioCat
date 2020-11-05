@@ -19,7 +19,7 @@
 
     {% include 'ssn/modals/network_physics_modal.html' %}
     {% include 'ssn/modals/edit_selected_nodes_modal.html' %}
-
+    {% include 'tabulator_tables/sequences_table/seq_row_click_modal.html' %}
 
     <script type="text/javascript">
         // initialize global variables.
@@ -43,7 +43,8 @@
         var interaction_options = {'tooltipDelay': 0,
                                    'hover': false,
                                    'hoverConnectedEdges': false,
-                                   'selectConnectedEdges': false}
+                                   'selectConnectedEdges': false,
+                                   'zoomSpeed': 0.5}
 
         var configure_options = {filter: function (option, path) {
                                     if (path.indexOf("physics") !== -1) {
@@ -65,7 +66,6 @@
         function edgesFilter(edge) {
             return (edge.weight >= document.getElementById("alignment_score").value);
         }
-
 
         const edges = new vis.DataSet({{edges|tojson}})
         const nodes = new vis.DataSet({{nodes|tojson}})
@@ -93,6 +93,15 @@
             show_hide_edges(connected_edges, false)
         })
 
+        window.selected_node = ''
+
+        network.on("hold", function(params) {
+            if (params['nodes'].length === 1) {
+                window.selected_node = params.nodes[0]
+                load_enzyme_modal()
+            }
+        })
+
         network.on("deselectNode", function(params) {
             show_hide_edges(shown_edges, true)
             shown_edges = []
@@ -100,6 +109,17 @@
 
         network.moveTo({position: {{start_pos|safe}},
                         scale: 0.01})
+
+        function load_enzyme_modal() {
+
+            if (data['nodes'].get([window.selected_node])[0]['node_type'] === 'biocatdb') {
+                var enzyme_name = window.selected_node
+                load_sequence_data(enzyme_name)
+                load_seq_papers(enzyme_name)
+                document.getElementById('sequence_row_click_model_title').innerHTML = enzyme_name;
+                $('#sequence_row_modal').modal('show');
+            }
+        }
 
         function get_new_connected_nodes(nodes_array, selected_nodes) {
             var new_connected_nodes = []
