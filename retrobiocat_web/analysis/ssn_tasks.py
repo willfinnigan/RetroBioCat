@@ -44,12 +44,9 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
 
     if ssn.db_object.identity_at_alignment_score == {}:
         ssn.set_status('Precalculating identity at alignment')
-        ssn_precalc = SSN_Cluster_Precalculator(ssn)
-        identity_at_alignment_score = ssn_precalc.precalculate_identity_at_alignment()
-        ssn.db_object.identity_at_alignment_score = identity_at_alignment_score
-        ssn.db_object.save()
+        current_app.preprocess_queue.enqueue(new_precalculate_identity_at_alignment_job, enzyme_type)
 
-    if ssn.db_object.pos_at_alignment_score == {}:
+    elif ssn.db_object.pos_at_alignment_score == {}:
         ssn.set_status('Precalculating cluster positions')
         current_app.preprocess_queue.enqueue(new_precalculate_job, enzyme_type)
 
@@ -87,6 +84,30 @@ def new_precalculate_job(enzyme_type):
         ssn.db_object.num_at_alignment_score.update(num_at_alignment_score)
         ssn.db_object.save()
         current_app.preprocess_queue.enqueue(new_precalculate_job, enzyme_type)
+
+def new_precalculate_identity_at_alignment_job(enzyme_type):
+    ssn = SSN(enzyme_type)
+    ssn.load()
+
+    ssn_precalc = SSN_Cluster_Precalculator(ssn)
+
+    if len(list(ssn.db_object.identity_at_alignment_score.keys())) == 0:
+        ssn_precalc.start = 10
+    else:
+        start_list = [int(s) for s in list(ssn.db_object.identity_at_alignment_score.keys())]
+        ssn_precalc.start = max(start_list) + 5
+
+    identity_at_alignment_score = ssn_precalc.precalculate_identity_at_alignment(num=5)
+
+    if identity_at_alignment_score == {}:
+        current_app.alignment_queue.enqueue(task_expand_ssn, enzyme_type)
+    else:
+        ssn.db_object.identity_at_alignment_score.update(identity_at_alignment_score)
+        ssn.db_object.save()
+        current_app.preprocess_queue.enqueue(new_precalculate_identity_at_alignment_job, enzyme_type)
+
+
+
 
 def remove_sequence(enzyme_type, enzyme_name):
     ssn = SSN(enzyme_type)

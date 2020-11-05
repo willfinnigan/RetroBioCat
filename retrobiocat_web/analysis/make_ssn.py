@@ -44,9 +44,11 @@ class SSN_Cluster_Precalculator(object):
 
         return num_at_alignment_score, pos_at_alignment_score
 
-    def precalculate_identity_at_alignment(self):
+    def precalculate_identity_at_alignment(self, num=10):
         identity_at_alignment_score = {}
+        count = 0
         for alignment_score in range(self.start, self.end, self.step):
+            count += 1
             graph = self.ssn.get_graph_filtered_edges(alignment_score)
             identities = []
             for edge in list(graph.edges(data=True)):
@@ -56,6 +58,8 @@ class SSN_Cluster_Precalculator(object):
                 identity_at_alignment_score[str(alignment_score)] = [round(statistics.mean(identities), 2),
                                                                      round(statistics.stdev(identities, statistics.mean(
                                                                          identities)), 2)]
+            if count >= num:
+                return identity_at_alignment_score
 
         return identity_at_alignment_score
 
