@@ -20,10 +20,11 @@ class AllByAllBlaster(object):
     def __init__(self, enzyme_type, log_level=0, num_threads=2):
         self.enzyme_type = enzyme_type
         self.enzyme_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
+        self.enz_type_dir_name = enzyme_type.replace(' ', '_')
 
         self.all_by_all_blast_folder = str(Path(__file__).parents[0]) + '/analysis_data/all_by_all_blast'
-        self.directory = f"{self.all_by_all_blast_folder}/{enzyme_type}"
-        self.database = f"{self.directory}/{enzyme_type}.fasta"
+        self.directory = f"{self.all_by_all_blast_folder}/{self.enz_type_dir_name}"
+        self.database = f"{self.directory}/{self.enz_type_dir_name}.fasta"
         self.cdhit_output = f"{self.directory}/cd_hit"
         self.num_threads = num_threads
         self.max_alignments = 10000
@@ -36,7 +37,7 @@ class AllByAllBlaster(object):
 
     def make_blast_db(self):
         """ Create a blast database for a single enzyme type """
-        self.log(f"Making blast database for {self.enzyme_type}")
+        self.log(f"Making blast database for {self.enz_type_dir_name}")
 
         if os.path.exists(self.directory):
             shutil.rmtree(self.directory)
@@ -44,7 +45,7 @@ class AllByAllBlaster(object):
 
         self._make_db_fasta()
 
-        command = f"makeblastdb -in {self.directory}/{self.enzyme_type}.fasta -dbtype prot"
+        command = f"makeblastdb -in {self.directory}/{self.enz_type_dir_name}.fasta -dbtype prot"
         sp.run(command, shell=True)
 
     def get_alignments(self, seq_obj):
@@ -72,7 +73,7 @@ class AllByAllBlaster(object):
         sp.run(cmd, shell=True)
 
         t1 = time.time()
-        self.log(f"Clustered sequences for {self.enzyme_type} at {identity} identity in {round(t1-t0,1)} seconds")
+        self.log(f"Clustered sequences for {self.enz_type_dir_name} at {identity} identity in {round(t1-t0,1)} seconds")
 
     def _blast_seq(self, seq_obj):
         """ Run blast and parse output into a biopython blast record """
@@ -130,7 +131,7 @@ class AllByAllBlaster(object):
                                 db.Q(sequence_unavailable__ne=True))
         bioinf_seqs = UniRef50.objects(db.Q(enzyme_type=self.enzyme_type_obj))
 
-        with open(f"{self.directory}/{self.enzyme_type}.fasta", 'w') as file:
+        with open(f"{self.directory}/{self.enz_type_dir_name}.fasta", 'w') as file:
             for seq in list(seqs) + list(bioinf_seqs):
                 name = seq.enzyme_name
                 seq = seq.sequence.replace('\n', '')
@@ -154,9 +155,8 @@ if __name__ == '__main__':
     from retrobiocat_web.mongo.default_connection import make_default_connection
     make_default_connection()
 
-
     seq_obj = Sequence.objects(enzyme_type='AAD')[0]
     etb = AllByAllBlaster('AAD', log_level=1)
     etb.make_blast_db()
-    alignment_names, alignment_scores = etb.get_alignments(seq_obj)
+    alignment_names, alignment_scores, identities, coverages = etb.get_alignments(seq_obj)
 
