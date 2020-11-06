@@ -146,5 +146,26 @@ def clear_all_bioinformatics_data():
 
     return jsonify(result=result)
 
+@bp.route('/_mark_not_aligned', methods=['GET', 'POST'])
+@roles_required('admin')
+def mark_not_aligned():
+    enzyme_type = request.form['enzyme_type']
+    sequences = Sequence.objects(enzyme_type=enzyme_type)
+
+    for seq in sequences:
+        seq.alignments_made = False
+        seq.save()
+
+    enz_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
+    ssn_record = SSN_record.objects(enzyme_type=enz_type_obj)[0]
+    ssn_record.status = 'Queued for update'
+    ssn_record.save()
+
+    result = {'status': 'success',
+              'msg': f"Done",
+              'issues': []}
+
+    return jsonify(result=result)
+
 
 

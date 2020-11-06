@@ -30,6 +30,7 @@
 
                                         <button class="btn btn-sm btn-outline-primary" id="{{enz_type}}_blast" onclick="queue_blast_search('{{enz_type}}')" {{button_disable}}>Queue blasts for {{enz_type}}</button>
                                         <button class="btn btn-sm btn-outline-info" id="{{enz_type}}_ssn" onclick="expand_ssn('{{enz_type}}')" {{button_disable}}>Expand SSN for {{enz_type}}</button>
+                                        <button class="btn btn-sm btn-outline-danger" id="{{enz_type}}_align" onclick="mark_not_aligned('{{enz_type}}')" {{button_disable}}>Mark DB sequences as not aligned for {{enz_type}}</button>
                                     </div>
                                 {% endfor %}
 
@@ -73,6 +74,17 @@
         function clear_all_bioinformatics_data() {
             $.post('/_clear_all_bioinformatics_data', {
                 }).done(function(data) {
+                    response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+                })
+        }
+
+        function mark_not_aligned(enzyme_type) {
+            $.post('/_mark_not_aligned', {
+                enzyme_type: enzyme_type
+                }).done(function(data) {
+                    document.getElementById(enzyme_type+'_align').disabled = true
+                    document.getElementById(enzyme_type+'_align').classList.add('disabled')
+                    document.getElementById(enzyme_type+'_ssn_status').innerHTML = 'Queued for update'
                     response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
                 })
         }

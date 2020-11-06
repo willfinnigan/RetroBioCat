@@ -53,8 +53,7 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
     else:
         ssn.set_status('Complete')
         print(f'- SSN CONSTRUCTION FOR {enzyme_type} IS COMPLETE -')
-
-    ssn.save()
+        ssn.save()
 
 def new_expand_ssn_job(enzyme_type):
     ssn = SSN(enzyme_type)
@@ -66,6 +65,14 @@ def new_precalculate_job(enzyme_type):
     ssn.load()
     ssn_precalc = SSN_Cluster_Precalculator(ssn)
 
+    num_nodes = len(list(ssn.graph.nodes))
+    if num_nodes > 7500:
+        num = 1
+    elif num_nodes > 5000:
+        num = 4
+    else:
+        num = 20
+
     if len(list(ssn.db_object.num_at_alignment_score.keys())) == 0:
         ssn_precalc.start = 10
         current_num_clusters = 0
@@ -74,7 +81,7 @@ def new_precalculate_job(enzyme_type):
         current_num_clusters = max(list(ssn.db_object.num_at_alignment_score.values()))
         ssn_precalc.start = max(start_list) + 5
 
-    num_at_alignment_score, pos_at_alignment_score = ssn_precalc.precalulate(num=2, current_num_clusters=current_num_clusters)
+    num_at_alignment_score, pos_at_alignment_score = ssn_precalc.precalulate(num=num, current_num_clusters=current_num_clusters)
 
     if num_at_alignment_score == {}:
         current_app.alignment_queue.enqueue(task_expand_ssn, enzyme_type)
@@ -91,13 +98,19 @@ def new_precalculate_identity_at_alignment_job(enzyme_type):
 
     ssn_precalc = SSN_Cluster_Precalculator(ssn)
 
+    num_nodes = len(list(ssn.graph.nodes))
+    if num_nodes > 5000:
+        num = 5
+    else:
+        num = 20
+
     if len(list(ssn.db_object.identity_at_alignment_score.keys())) == 0:
         ssn_precalc.start = 10
     else:
         start_list = [int(s) for s in list(ssn.db_object.identity_at_alignment_score.keys())]
         ssn_precalc.start = max(start_list) + 5
 
-    identity_at_alignment_score = ssn_precalc.precalculate_identity_at_alignment(num=5)
+    identity_at_alignment_score = ssn_precalc.precalculate_identity_at_alignment(num=num)
 
     if identity_at_alignment_score == {}:
         current_app.alignment_queue.enqueue(task_expand_ssn, enzyme_type)
@@ -105,8 +118,6 @@ def new_precalculate_identity_at_alignment_job(enzyme_type):
         ssn.db_object.identity_at_alignment_score.update(identity_at_alignment_score)
         ssn.db_object.save()
         current_app.preprocess_queue.enqueue(new_precalculate_identity_at_alignment_job, enzyme_type)
-
-
 
 
 def remove_sequence(enzyme_type, enzyme_name):

@@ -260,3 +260,5 @@ class SSN_record(db.Document):
     num_at_alignment_score = db.DictField(default={})
     pos_at_alignment_score = db.DictField(default={})
     identity_at_alignment_score = db.DictField(default={})
+
+    meta = {'indexes': ['enzyme_type']}

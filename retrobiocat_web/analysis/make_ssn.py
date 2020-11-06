@@ -373,7 +373,8 @@ class SSN(object):
         for node in list(self.graph):
             att_dict[node] = self.graph.nodes[node]
 
-        df_graph.to_csv(f"{self.save_path}/graph.csv")
+
+        df_graph.to_csv(f"{self.save_path}/graph.csv", index=False)
 
         with open(f'{self.save_path}/attributes.json', 'wb') as outfile:
             outfile.write(json.dumps(att_dict).encode("utf-8"))
@@ -392,7 +393,7 @@ class SSN(object):
         df_graph = pd.read_csv(f"{self.save_path}/graph.csv")
         att_dict = json.load(open(f'{self.save_path}/attributes.json'))
 
-        self.graph = nx.from_pandas_edgelist(df_graph, edge_attr=['weight', 'i', 'c'])
+        self.graph = nx.from_pandas_edgelist(df_graph, edge_attr=['weight', 'i'])
 
         # Nodes with no edges are not in edge list..
         for node in att_dict:
@@ -570,7 +571,7 @@ class SSN(object):
 
     def _add_alignment_edge(self, node_name, alignment_node_name, alignment_score, i, c):
         if node_name != alignment_node_name:
-            self.graph.add_edge(node_name, alignment_node_name, weight=alignment_score, i=i, c=c)
+            self.graph.add_edge(node_name, alignment_node_name, weight=alignment_score, i=i)
 
     def log(self, msg, level=10):
         if level >= self.log_level:

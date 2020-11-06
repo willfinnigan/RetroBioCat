@@ -33,7 +33,9 @@ def task_get_ssn(enzyme_type, score, include_mutants, only_biocatdb):
     ssn = SSN(enzyme_type)
     ssn.load(include_mutants=include_mutants, only_biocatdb=only_biocatdb)
 
-    if str(score) in ssn.db_object.pos_at_alignment_score:
+    if only_biocatdb == True:
+        precalc_pos = None
+    elif str(score) in ssn.db_object.pos_at_alignment_score:
         precalc_pos = ssn.db_object.pos_at_alignment_score[str(score)]
     else:
         precalc_pos = None
