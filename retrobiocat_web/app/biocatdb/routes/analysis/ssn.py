@@ -112,8 +112,8 @@ def ssn_object_status():
 
     alignment_cluster_data = []
     max_clusters = 0
-    max_alignment = 0
-    min_alignment = 300
+    max_alignment = 100
+    min_alignment = 10
     if ssn_obj.num_at_alignment_score is not None:
         for score_string, num_clusters in ssn_obj.num_at_alignment_score.items():
             score = int(score_string)
