@@ -99,12 +99,15 @@ def new_precalculate_identity_at_alignment_job(enzyme_type):
     ssn_precalc = SSN_Cluster_Precalculator(ssn)
 
     num_nodes = len(list(ssn.graph.nodes))
-    if num_nodes > 5000:
+    if num_nodes > 7500:
+        num = 1
+    elif num_nodes > 5000:
         num = 5
     else:
         num = 20
 
     if len(list(ssn.db_object.identity_at_alignment_score.keys())) == 0:
+        print('No existing % identity data, starting at alignment score 10')
         ssn_precalc.start = 10
     else:
         start_list = [int(s) for s in list(ssn.db_object.identity_at_alignment_score.keys())]
