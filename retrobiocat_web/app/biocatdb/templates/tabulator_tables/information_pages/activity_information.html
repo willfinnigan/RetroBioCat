@@ -1,4 +1,5 @@
 <div class="container-fluid">
+    <div id="activity_report_response"></div>
     <div id="row_1_activity" class="row">
         <div class='col-6 my-auto text-center no-gutters mt-4' id="activity_col1"></div>
         <div class='col-6 my-auto text-center no-gutters mt-4' id="activity_col2"></div>
@@ -21,7 +22,33 @@
             <p><strong>Data curated by: </strong><span id="activity_added_by"></span></p>
         </div>
     </div>
+
+    {% if hide_raise_issue is not defined %}
+        <btn class="btn btn-outline-danger btn-sm"
+             type="button"
+             data-toggle="collapse"
+             data-target="#issue_div">
+            Raise an issue with this data
+        </btn>
+
+
+        <div class="row">
+            <div class="collapse container mt-2" id="issue_div">
+                {% if current_user.is_anonymous %}
+                    <p>Please login to raise an issue</p>
+                {% else %}
+                    <div class="input-group mt-2">
+                        <textarea class="form-control" id="activity_issue_comment"
+                                  placeholder="Please describe what you feel is wrong with this entry. Your name and affiliation will be associated with this comment, which will be publicly available."
+                                  rows="6"></textarea>
+                    </div>
+                    <btn class="btn btn-danger btn-sm mt-2" onclick="submit_reaction_issue()">Submit issue</btn>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
 </div>
+
 
 
 <script>
@@ -109,10 +136,32 @@
 
     }
 
+
+    function reset_issue() {
+        document.getElementById("activity_issue_comment").value = ""
+        $('#issue_div').collapse("hide")
+    }
+
+    function submit_reaction_issue() {
+        $.post('/_raise_activity_data_issue', {
+            activity_id: window.current_activity_id,
+            comment: document.getElementById("activity_issue_comment").value
+        }).done(function (data) {
+            response_msg(data.result.msg, data.result.status, data.result.issues, "activity_report_response")
+            reset_issue()
+        })
+    }
+
+    window.current_activity_id = ''
+
     function load_single_activity_data(activity_id) {
         $.post('/_load_single_activity_data', {
             activity_id: activity_id,
         }).done(function (data) {
+            {% if hide_raise_issue is not defined %}
+                reset_issue()
+            {% endif %}
+
             set_reaction_img(data.result.sub1_img, data.result.sub2_img, data.result.prod_img,
                              data.result.reaction, data.result.enzyme_name, data.result.enzyme_type,
                              data.result.biocat_conc, data.result.formulation, data.result.selectivity,
@@ -124,8 +173,13 @@
 
             set_colour(data.result.active, data.result.category)
 
+            window.current_activity_id = activity_id
+
             document.getElementById("activity_added_by").innerHTML = data.result.added_by
         })
     }
+
+
+
 </script>
 

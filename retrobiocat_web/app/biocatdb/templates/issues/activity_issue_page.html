@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% set active_page = "community_driven" %}
+{% set hide_raise_issue = True %}
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div id="report_response"></div>
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-form">
+                    <div class="card-body">
+                        <div class="container text-center">
+                            <h3>Issue for an activity data entry in {{paper}}</h3>
+                            <div class="my-3">{{reaction_svg|safe}}</div>
+                            <button class="btn btn-success mb-4"
+                                    onclick="load_activity_data()"
+                                    data-toggle="modal" data-target="#substrate_specificity_modal">
+                                View complete activity data entry
+                            </button>
+                            <p><strong>Raised by: </strong>{{raised_by}}</p>
+                            <p><strong>Date: </strong>{{date}}</p>
+                            <p><strong>Status: </strong>{{status}}</p>
+
+                            <h4 class="mt-4">Comments</h4>
+
+                            {% for comment in comments %}
+                                <div class="card my-2">
+                                <div class="card-header text-left">
+
+                                    <p class="no_margin">
+                                        {{comment['user']}}
+                                        <small class="no_margin">{{comment['date']}}</small>
+                                        <span class="float-right">
+                                            {% if comment['can_edit'] == True %}
+                                                <button id="{{comment['comment_id']}}_edit"
+                                                        class="btn btn-sm btn-outline-warning"
+                                                        onclick="load_comment_info('{{comment['comment_id']}}')"
+                                                        data-toggle="modal" data-target="#edit_comment_modal">
+                                                    Edit
+                                                </button>
+                                            {% endif %}
+                                            {% if comment['can_delete'] == True %}
+                                                <button class="btn btn-sm btn-outline-danger"
+                                                        id="{{comment['comment_id']}}_delete"
+                                                        onclick=toggle_delete_confirm("{{comment['comment_id']}}")>
+                                                    Delete
+                                                </button>
+                                                <button id="{{comment['comment_id']}}_def_delete"
+                                                        class="btn btn-sm btn-danger"
+                                                        style="display: none"
+                                                        onclick="delete_comment('{{comment['comment_id']}}')">
+                                                    Definitely Delete?
+                                                </button>
+                                            {% endif %}
+                                        </span>
+                                    </p>
+                                </div>
+                                    <div class="card-body text-left">
+                                        <p class="card-text">{{comment['comment']}}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+
+
+                            <div class="container my-4 text-center">
+                                {% if current_user.has_role('rxn_rules_admin') %}
+                                    <button class="btn btn-outline-danger"
+                                            id="{{issue_id}}_delete"
+                                            onclick=toggle_delete_confirm("{{issue_id}}")>
+                                        Delete issue
+                                    </button>
+                                    <button id="{{issue_id}}_def_delete"
+                                            class="btn btn-danger"
+                                            style="display: none"
+                                            onclick="delete_issue()">
+                                        Definitely delete issue?
+                                    </button>
+
+                                    {% if status == 'Open' %}
+                                        <button class="btn btn-warning px-5" onclick="open_close_issue('Close')">Close issue</button>
+                                    {% else %}
+                                        <button class="btn btn-success px-5" onclick="open_close_issue('Open')">Open issue</button>
+                                    {% endif %}
+                                {% endif %}
+
+                                {% if current_user.is_anonymous %}
+                                <button class="btn btn-primary disabled" disabled>Please login to reply</button>
+                                {% else %}
+                                <button class="btn btn-primary px-5" data-toggle="modal" data-target="#comment_modal">Reply</button>
+                                {% endif %}
+                            </div>
+
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'comments/comment_modal.html' %}
+    {% include 'comments/edit_comment_modal.html' %}
+    {% include 'tabulator_tables/substrate_specificity/substrate_specificity_modal.html' %}
+
+
+    <script>
+    window.parent_type = 'activity_issue'
+    window.parent_id = "{{issue_id}}"
+
+    function load_activity_data() {
+        var activity_id = "{{activity_id}}"
+        var enzyme_name = "{{enzyme_name}}"
+        var paper_id = "{{paper_id}}"
+        load_sequence_data(enzyme_name)
+        load_single_activity_data(activity_id)
+        load_paper_data(paper_id)
+        $('#substrate_specificity_modal').modal('show');
+    }
+
+    function open_close_issue(open_close) {
+        $.post('/_open_close_activity_issue', {
+            issue_id: "{{issue_id}}",
+            open_close: open_close
+        }).done(function (data) {
+            response_msg(data.result.msg, data.result.status, data.result.issues, "report_response")
+            location.reload()
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+
+    function toggle_delete_confirm(button_id) {
+        document.getElementById(button_id + '_delete').style.display = "none"
+        document.getElementById(button_id + '_def_delete').style.display = "block"
+    }
+
+    function delete_comment(comment_id) {
+        $.post('/_delete_comment', {
+            comment_id: comment_id
+        }).done(function (data) {
+            response_msg(data.result.msg, data.result.status, data.result.issues, "report_response")
+            location.reload()
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+
+    function delete_issue() {
+        $.post('/_delete_activity_issue', {
+            issue_id: "{{issue_id}}",
+        }).done(function (data) {
+            if (data.result.status === 'success') {
+                location.href = Flask.url_for("biocatdb.activity_data_issues_table")
+            }
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+
+
+    </script>
+
+{% endblock %}

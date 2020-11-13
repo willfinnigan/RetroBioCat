@@ -25,3 +25,7 @@ def terms():
 @bp.route('/retrosynthesis_help', methods=['GET'])
 def retrosynthesis_help():
     return render_template('retrosynthesis_help.html')
+
+@bp.route('/instructions_for_data_contribution', methods=['GET'])
+def instructions_for_data_contribution():
+    return render_template('instructions_for_data_contribution.html')

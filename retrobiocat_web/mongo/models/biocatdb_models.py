@@ -1,6 +1,8 @@
 import mongoengine as db
 from rdkit import Chem
 from retrobiocat_web.mongo.functions import sequence_functions
+from datetime import datetime
+
 
 class EnzymeType(db.Document):
     enzyme_type = db.StringField(max_length=120, unique=True, required=True)
@@ -262,3 +264,14 @@ class SSN_record(db.Document):
     identity_at_alignment_score = db.DictField(default={})
 
     meta = {'indexes': ['enzyme_type']}
+
+
+
+
+
+class ActivityIssue(db.Document):
+    activity = db.ReferenceField(Activity)
+    raised_by = db.ReferenceField(User, reverse_delete_rule=2)
+    status = db.StringField(default='Open')
+    comments = db.ListField(db.ReferenceField(Comment, reverse_delete_rule=4))
+    date = db.DateTimeField(default=datetime.utcnow)

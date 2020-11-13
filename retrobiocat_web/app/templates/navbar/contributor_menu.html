@@ -21,6 +21,9 @@
             {% endif %}
             My papers
         </a>
+        <a class="dropdown-item" href="{{url_for('main_site.instructions_for_data_contribution')}}">
+            Instructions
+        </a>
         {% if current_user.has_role('paper_adder') %}
             <strong>Paper adder</strong>
             <a class="dropdown-item" href="{{url_for('biocatdb.launch_add_paper')}}">Add paper</a>

@@ -1,0 +1,63 @@
+<div class="">
+    <div class="custom-control custom-checkbox">
+        <input class="custom-control-input" type="checkbox" id="filter_by_status" onclick="filter_closed_open()">
+        <label class="custom-control-label" for="filter_by_status">Show closed issues</label>
+    </div>
+</div>
+
+<p class="text-danger no_margin">Click on a row to load the issue and see comments.</p>
+<div id="activity_data_issues_table"></div>
+
+<script>
+    var columns = [
+
+        {'title': "_id", 'field': "_id", visible:false},
+
+        {title:"Date", field:"date", formatter:"datetime", 'minWidth':100, formatterParams:{
+                outputFormat:"DD/MM/YYYY",
+                invalidPlaceholder:"(invalid date)"}},
+
+        {'title': "Reaction", 'field': "reaction_svg", 'minWidth':325, formatter:"html"},
+
+        {'title': "Paper", 'field': "paper", 'minWidth':200, formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
+
+        {'title': "Status", 'field': "status", 'minWidth':100, formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
+
+        {'title': "Raised by", 'field': "raised_by", 'minWidth':100, formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
+
+        {'title': "Comment", 'field': "first_comment", 'minWidth':500, formatter:"textarea", headerFilter:"select", headerFilterParams:{values:true}},
+
+        ]
+
+    var tabledata = {{activity_data_issues_data|safe}}
+
+    var table = new Tabulator("#activity_data_issues_table", {
+        data:tabledata, //assign data to table
+        maxHeight:"75vh",
+        layout:"fitColumns",
+        addRowPos:"bottom",
+        columns:columns,
+        cellHozAlign:"center",
+        cellVertAlign:"middle",
+        rowClick:function(e, row){
+            var rowData = row.getData();
+            var issue_id = rowData['_id']
+            location.href = Flask.url_for("biocatdb.activity_data_issue", {"issue_id": issue_id})
+            },
+    });
+
+    table.setFilter("status", "=", 'Open');
+
+    function filter_closed_open() {
+        console.log('Checkbox clicked')
+        if (document.getElementById("filter_by_status").checked === false){
+            table.setFilter("status", "=", 'Open');
+        } else {
+            table.clearFilter();
+        }
+    }
+
+
+
+</script>
+

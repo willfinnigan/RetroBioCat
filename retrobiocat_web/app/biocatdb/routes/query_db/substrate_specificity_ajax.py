@@ -1,7 +1,9 @@
 from flask import render_template, jsonify, session, current_app, request
 from retrobiocat_web.app.biocatdb import bp
-from retrobiocat_web.mongo.models.biocatdb_models import Activity, Sequence
+from retrobiocat_web.mongo.models.biocatdb_models import Activity, Sequence, ActivityIssue
 from retrobiocat_web.app.biocatdb.functions.substrate_specificity import images
+from retrobiocat_web.app.app import user_datastore
+from flask_security import roles_required, current_user
 
 
 @bp.route('/_load_single_activity_data', methods=['GET', 'POST'])
@@ -123,3 +125,6 @@ def load_single_activity_data():
         if result[key] is None:
             result[key] = ''
     return jsonify(result=result)
+
+
+

@@ -48,11 +48,16 @@ def load_paper_data():
     else:
         v_short_cit = paper.title[0:10] + '..'
 
+    if paper.date != None:
+        date = paper.date.strftime('%B-%Y')
+    else:
+        date = None
+
     result = {'title': paper.title,
               'authors': authors_str,
               'owner': owner,
               'journal': paper.journal,
-              'date': paper.date.strftime('%B-%Y'),
+              'date': date,
               'tags': tags_str,
               'status': paper.status,
               'doi': paper.doi,

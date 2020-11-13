@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+{% set active_page = "home" %}
+
+{% block content %}
+<div class="container">
+        <div class="row">
+            <div class="col-12 mx-auto">
+                <div class="card card-form my-5">
+                    <div class="card-body">
+                        <h3 class="card-title text-center">Instructions for adding data to RetroBioCat</h3>
+                    </div>
+                </div>
+
+                <div class="card card-form my-5">
+                    <div class="card-body">
+                        <h3 class="mb-5 text-center">Step 1 - Assign yourself a paper</h3>
+                        <p>
+                            Under <b>“Contributor”</b>, select <b>“Papers to be curated”.</b> <br/>
+                            Select <b>“Self assign”</b> to assign your chosen paper to yourself.
+                            Papers can be filtered by enzyme type by using the <b>“Tags”</b> field.
+                        </p>
+
+                        <div class="row justify-content-center mb-5">
+                            <img src="{{ url_for('.static', filename='images/cont_inst_1.png') }}"
+                                 class="center-block img-fluid"
+                                 style="max-width: 60%; height: auto">
+                        </div>
+
+                        <p>
+                            Once you’ve assigned a paper to yourself you will be directed to that paper’s landing page,
+                            which consists of 4 tabs.
+                            The <b>“Status”</b> tab describes the current state of the data deposition,
+                            with the most basic state being that the paper metadata (citation, DOI, date published etc) has been added.
+                        </p>
+
+                        <div class="row justify-content-center mb-5">
+                            <img src="{{ url_for('.static', filename='images/cont_inst_2.png') }}"
+                                 class="center-block img-fluid"
+                                 style="max-width: 60%; height: auto">
+                        </div>
+
+                        <p>
+                            The <b>“Paper”</b> tab contains all of the metadata for the paper.
+                            This is extracted automatically from Pubmed or Crossref using the paper’s DOI,
+                            and you should <u>not</u> need to edit it.
+                            You can use the <b>“Link”</b> button to launch a new tab of the paper for your consultation (subject to journal access permissions).
+                        </p>
+                        <div class="row justify-content-center mb-5">
+                            <img src="{{ url_for('.static', filename='images/cont_inst_3.png') }}"
+                                 class="center-block img-fluid"
+                                 style="max-width: 60%; height: auto">
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="card card-form my-5">
+                    <div class="card-body">
+                        <h3 class="mb-5 text-center">Step 2 - Add enzyme sequences</h3>
+
+                        <p>
+                            The <b>“Sequences”</b> tab is where the information related to the enzymes used in the publication is stored. <br/>
+                            Sequences should be added prior to adding activity data. <br/>
+                            Click <b>“Add Enzyme”</b> to begin the process of adding an enzyme.
+                        </p>
+                        <div class="row justify-content-center mb-5">
+                            <img src="{{ url_for('.static', filename='images/cont_inst_4.png') }}"
+                                 class="center-block img-fluid"
+                                 style="max-width: 60%; height: auto">
+                        </div>
+
+                        <p>
+                            Select the enzyme type from the dropdown menu (<b>“1. Select enzyme type”</b>).
+                            A list of abbreviations used can be found at <a href="{{url_for('biocatdb.paper_progress')}}">here</a>
+                        </p>
+                        <div class="row justify-content-center mb-5">
+                            <img src="{{ url_for('.static', filename='images/cont_inst_5.png') }}"
+                                 class="center-block img-fluid"
+                                 style="max-width: 60%; height: auto">
+                        </div>
+
+                        <p>
+                            <b><u>A)</u></b> Next, check to see whether the enzyme is already present using the second dropdown menu.
+                            If it is present, select it from the dropdown menu and click <b>“Add sequence”</b>. <br/>
+                            This will also save you having to add any additional enzyme data, as it should already be present.
+                        </p>
+                        <div class="row justify-content-center mb-5">
+                            <img src="{{ url_for('.static', filename='images/cont_inst_6.png') }}"
+                                 class="center-block img-fluid"
+                                 style="max-width: 60%; height: auto">
+                        </div>
+
+                        <p>
+                            <b><u>B)</u></b> If the enzyme of interest was not present in the second dropdown menu, enter it as a new enzyme in the box.
+                            Where possible, use an abbreviation of the organism name, followed by enzyme type.
+                            For example <u>ms</u>CAR or <u>Asp</u>RedAm. Click <b>“Add sequence”</b>.
+                        </p>
+                        <div class="row justify-content-center mb-5">
+                            <img src="{{ url_for('.static', filename='images/cont_inst_7.png') }}"
+                                 class="center-block img-fluid"
+                                 style="max-width: 60%; height: auto">
+                        </div>
+
+                        <p>
+                            Your new or selected enzyme should now be visible on the <b>“Sequences”</b> tab.
+                        </p>
+
+                        <p>
+                            If available, additional information about the enzyme should now be entered.
+                            For example, information on amino acid sequence, accession number, mutant information etc. <br/>
+                            Click <b>“Edit”</b> on the relevant enzyme entry to begin.
+                        </p>
+
+                        <div class="row justify-content-center mb-5">
+                            <img src="{{ url_for('.static', filename='images/cont_inst_8.png') }}"
+                                 class="center-block img-fluid"
+                                 style="max-width: 60%; height: auto">
+                        </div>
+
+                        <p>
+                            Sequences you have added will be assigned to you. You will only be able to edit these sequences (initially). <br/>
+                            Fill in the fields with as much information as possible.
+                            If the protein sequence is available (either directly from the publication, or via accession codes provided in the publication),
+                            enter it in the “Protein sequence” field.
+                            If the sequence is unavailable (e.g. if the sequence information is proprietary), tick the “Sequence unavailable” box.
+                        </p>
+
+                        <div class="row justify-content-center mb-5">
+                            <img src="{{ url_for('.static', filename='images/cont_inst_9.png') }}"
+                                 class="center-block img-fluid"
+                                 style="max-width: 60%; height: auto">
+                        </div>
+
+                        <p>
+                            Enter N- or C-terminal tag information, accession number (e.g. Uniprot, GenBank),
+                            other names or identifiers of the enzyme, PDB code, mutant information,
+                            and any other notes you think are relevant.
+                        </p>
+
+                        <div class="row justify-content-center mb-3">
+                            <img src="{{ url_for('.static', filename='images/cont_inst_10.png') }}"
+                                 class="center-block img-fluid"
+                                 style="max-width: 60%; height: auto">
+                        </div>
+
+                        <div class="row justify-content-center mb-5">
+                            <img src="{{ url_for('.static', filename='images/cont_inst_11.png') }}"
+                                 class="center-block img-fluid"
+                                 style="max-width: 60%; height: auto">
+                        </div>
+
+                        <p class="mb-2">
+                            Once all the enzymes in the paper have been added, it's time to add activity data.. <br/>
+                            Click on the <b>“Activity”</b> tab.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="card card-form my-5">
+                    <div class="card-body">
+                        <h3 class="mb-5 text-center">Step 3 - Add activity data</h3>
+
+                        <p class="mb-5">
+                            The following instructions detail how to add activity data via the web interface. <br/>
+                            Some users may prefer to create an excel file with their data in it, and upload this via the
+                            <b>Upload Excel</b> button.<br/>
+                            A template is available with-in the upload pop-up, or
+                            <a href="{{url_for('biocatdb.static', filename='Template_for_substrate_specificity_data_V2.xltx') }}">here</a>.
+                        </p>
+
+                        <p>
+                            Click <b>“Add row”</b> to add an empty row to the table.
+                        </p>
+
+                        <div class="row justify-content-center mb-5">
+                            <img src="{{ url_for('.static', filename='images/cont_inst_12.png') }}"
+                                 class="center-block img-fluid"
+                                 style="max-width: 60%; height: auto">
+                        </div>
+
+                        <p>
+                            Use the <b>“Reaction”</b> dropdown menu to select the relevant reaction type for the data entry you are adding.
+                        </p>
+
+                        <div class="row justify-content-center mb-5">
+                            <img src="{{ url_for('.static', filename='images/cont_inst_13.png') }}"
+                                 class="center-block img-fluid"
+                                 style="max-width: 60%; height: auto">
+                        </div>
+
+                        <p>
+                            Select the enzyme that is catalysing the chosen reaction from the <b>“Enzyme name”</b> dropdown menu. <br/>
+                            Only enzymes that you have added to the <b>“Sequences”</b> tab will be available here. <br/>
+                            Choose “Chemical” if the transformation you are describing is a chemical step.
+                            Details of chemical steps covered, and their names, can be found
+                            <a href="{{url_for('retrobiocat.reaction_rules')}}">here</a>.
+                        </p>
+
+                        <div class="row justify-content-center mb-5">
+                            <img src="{{ url_for('.static', filename='images/cont_inst_14.png') }}"
+                                 class="center-block img-fluid"
+                                 style="max-width: 60%; height: auto">
+                        </div>
+
+                        <p>
+                            To add SMILES information for the substrate(s) and product of your chosen transformation,
+                            you first need to generate SMILES strings for the molecules.
+                            This can be done a number of ways, but a convenient method is the use of
+                            <a href="https://marvinjs-demo.chemaxon.com/latest/">MarvinJS</a>.
+                        </p>
+                        <btn class="btn btn-sm btn-outline-info mb-5" data-toggle="modal" data-target="#marvin_modal">MarvinJS Instructions</btn>
+
+                        <p>
+                            Copy the SMILES string and paste it into the <b>“Substrate 1 SMILES”</b> field of RetroBioCat.
+                            Repeat the above directions to get SMILES strings for the second substrate (if applicable),
+                            and the product.
+                        </p>
+
+                        <p>
+                            For simplicity, RetroBioCat is structured to allow only a single product per reaction. <br/>
+                            For reactions that have two products of interest (e.g. lipase hydrolysis), each product should be added as a separate row using the same substrate.
+                            If the second product is not of interest, this can be ignored.
+                        </p>
+
+                        <div class="row justify-content-center mb-5">
+                            <img src="{{ url_for('.static', filename='images/cont_inst_15.png') }}"
+                                 class="center-block img-fluid"
+                                 style="max-width: 60%; height: auto">
+                        </div>
+
+                        <p>
+                            Enter details about the reaction conditions in the relevant fields,
+                            including any other <b>“Notes”</b> about the experimental design that you think are relevant.
+                        </p>
+
+                        <div class="row justify-content-center mb-5">
+                            <img src="{{ url_for('.static', filename='images/cont_inst_16.png') }}"
+                                 class="center-block img-fluid"
+                                 style="max-width: 60%; height: auto">
+                        </div>
+
+                        <p>
+                            To enter details related to the reaction outcomes, you must first identify what type of datayou are dealing. <br/>
+                            This can be kinetics data, specific activity data, or % conversion data (publications often cover more than one type).
+                        </p>
+
+                         <ul>
+                             <li>If kinetics, add relevant details in the <b>“kcat”</b>, <b>“KM”</b> and <b>“MW”</b> fields.</li>
+                             <li>If specific activity, add relevant details in the <b>“Specific activity”</b> field.</li>
+                             <li>If % conversion data, add relevant details in the <b>“Conversion” field</b>.</li>
+                        </ul>
+
+                        <p>
+                            If no kinetics, specific activity or conversion data is presented in the paper you are working from,
+                            enter either <b>“Categorical”</b> (e.g. High, Medium, Low, None) or <b>“Binary”</b> (1 or 0) information.
+                        </p>
+
+                        <ul>
+                            <li>Categorical information is typically extracted from colorimetric screens, or data presented within a heat map</li>
+                            <li>Binary information is the bare minimum, enter a 1 if the product was seen at all and 0 if no product was seen</li>
+                        </ul>
+
+                        <p>
+                            Data will automatically cascade down the levels upon saving.
+                            For example, a specific activity more than 0.01 will be marked as binary 1. <br/>
+                            Therefore, only one type of data is required per row.
+                        </p>
+
+                        <div class="row justify-content-center mb-5">
+                            <img src="{{ url_for('.static', filename='images/cont_inst_17.png') }}"
+                                 class="center-block img-fluid"
+                                 style="max-width: 60%; height: auto">
+                        </div>
+
+                        <p>
+                            If the paper you are adding data from has several similar examples (e.g. a substrate screen),
+                            it is possible to duplicate rows to avoid re-entering experimental conditions.
+                            To do this, select the row of interest using the checkbox, and click <b>“Duplicate rows”</b> until you have the desired number of duplicated rows..
+                        </p>
+
+                        <p>
+                            Be sure to remove reaction outcome information or SMILES that no longer apply to the new data entries.
+                        </p>
+
+                        <div class="row justify-content-center mb-5">
+                            <img src="{{ url_for('.static', filename='images/cont_inst_18.png') }}"
+                                 class="center-block img-fluid"
+                                 style="max-width: 60%; height: auto">
+                        </div>
+
+                        <p>
+                            When you have added all reaction data from the publication, click <b>“Save”</b>.
+                        </p>
+
+                        <p>
+                            Navigating back to the <b>“Status”</b> page of the paper, you will see that the status has been updated.
+                        </p>
+
+                        <p class="text-success">Congratulations, the data you added will be incorporated into the RetroBioCat database, pending review and approval! </p>
+
+                        <div class="row justify-content-center mb-5">
+                            <img src="{{ url_for('.static', filename='images/cont_inst_19.png') }}"
+                                 class="center-block img-fluid"
+                                 style="max-width: 60%; height: auto">
+                        </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include "marvin_instructions_modal.html" %}
+
+{% endblock %}
+

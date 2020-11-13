@@ -47,6 +47,7 @@
                     <a class="dropdown-item" href="{{url_for('biocatdb.enzyme_teams')}}">Enzyme teams</a>
                     <a class="dropdown-item" href="{{url_for('biocatdb.paper_progress')}}">Database completion</a>
                     <a class="dropdown-item" href="{{url_for('biocatdb.leaderboard')}}">Contributors</a>
+                    <a class="dropdown-item" href="{{url_for('biocatdb.activity_data_issues_table')}}">Activity data issues</a>
                     {% if not current_user.has_role('contributor') %}
                         <a class="dropdown-item text-success" href="{{url_for('biocatdb.contributor_sign_up')}}">Become a database contributor</a>
                     {% endif %}

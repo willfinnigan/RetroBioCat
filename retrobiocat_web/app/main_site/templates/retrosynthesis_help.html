@@ -3,49 +3,50 @@
 
 {% block content %}
     <div class="container">
-    <div class="row">
-        <div class="col-10 mx-auto">
-            <div class="card card-form my-5">
-                <div class="card-body" align="center">
-                    <h3 class="card-title">Retro-synthesis in RetroBioCat</h3>
+        <div class="row">
+            <div class="col-10 mx-auto">
+                <div class="card card-form my-5">
+                    <div class="card-body" align="center">
+                        <h3 class="card-title">Retro-synthesis in RetroBioCat</h3>
 
-                    <div class="row justify-content-center pb-2">
-                        <h6>RetroBioCat features two complementary approaches to computer-aided synthesis planning:
-                            <br/>
-                               Network explorer and Pathway explorer.</h6>
+                        <div class="row justify-content-center pb-2">
+                            <h6>RetroBioCat features two complementary approaches to computer-aided synthesis planning:
+                                <br/>
+                                   Network explorer and Pathway explorer.</h6>
+                        </div>
+
+                        <p class="text-justify">
+                            Network explorer offers ‘human-led’ computer aided retrosynthesis.
+                            Starting from the target molecule and working backwards,
+                            RetroBioCat can make suggestions for which reactions might be possible,
+                            allowing the user to direct the search for a synthesis route.</p>
+
+                        <p class="text-justify">
+                            In contrast, Pathway explorer will automatically build a large number of potential pathways,
+                            and score these using a weighted score which can be set by the user.
+                            Pathways are then displayed in order of score, and can be navigated through one at a time.
+                        </p>
+
+                        <div class="row justify-content-center">
+                            <button class="btn mx-5">
+                                <a href="{{url_for('retrobiocat.network_explorer_form')}}">
+                                    <img src="{{ url_for('.static', filename='images/network_btn.png') }}"
+                                    alt="Network explorer"
+                                    style="height: 200px">
+                                </a>
+                            </button>
+
+                            <button class="btn mx-5">
+                                <a href="{{url_for('retrobiocat.pathway_explorer_form')}}">
+                                    <img src="{{ url_for('.static', filename='images/pathway_btn.png') }}"
+                                     alt="Pathway explorer"
+                                     style="height: 200px">
+                                </a>
+                            </button>
+                        </div>
+
+
                     </div>
-
-                    <p class="text-justify">
-                        Network explorer offers ‘human-led’ computer aided retrosynthesis.
-                        Starting from the target molecule and working backwards,
-                        RetroBioCat can make suggestions for which reactions might be possible,
-                        allowing the user to direct the search for a synthesis route.</p>
-
-                    <p class="text-justify">
-                        In contrast, Pathway explorer will automatically build a large number of potential pathways,
-                        and score these using a weighted score which can be set by the user.
-                        Pathways are then displayed in order of score, and can be navigated through one at a time.
-                    </p>
-
-                    <div class="row justify-content-center">
-                        <button class="btn mx-5">
-                            <a href="{{url_for('retrobiocat.network_explorer_form')}}">
-                                <img src="{{ url_for('.static', filename='images/network_btn.png') }}"
-                                alt="Network explorer"
-                                style="height: 200px">
-                            </a>
-                        </button>
-
-                        <button class="btn mx-5">
-                            <a href="{{url_for('retrobiocat.pathway_explorer_form')}}">
-                                <img src="{{ url_for('.static', filename='images/pathway_btn.png') }}"
-                                 alt="Pathway explorer"
-                                 style="height: 200px">
-                            </a>
-                        </button>
-                    </div>
-
-
                 </div>
             </div>
         </div>
