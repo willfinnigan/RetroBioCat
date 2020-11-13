@@ -41,6 +41,7 @@ class Paper(db.Document):
     reviewed_by = db.ReferenceField(User)
     has_issues = db.BooleanField(default=False)
     comments = db.ListField(db.ReferenceField(Comment, reverse_delete_rule=4))
+    high_importance = db.BooleanField(default=False)
 
     def __unicode__(self):
         return self.short_citation

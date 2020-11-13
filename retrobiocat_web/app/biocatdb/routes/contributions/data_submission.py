@@ -75,6 +75,8 @@ def get_status(paper, user):
                    'reviewed_by': '',
                    'issues_checked': '',
                    'issues_hidden': 'hidden',
+                   'importance_checked': '',
+                   'importance_hidden': 'hidden',
                    'status': status,
                    'status_colour': status_colour,
                    'paper_progress': paper_progress,
@@ -87,22 +89,26 @@ def get_status(paper, user):
     if current_user.has_role('super_contributor'):
         status_dict['review_disabled'] = ''
         status_dict['issues_hidden'] = ''
+        status_dict['importance_hidden'] = ''
     if current_user.has_role('enzyme_champion'):
         for tag in paper.tags:
             if tag in user.enzyme_champion:
                 status_dict['review_disabled'] = ''
                 status_dict['issues_hidden'] = ''
+                status_dict['importance_hidden'] = ''
     if paper.reviewed_by != None:
         rb = paper.reviewed_by
         status_dict['reviewed_by'] = f"{rb.first_name} {rb.last_name}, {rb.affiliation}"
 
-    if paper.has_issues == True:
-        status_dict['issues_hidden'] = ''
 
     if paper.reviewed == True:
         status_dict['review_checked'] = 'checked'
     if paper.has_issues == True:
         status_dict['issues_checked'] = 'checked'
+        status_dict['issues_hidden'] = ''
+    if paper.has_issues == True:
+        status_dict['importance_checked'] = 'checked'
+        status_dict['importance_hidden'] = ''
 
     return status_dict
 

@@ -326,6 +326,22 @@ def paper_issues():
 
         return jsonify(result=result)
 
+@bp.route('/_importance_updated', methods=['GET', 'POST'])
+@roles_required('contributor')
+def importance_updated():
+    paper = Paper.objects(id=request.form['paper_id'])[0]
+    if check_permission.check_seq_permissions(current_user.id, paper):
+        importance = bool(strtobool(request.form['importance']))
+        paper.high_importance = importance
+        paper.save()
+
+        result = {'status': 'success',
+                  'msg': 'Importance updated',
+                  'issues': []}
+
+        return jsonify(result=result)
+
+
 @bp.route('/_self_assign', methods=['GET', 'POST'])
 @roles_required('contributor')
 def self_assign():

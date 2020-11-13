@@ -35,6 +35,8 @@
 
             </div>
 
+            <div id="check_box_response"></div>
+
             <div class="custom-control custom-checkbox mt-4">
                 <input class="custom-control-input" type="checkbox" id="reviewed" {{status['review_checked']}} {{status['review_disabled']}}>
                 <label class="custom-control-label" for="reviewed">Reviewed</label>
@@ -45,6 +47,12 @@
                 <input class="custom-control-input" type="checkbox" id="issues" {{status['issues_checked']}} {{status['review_disabled']}}>
                 <label class="custom-control-label" for="issues">Has issues</label>
             </div>
+
+            <div class="custom-control custom-checkbox mb-4 mt-1" {{status['importance_hidden']}}>
+                <input class="custom-control-input" type="checkbox" id="importance" {{status['importance_checked']}} {{status['review_disabled']}}>
+                <label class="custom-control-label" for="importance">High importance</label>
+            </div>
+
 
             <div class="container text-center">
                 <h4 class="mt-4">Comments</h4>
@@ -108,6 +116,7 @@
             comment_id: comment_id
         }).done(function (data) {
             response_msg(data.result.msg, data.result.status, data.result.issues, "response_div")
+            response_msg(data.result.msg, data.result.status, data.result.issues, "check_box_response")
             location.reload()
         }).fail(function(xhr, status, error) {
             console.log(error)
@@ -122,6 +131,10 @@
         has_issues()
     };
 
+    document.getElementById("importance").onchange = function(){
+        importance_updated()
+    };
+
     function update_reviewed() {
         $.post('/_review_paper', {
             paper_id: "{{paper['id']}}",
@@ -129,6 +142,7 @@
 
             }).done(function(data) {
                 response_msg(data.result.msg, data.result.status, data.result.issues, "response_div")
+                response_msg(data.result.msg, data.result.status, data.result.issues, "check_box_response")
             })
         }
 
@@ -138,8 +152,21 @@
             issues: document.getElementById("issues").checked,
             }).done(function(data) {
                 response_msg(data.result.msg, data.result.status, data.result.issues, "response_div")
+                response_msg(data.result.msg, data.result.status, data.result.issues, "check_box_response")
             })
         }
+
+    function importance_updated() {
+        $.post('/_importance_updated', {
+            paper_id: "{{paper['id']}}",
+            importance: document.getElementById("importance").checked,
+            }).done(function(data) {
+                response_msg(data.result.msg, data.result.status, data.result.issues, "response_div")
+                response_msg(data.result.msg, data.result.status, data.result.issues, "check_box_response")
+            })
+        }
+
+
 </script>
 
 {% include 'comments/comment_modal.html' %}
