@@ -106,7 +106,7 @@ def get_status(paper, user):
     if paper.has_issues == True:
         status_dict['issues_checked'] = 'checked'
         status_dict['issues_hidden'] = ''
-    if paper.has_issues == True:
+    if paper.high_importance == True:
         status_dict['importance_checked'] = 'checked'
         status_dict['importance_hidden'] = ''
 
