@@ -54,6 +54,10 @@
             <p class="seq_field"><span id="notes_query"></span></p>
 
             <p class="seq_heading">Links:</p>
+            <div class="custom-control custom-checkbox">
+                <input type="checkbox" class="custom-control-input" id="reviewed_checkbox" checked>
+                <label for="reviewed_checkbox" class="custom-control-label">Only reviewed data</label>
+            </div>
             <div class="text-center">
                 <a id="substrate_spec_of_seq_query" href=""><button class="btn btn-outline-primary">Substrate specificity of <span id="enzyme_name_2_query"></span></button></a>
                 <a id="paper_feat_seq_query" href=""><button class="btn btn-outline-info">Papers featuring <span id="enzyme_name_3_query"></span></button></a>
@@ -70,6 +74,8 @@
 </div>
 
 <script>
+    window.current_enzyme_name = ""
+
     function parse_sequence_data(data) {
         document.getElementById("enzyme_type_query").innerHTML = data.result.enzyme_type;
         document.getElementById("enzyme_type_full_query").innerHTML = data.result.enzyme_type_full;
@@ -155,10 +161,27 @@
             document.getElementById("notes_heading_query").style.display = "inline";
         }
 
-        document.getElementById('paper_feat_seq_query').href = Flask.url_for("biocatdb.show_papers", {"enzyme_name": data.result.enzyme_name});
-        document.getElementById('substrate_spec_of_seq_query').href = Flask.url_for("biocatdb.enzyme_substrate_specificity", {"enzyme_name": data.result.enzyme_name});
+        window.current_enzyme_name = data.result.enzyme_name
+        set_enzyme_links()
 
         document.getElementById('sequence_owner_query').innerHTML = data.result.owner;
+    }
+
+    function set_enzyme_links() {
+        var reviewed = document.getElementById('reviewed_checkbox').checked
+        var enzyme_name = window.current_enzyme_name
+
+        if (reviewed === true) {
+            document.getElementById('paper_feat_seq_query').href = Flask.url_for("biocatdb.show_papers", {"enzyme_name": enzyme_name, "reviewed": 'reviewed'});
+            document.getElementById('substrate_spec_of_seq_query').href = Flask.url_for("biocatdb.enzyme_substrate_specificity", {"enzyme_name": enzyme_name, "reviewed": 'reviewed'});
+        } else {
+            document.getElementById('paper_feat_seq_query').href = Flask.url_for("biocatdb.show_papers", {"enzyme_name": enzyme_name});
+            document.getElementById('substrate_spec_of_seq_query').href = Flask.url_for("biocatdb.enzyme_substrate_specificity", {"enzyme_name": enzyme_name});
+        }
+    }
+
+    document.getElementById('reviewed_checkbox').onchange = function() {
+        set_enzyme_links()
     }
 
     function load_sequence_data(enzyme_name) {

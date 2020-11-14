@@ -59,7 +59,8 @@ class Network(object):
                          'rr_min_products': 10,
                          'rr_max_reactions': 1,
                          'aizynth_reaction_mode': 'policy',
-                         'retrobiocat_reaction_mode': 'complexity'}
+                         'retrobiocat_reaction_mode': 'complexity',
+                         'only_reviewed_activity_data': False}
 
     def update_settings(self, settings):
         self.settings.update(settings)

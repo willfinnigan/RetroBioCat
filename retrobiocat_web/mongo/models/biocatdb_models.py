@@ -76,6 +76,7 @@ class Sequence(db.Document):
     alignments_made = db.BooleanField(default=False)
 
     objects_to_update = []
+    reviewed = db.BooleanField()
 
     def update_name(self, new_name):
         new_name = sequence_functions.sanitise_string(new_name)
@@ -211,6 +212,7 @@ class Activity(db.Document):
 
     selectivity = db.StringField()
     auto_generated = db.BooleanField()
+    reviewed = db.BooleanField()
 
     meta = {'indexes': ['enzyme_name', 'enzyme_type', 'reaction']}
 

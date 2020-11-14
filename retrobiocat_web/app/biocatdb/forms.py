@@ -50,6 +50,7 @@ class SubstrateForm(FlaskForm):
     target_smiles = StringField('Product SMILES', validators=[is_accepted_by_rdkit])
     similarity = DecimalField('Similarity cutoff', default=0.6, validators=[NumberRange(min=0.1, max=1)])
     auto_data = BooleanField('Include automatically generated data', default=False)
+    only_reviewed = BooleanField('Only reviewed data', default=True)
     submit = SubmitField('Submit')
 
     def set_choices(self):
@@ -77,20 +78,24 @@ class Network_Vis_Options(FlaskForm):
 
 class SequenceByName(FlaskForm):
     name = StringField('Enzyme name', validators=[DataRequired()])
+    only_reviewed = BooleanField('Only reviewed data', default=True)
     submit = SubmitField('Submit')
 
 class SequenceByType(FlaskForm):
     def __init__(self, choices):
         super().__init__()
         self.type = SelectField('Enzyme type', choices=choices)
+        self.only_reviewed = BooleanField('Only reviewed data', default=True)
         self.submit = SubmitField('Submit')
 
 class SequenceBySequence(FlaskForm):
     sequence = StringField('Protein sequence', validators=[DataRequired()])
+    only_reviewed = BooleanField('Only reviewed data', default=True)
     submit = SubmitField('Submit')
 
 class SequenceSearch(FlaskForm):
     enzyme_type = SelectField('Enzyme type')
+    only_reviewed = BooleanField('Only reviewed data', default=True)
     submit = SubmitField('Submit')
 
     def set_choices(self):
@@ -100,6 +105,7 @@ class PapersSearch(FlaskForm):
     enzyme_type = SelectField('Enzyme type')
     enzyme_name = SelectField('Enzyme name')
     reaction = SelectField('Reaction')
+    only_reviewed = BooleanField('Only reviewed data', default=True)
     submit = SubmitField('Submit')
 
     def set_choices(self):
@@ -110,6 +116,7 @@ class PapersSearch(FlaskForm):
 class SubstrateScopeForm(FlaskForm):
     enzyme_type = SelectField('Enzyme name')
     enzyme_name = SelectField('Enzyme name')
+    only_reviewed = BooleanField('Only reviewed data', default=True)
     submit = SubmitField('Submit')
 
     def set_choices(self):

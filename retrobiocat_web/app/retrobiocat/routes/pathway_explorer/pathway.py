@@ -111,7 +111,8 @@ def task_get_pathways(form_data):
                              'colour_reactions': form_data['colour_reactions'],
                              "colour_arrows": form_data['colour_edges'],
                              "show_negative_enzymes": form_data['show_neg_enz'],
-                             "only_postitive_enzyme_data" : not form_data['show_neg_enz']})
+                             "only_postitive_enzyme_data": not form_data['show_neg_enz'],
+                             'only_reviewed_activity_data': bool(form_data["only_reviewed"])})
 
     if form_data["specificity_scoring_mode"] == 'Product + substrates (slower)':
         network.update_settings({'specificity_score_substrates' : True})

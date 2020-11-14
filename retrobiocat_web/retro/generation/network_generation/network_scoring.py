@@ -107,7 +107,7 @@ class NetworkEvaluator():
 
             only_active = network.settings["only_postitive_enzyme_data"]
             sim_cuttoff = network.settings['similarity_score_threshold']
-
+            only_reviewed = network.settings['only_reviewed_activity_data']
 
             for node in network.reaction_nodes:
                 if 'specificity_scores' not in network.graph.nodes[node]['attributes']:
@@ -123,7 +123,8 @@ class NetworkEvaluator():
                     for enz in possible_enzymes:
                         score, info, = self.specficity_scorer.scoreReaction(reaction_name, enz, product, subOne, subTwo,
                                                                            sim_cutoff=sim_cuttoff,
-                                                                           onlyActive=only_active)
+                                                                           onlyActive=only_active,
+                                                                           only_reviewed=only_reviewed)
 
                         network.graph.nodes[node]['attributes']['specificity_scores'][enz] = score
                         network.graph.nodes[node]['attributes']['enzyme_info'][enz] = info

@@ -41,7 +41,7 @@ def organise_mongo_columns(df):
     df = df.reindex(columns=COLUMNS)
     return df
 
-def query_specificity_data(listReactions, listEnzymes):
+def query_specificity_data(listReactions, listEnzymes, only_reviewed=False):
     if "All" in listEnzymes or len(listEnzymes) == 0 or listEnzymes == ['']:
         enzQ = Q()
     else:
@@ -52,7 +52,12 @@ def query_specificity_data(listReactions, listEnzymes):
     else:
         reacQ = Q(reaction__in=listReactions)
 
-    result = Activity.objects(enzQ & reacQ).as_pymongo()
+    if only_reviewed == True:
+        revQ = Q(reviewed=True)
+    else:
+        revQ = Q()
+
+    result = Activity.objects(enzQ & reacQ & revQ).as_pymongo()
     spec_df = pd.DataFrame(list(result))
     spec_df = organise_mongo_columns(spec_df)
 

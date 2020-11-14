@@ -83,7 +83,7 @@
         <ul class="navbar-nav">
             {% if current_user.is_anonymous %}
                 <li id='pathway_explorer' class="nav-item">
-                    <a class="nav-link" href="/login">Login</a>
+                    <a class="nav-link" href="/login">Login / Sign-up</a>
                 </li>
             {% else %}
                 {% include 'navbar/logged_in_menu.html' %}

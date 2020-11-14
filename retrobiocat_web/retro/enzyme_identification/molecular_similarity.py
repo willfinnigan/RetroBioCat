@@ -77,7 +77,7 @@ class SubstrateSpecificityScorer():
         self.print_log = print_log
         self.log_times = log_times
 
-    def scoreReaction(self, reaction, enzyme, p1, s1, s2, sim_cutoff=0.7, onlyActive=True, maxEnzymes=1, maxHits=4):
+    def scoreReaction(self, reaction, enzyme, p1, s1, s2, sim_cutoff=0.7, onlyActive=True, maxEnzymes=1, maxHits=4, only_reviewed=False):
         """
         scoreReaction is called when generating a network, to score whether a similar reaction is in the database.
         It returns a score, and a dict (info), containing some information on the best hit
@@ -85,7 +85,7 @@ class SubstrateSpecificityScorer():
         We need to edit this dict so it contains more information from the query, so that this can be displayed.
         """
 
-        spec_df = query_mongodb.query_specificity_data([reaction], [enzyme])
+        spec_df = query_mongodb.query_specificity_data([reaction], [enzyme], only_reviewed=only_reviewed)
         if len(spec_df.index) != 0:
             spec_df_f = self.get_fingerprints(spec_df)
             spec_df_f = self.drop_fingerprint_nan(spec_df_f, p1, s1, s2)
@@ -108,11 +108,11 @@ class SubstrateSpecificityScorer():
 
     def querySpecificityDf(self, productSmi, listReactionNames, listEnzymes,
                            dataLevel='All', numEnzymes=5, numHits=2, simCutoff=0.65,
-                           include_auto_generated=True):
+                           include_auto_generated=True, only_reviewed=False):
 
 
 
-        spec_df = query_mongodb.query_specificity_data(listReactionNames, listEnzymes)
+        spec_df = query_mongodb.query_specificity_data(listReactionNames, listEnzymes, only_reviewed=only_reviewed)
         self._log(f'Queried mongodb, retrieved {len(spec_df.index)} entries')
 
         spec_df = self.filter_df_by_data_level(spec_df, dataLevel)

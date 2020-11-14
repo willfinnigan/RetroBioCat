@@ -45,6 +45,7 @@ class NetworkExploreForm(FlaskForm):
     combine_enantiomers = BooleanField('Combine enantiomers for racemic starting material', default=True)
     include_experimental = BooleanField('Include experimental reaction rules', default=False)
     include_two_step = BooleanField('Include reaction rules for multi-step reactions, which are also included as single step rules', default=True)
+    only_reviewed = BooleanField('Use only reviewed substrate specificity data', default=False)
     calc_complexity = BooleanField('Calculate molecular complexity (slower)', default=True)
     sub_sim = BooleanField('Calculate substrate specificity (slower)', default=True)
     sub_thres = DecimalField('Substrate similarity threshold', default=0.5, validators=[NumberRange(min=0, max=1)])
@@ -65,6 +66,7 @@ class PathwayExploreForm(FlaskForm):
     remove_small = BooleanField('Remove small molecules (eg NH3)', default=True)
     combine_enantiomers = BooleanField('Combine enantiomers for racemic starting material', default=True)
     include_experimental = BooleanField('Include experimental reaction rules', default=False)
+    only_reviewed = BooleanField('Use only reviewed substrate specificity data', default=False)
     include_two_step = BooleanField('Include reaction rules for multi-step reactions, which are also included as single step rules', default=True)
     sub_thres = DecimalField('Substrate similarity threshold', default=0.6, validators=[NumberRange(min=0, max=1)])
     specificity_scoring_mode = SelectField('Specificity scoring mode', choices=score_substrates)
@@ -92,6 +94,7 @@ class SubstrateForm(FlaskForm):
     max_hits = IntegerField('Max number of substrates', default=10, validators=[NumberRange(min=1, max=100)])
     product = StringField('Product SMILES', validators=[is_accepted_by_rdkit])
     similarity = DecimalField('Similarity cutoff', default=0.6, validators=[NumberRange(min=0.1, max=1)])
+    only_reviewed = BooleanField('Only reviewed data', default=False)
     submit = SubmitField('Submit')
 
 class Network_Vis_Options(FlaskForm):

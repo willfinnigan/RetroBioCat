@@ -37,8 +37,11 @@ def papers_search():
             enzyme_name = None
         if reaction == 'All':
             reaction = None
-
-        return redirect(url_for("biocatdb.show_papers", enzyme_type=enzyme_type, enzyme_name=enzyme_name, reaction=reaction))
+        if form_data['only_reviewed'] == True:
+            return redirect(url_for("biocatdb.show_papers", enzyme_type=enzyme_type, enzyme_name=enzyme_name, reaction=reaction, reviewed='reviewed'))
+        else:
+            return redirect(
+                url_for("biocatdb.show_papers", enzyme_type=enzyme_type, enzyme_name=enzyme_name, reaction=reaction))
 
     return render_template('papers_query/papers_query.html', form=form)
 
@@ -50,6 +53,11 @@ def show_papers():
     args = request.args.to_dict()
     title = "Papers"
 
+    if 'reviewed' in args:
+        revQ = db.Q(reviewed=True)
+    else:
+        revQ = db.Q()
+
     status_query = db.Q(status_not = 'Data required')
 
     if 'enzyme_type' in args:
@@ -58,9 +66,7 @@ def show_papers():
     else:
         enzyme_type_query = db.Q()
 
-    papers = Paper.objects(enzyme_type_query)
-
-
+    papers = Paper.objects(enzyme_type_query & revQ)
 
     if 'enzyme_name' in args:
         papers = filter_papers_by_enzyme_name(papers, args['enzyme_name'])

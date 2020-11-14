@@ -15,10 +15,18 @@ def sequence_search():
     if form.validate_on_submit() == True:
         form_data = form.data
         enzyme_type = form_data['enzyme_type']
-        if enzyme_type == 'All':
-            return redirect(url_for("biocatdb.show_sequences"))
+        only_reviewed = form_data['only_reviewed']
+
+        if only_reviewed is not True:
+            if enzyme_type == 'All':
+                return redirect(url_for("biocatdb.show_sequences"))
+            else:
+                return redirect(url_for("biocatdb.show_sequences", enzyme_type=form_data['enzyme_type']))
         else:
-            return redirect(url_for("biocatdb.show_sequences", enzyme_type=form_data['enzyme_type']))
+            if enzyme_type == 'All':
+                return redirect(url_for("biocatdb.show_sequences", reviewed='reviewed'))
+            else:
+                return redirect(url_for("biocatdb.show_sequences", reviewed='reviewed', enzyme_type=form_data['enzyme_type']))
 
     return render_template('sequence_query/sequence_query.html', form=form)
 
@@ -29,6 +37,12 @@ def show_sequences():
 
     args = request.args.to_dict()
     title = "Enzyme sequences"
+
+    if 'reviewed' in args:
+        revQ = db.Q(reviewed=True)
+    else:
+        revQ = db.Q()
+        title += " (including not reviewed)"
 
     if 'enzyme_type' in args:
         enzyme_type_query = db.Q(enzyme_type=args['enzyme_type'])
@@ -43,7 +57,7 @@ def show_sequences():
     else:
         paper_query = db.Q()
 
-    enzyme_data = sequence_table.get_enzyme_data(enzyme_type_query & paper_query)
+    enzyme_data = sequence_table.get_enzyme_data(enzyme_type_query & paper_query & revQ)
     enzyme_types = sorted(list(EnzymeType.objects().distinct("enzyme_type")))
 
     return render_template('edit_tables/edit_sequences.html',

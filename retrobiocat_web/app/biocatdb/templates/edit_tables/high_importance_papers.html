@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% set active_page = "contributions_menu" %}
+
+{% block content %}
+
+<div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-form">
+                    <div class="card-body">
+                        <h2 class="text-center">Papers we'd like to get into the database ASAP</h2>
+                        <p class="px-5">
+                            Some papers are of particular importance for the RetroBioCat database,
+                            as they contain lots of data on substrate specificity, or maybe contain lots
+                            of new enzyme sequences.  We'd like to get these papers in as a first priority,
+                            so these are a great place to start if you're looking to help with the database.
+                            Papers of importance are listed below..
+                        </p>
+
+                        {% if not current_user.has_role('contributor') %}
+                            <p class="mx-5">
+                                If you haven't already, make yourself a user account and
+                                <a class="text-success" href="{{url_for('biocatdb.contributor_sign_up')}}"><b>sign up as a contributor.</b></a>
+                            </p>
+                        {% endif %}
+
+                        <p class="mx-5">
+                            Instructions for the process of adding data to RetroBioCat are
+                            <a href="{{url_for('main_site.instructions_for_data_contribution')}}">available here.</a>
+                        </p>
+                        <div id="hi_response_div"></div>
+                        {% for tag in tags %}
+                            <h5 class="text-center mt-5">
+                                {{tag}}
+                            {% if tag in enzyme_full_names %}
+                                 - {{ enzyme_full_names[tag] }}
+                            {% endif %}
+                            </h5>
+                            {% include 'tabulator_tables/papers_table/high_importance_papers_tabulator.html' %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+</div>
+
+{% endblock %}

@@ -34,7 +34,12 @@
                                 {% endfor %}
                             </div>
 
-                            {{ form.submit(class="btn-lg btn-block btn-success") }}
+                            <div class="custom-control custom-checkbox">
+                                {{ form.only_reviewed(type='checkbox', class="custom-control-input") }}
+                                {{ form.only_reviewed.label(class="custom-control-label") }}
+                            </div>
+
+                            {{ form.submit(class="btn-lg btn-block btn-success mt-3") }}
                         </form>
 
                     </div>

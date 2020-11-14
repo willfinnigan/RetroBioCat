@@ -20,6 +20,7 @@
                         <button class="btn btn-primary" onclick="convert_to_pdb_schema()">convert_to_pdb_schema</button>
                         <button class="btn btn-info" onclick="clear_all_redis_jobs()">Clear all redis jobs</button>
                         <button class="btn btn-success" onclick="ensure_correct_sequence_naming()">Ensure correct sequence naming</button>
+                        <button class="btn btn-warning" onclick="update_reviewed()">Update reviewed status</button>
 
                     </div>
                 </div>
@@ -78,6 +79,15 @@
                     response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
                 })
             }
+
+        function update_reviewed() {
+            $.post('/_update_reviewed_status', {
+                }).done(function(data) {
+                    response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+                })
+            }
+
+
 
 
 

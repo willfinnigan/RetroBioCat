@@ -1,0 +1,62 @@
+
+<div id="{{tag}}_table_div"></div>
+
+<script>
+    var paper_self_assignButton = function(cell, formatterParams, onRendered){ //plain text value
+        return "<button class='btn btn-sm btn-outline-success'>Self assign</button>";
+    };
+
+    var papers_columns = [
+
+        {'title':"ID", align:"center", 'field':"_id", visible:false},
+
+        {'title': "Short citation", align:"center", 'minWidth':200, 'field': "short_citation", formatter:"textarea"},
+
+        {'title': "Title", align:"center", 'field': "title", 'minWidth':300, formatter:"textarea"},
+
+        {'title': "DOI", align:"center", 'minWidth':200, 'field': "doi",
+            formatter:function(cell, formatterParams){
+                var cell_value = cell.getValue();
+                var row_data = cell.getData()
+                var doi = row_data['doi']
+                var url = "<a href='https://doi.org/" + doi + "' target='_blank'>" + cell_value + "</a>";
+
+                cell.getElement().style.display = 'inline-flex'
+                cell.getElement().style["white-space"]  = 'pre-wrap'
+                return url
+                }
+        },
+
+        {'title': 'Self Assign', 'width':100, formatter:paper_self_assignButton, align:"center",
+            cellClick:function(e, cell){self_assign(cell.getRow().getData()._id)}},
+
+    ];
+
+    var {{tag}}_table_data = {{data_by_tag[tag]|safe}}
+
+    var {{tag}}_papers_table = new Tabulator("#{{tag}}_table_div", {
+        data: {{tag}}_table_data, //assign data to table
+        maxHeight: "20vh",
+        layout: "fitColumns",
+        addRowPos: "bottom",
+        columns: papers_columns,
+        cellHozAlign: "center",
+        cellVertAlign: "middle"
+    })
+
+    function self_assign(id) {
+        {% if current_user.is_anonymous %}
+            window.location.href = Flask.url_for("biocatdb.contributor_sign_up")
+        {% else %}
+            $.post('/_self_assign', {
+                paper_id: id,
+                }).done(function(data) {
+                    response_msg(data.result.msg, data.result.status, data.result.issues, "hi_response_div")
+                if (data.result.status === 'success') {
+                    window.location.href = Flask.url_for("biocatdb.submission_main_page", {"paper_id": id})
+                }
+                })
+        {% endif %}
+    }
+
+</script>

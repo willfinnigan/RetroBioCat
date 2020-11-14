@@ -342,6 +342,27 @@ def ensure_correct_sequence_naming():
     return jsonify(result=result)
 
 
+@bp.route('/_update_reviewed_status', methods=['GET', 'POST'])
+@roles_required('admin')
+def update_reviewed_status():
+    papers = Paper.objects(reviewed=True)
+    for paper in papers:
+        acts = Activity.objects(paper=paper)
+        seqs = Sequence.objects(papers=paper)
+        for act in acts:
+            act.reviewed = True
+            act.save()
+        for seq in seqs:
+            seq.reviewed = True
+            seq.save()
+
+    result = {'status': 'success',
+              'msg': f'Updated activity and sequence data to reviewed = True, if paper has been reviewed',
+              'issues': []}
+
+    return jsonify(result=result)
+
+
 if __name__ == '__main__':
     data_folder = str(Path(__file__).parents[4]) + '/retro/data/buyability'
     print(data_folder)

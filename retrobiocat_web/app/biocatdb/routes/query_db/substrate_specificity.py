@@ -90,15 +90,17 @@ def task_get_spec_data(form_data):
     data_level = form_data['data_level']
     max_hits = form_data['max_hits']
     include_auto_data = bool(form_data['auto_data'])
+    only_reviewed = bool(form_data['only_reviewed'])
 
     scorer = molecular_similarity.SubstrateSpecificityScorer(print_log=False)
 
     activity_df = scorer.querySpecificityDf(product, reactions, enzyme_names,
-                                   dataLevel=data_level,
-                                   numEnzymes=num_choices,
-                                   simCutoff=similarity_cutoff,
-                                   numHits=max_hits,
-                                   include_auto_generated=include_auto_data)
+                                            dataLevel=data_level,
+                                            numEnzymes=num_choices,
+                                            simCutoff=similarity_cutoff,
+                                            numHits=max_hits,
+                                            include_auto_generated=include_auto_data,
+                                            only_reviewed=only_reviewed)
 
     if activity_df is None:
         print('Activity df is none')
@@ -122,37 +124,65 @@ def task_get_spec_data(form_data):
 
 @bp.route("/paper_substrates/<paper_id>", methods=["GET"])
 def paper_substrate_specificity(paper_id):
-
     paper = Paper.objects(id=paper_id)[0]
+    title = f"{paper.short_citation} activity data"
 
-    activity_data = list(Activity.objects(paper=paper).only(*process_activity_data.mongo_cols).as_pymongo())
+    args = request.args.to_dict()
+    if 'reviewed' in args:
+        revQ = db.Q(reviewed=True)
+    else:
+        title += " (including not reviewed)"
+        revQ = db.Q()
+
+    paper_Q = db.Q(paper=paper)
+
+    activity_data = list(Activity.objects(paper_Q & revQ).only(*process_activity_data.mongo_cols).as_pymongo())
     activity_data = process_activity_data.process_activity_data(activity_data)
     activity_data = process_activity_data.smiles_to_svg(activity_data)
 
-    return render_template('substrate_specificity/table_result_specificity.html', substrate_specificity_data=activity_data, title=f"{paper.short_citation} activity data")
+    return render_template('substrate_specificity/table_result_specificity.html', substrate_specificity_data=activity_data, title=title)
 
 @bp.route("/enzyme_substrates/<enzyme_name>", methods=["GET"])
 def enzyme_substrate_specificity(enzyme_name):
+    title = f"{enzyme_name} substrate specificity"
+    args = request.args.to_dict()
+    if 'reviewed' in args:
+        revQ = db.Q(reviewed=True)
+    else:
+        revQ = db.Q()
+        title += " (including not reviewed)"
 
-    activity_data = list(Activity.objects(enzyme_name=enzyme_name).only(*process_activity_data.mongo_cols).as_pymongo())
+    enzNameQ = db.Q(enzyme_name=enzyme_name)
+
+    activity_data = list(Activity.objects(enzNameQ & revQ).only(*process_activity_data.mongo_cols).as_pymongo())
     activity_data = process_activity_data.process_activity_data(activity_data)
     activity_data = process_activity_data.smiles_to_svg(activity_data)
 
-    return render_template('substrate_specificity/table_result_specificity.html', substrate_specificity_data=activity_data, title=f"{enzyme_name} substrate specificity")
+    return render_template('substrate_specificity/table_result_specificity.html', substrate_specificity_data=activity_data, title=title)
+
 
 @bp.route("/enzyme_substrates_type/<enzyme_type>", methods=["GET"])
 def enzyme_substrate_specificity_type(enzyme_type):
+    title = f"Substrate scope for all {enzyme_type} enzymes"
+
     if enzyme_type == 'All':
         enz_type_q = db.Q()
+        title += " (including not reviewed)"
     else:
         enz_type_q = db.Q(enzyme_type=enzyme_type)
 
-    activity_data = list(Activity.objects(enz_type_q).only(*process_activity_data.mongo_cols).as_pymongo())
+    args = request.args.to_dict()
+    if 'reviewed' in args:
+        revQ = db.Q(reviewed=True)
+    else:
+        revQ = db.Q()
+
+    activity_data = list(Activity.objects(enz_type_q & revQ).only(*process_activity_data.mongo_cols).as_pymongo())
     activity_data = process_activity_data.process_activity_data(activity_data)
     activity_data = process_activity_data.smiles_to_svg(activity_data)
 
     return render_template('substrate_specificity/table_result_specificity.html', substrate_specificity_data=activity_data,
-                           title=f"Substrate scope for all {enzyme_type} enzymes")
+                           title=title)
 
 @bp.route("/substrate_scope_search", methods=["GET", "POST"])
 def substrate_scope_search():
@@ -161,11 +191,18 @@ def substrate_scope_search():
 
     if form.validate_on_submit() == True:
         form_data = form.data
+        if form_data['only_reviewed'] == True:
+            if form_data['enzyme_name'] != 'All':
+                return redirect(url_for("biocatdb.enzyme_substrate_specificity", enzyme_name=form_data['enzyme_name'], reviewed='reviewed'))
+            elif form_data['enzyme_type'] != 'All':
+                return redirect(url_for("biocatdb.enzyme_substrate_specificity_type", enzyme_type=form_data['enzyme_type'], reviewed='reviewed'))
 
-        if form_data['enzyme_name'] != 'All':
-            return redirect(url_for("biocatdb.enzyme_substrate_specificity", enzyme_name=form_data['enzyme_name']))
-        elif form_data['enzyme_type'] != 'All':
-            return redirect(url_for("biocatdb.enzyme_substrate_specificity_type", enzyme_type=form_data['enzyme_type']))
+        else:
+            if form_data['enzyme_name'] != 'All':
+                return redirect(url_for("biocatdb.enzyme_substrate_specificity", enzyme_name=form_data['enzyme_name']))
+            elif form_data['enzyme_type'] != 'All':
+                return redirect(url_for("biocatdb.enzyme_substrate_specificity_type", enzyme_type=form_data['enzyme_type']))
+
 
     return render_template('substrate_specificity/substrate_scope_form.html', form=form)
 

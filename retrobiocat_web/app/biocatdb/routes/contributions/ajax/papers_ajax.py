@@ -296,6 +296,8 @@ def remove_sequence():
 def review_paper():
     user = user_datastore.get_user(current_user.id)
     paper = Paper.objects(id=request.form['paper_id'])[0]
+    acts = Activity.objects(paper=paper)
+    seqs = Sequence.objects(papers=paper)
     if check_permission.check_seq_permissions(current_user.id, paper):
         reviewed = bool(strtobool(request.form['reviewed']))
         paper.reviewed = reviewed
@@ -304,6 +306,13 @@ def review_paper():
         else:
             paper.reviewed_by = None
         paper.save()
+
+        for act in acts:
+            act.reviewed = reviewed
+            act.save()
+        for seq in seqs:
+            seq.reviewed = reviewed
+            seq.save()
 
         result = {'status': 'success',
                   'msg': 'Review status updated',

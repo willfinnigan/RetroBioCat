@@ -109,3 +109,33 @@ def papers_with_orhpan_sequences():
                            show_owner=True,
                            title=title,
                            row_click_modal=False)
+
+@bp.route('/high_importance_papers', methods=['GET'])
+def high_importance_papers():
+    hi_papers = Paper.objects(high_importance=True).select_related()
+    enzyme_types = EnzymeType.objects()
+
+    tags = []
+    for paper in hi_papers:
+        for tag in paper.tags:
+            if tag not in tags:
+                tags.append(str(tag))
+    tags = sorted(tags)
+
+    data_by_tag = {}
+    for tag in tags:
+        hi_q = db.Q(high_importance=True)
+        tag_q = db.Q(tags=tag)
+
+        papers_data = list(Paper.objects(hi_q & tag_q).only(*papers_table.PAPERS_TABLE_FIELDS).order_by('-status').as_pymongo())
+        papers_data = papers_table.process_papers_dict(papers_data, show_owner=False)
+        data_by_tag[tag] = papers_data
+
+    enzyme_full_names = {}
+    for enz_type in enzyme_types:
+        enzyme_full_names[enz_type.enzyme_type] = enz_type.full_name
+
+    return render_template('edit_tables/high_importance_papers.html',
+                           data_by_tag=data_by_tag,
+                           tags=tags,
+                           enzyme_full_names=enzyme_full_names)

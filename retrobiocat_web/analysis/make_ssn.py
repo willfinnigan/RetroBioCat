@@ -10,6 +10,7 @@ import os
 import pandas as pd
 import palettable
 import statistics
+import dask.dataframe
 
 class SSN_Cluster_Precalculator(object):
 
@@ -383,22 +384,26 @@ class SSN(object):
 
         self.log(f"Saved SSN for {self.enzyme_type} in {round(t1 - t0, 1)} seconds")
 
-    def load(self, include_mutants=True, only_biocatdb=False):
+    def load(self, include_mutants=True, only_biocatdb=False, no_edges=False):
 
         t0 = time.time()
         if not os.path.exists(f"{self.save_path}/graph.csv") or not os.path.exists(f"{self.save_path}/attributes.json"):
             self.log(f"No saved SSN found for {self.enzyme_type}, could not load")
             return False
 
-        df_graph = pd.read_csv(f"{self.save_path}/graph.csv")
+        #df_graph = pd.read_csv(f"{self.save_path}/graph.csv")
+        df_graph = dask.dataframe.read_csv(f"{self.save_path}/graph.csv")
         att_dict = json.load(open(f'{self.save_path}/attributes.json'))
 
         self.graph = nx.from_pandas_edgelist(df_graph, edge_attr=['weight', 'i'])
 
         # Nodes with no edges are not in edge list..
-        for node in att_dict:
-            if node not in self.graph.nodes:
-                self._add_protein_node(node)
+        """
+        if no_edges == True:
+            for node in att_dict:
+                if node not in self.graph.nodes:
+                    self._add_protein_node(node)
+        """
 
         if include_mutants is False:
             self.filter_out_mutants()

@@ -40,6 +40,11 @@
         {{ form.auto_data.label(class="custom-control-label") }}
     </div>
 
+    <div class="custom-control custom-checkbox">
+        {{ form.only_reviewed(type='checkbox', form="main_form", class="custom-control-input") }}
+        {{ form.only_reviewed.label(class="custom-control-label") }}
+    </div>
+
     <div class="form-inline">
         {{ form.num_choices.label(class="mx-2 my-1") }}
         {{ form.num_choices(type='number', form="main_form", class="form-control form-control-sm w-25 my-1") }}
