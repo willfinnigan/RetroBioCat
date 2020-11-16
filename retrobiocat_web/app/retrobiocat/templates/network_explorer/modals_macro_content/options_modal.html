@@ -22,9 +22,20 @@
         <label class='custom-control-label' for="physics_switch">Graph physics:</label>
     </div>
 
+    <button class="btn btn-outline-info" onclick="remove_node_labels()">Remove node labels</button>
+
 </div>
 
 <script>
+    function remove_node_labels() {
+        var update_array = []
+        var all_nodes = data['nodes'].getIds()
+        all_nodes.forEach(function (node, i) {
+        var update_node = {'id': node, 'label': ''}
+            update_array.push(update_node)
+        })
+        data['nodes'].update(update_array)
+    }
 
     document.getElementById("edge_colour_select").onchange = function() {
         set_network_options(data)

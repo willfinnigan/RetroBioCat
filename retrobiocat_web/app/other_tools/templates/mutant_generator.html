@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% set active_page = "more_info" %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-10 mx-auto">
+                <div class="card card-form my-5">
+                    <div class="card-body">
+                        <h3 class="card-title py-5">Mutant generator</h3>
+
+                        <div class="form-group">
+                            <label for='enzyme_name'>Enzyme name</label>
+                            <input type="text" class="form-control" id="enzyme_name" placeholder="">
+                        </div>
+
+                        <div class="form-group">
+                            <label for='sequence'>Protein sequence</label>
+                            <textarea class="form-control" id="sequence" placeholder="" rows="4"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for='res_num'>Residue number to mutate</label>
+                            <input type="number" class="form-control" id="res_num" placeholder="">
+                            <p>Residue = <span id="residue"></span></p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for='mutate_to'>Amino acid to mutate to</label>
+                            <input type="text" class="form-control" id="mutate_to" placeholder="">
+                        </div>
+
+                        <button type="button" onclick="do_mutation()" class="btn btn-success" id="execute">Execute</button>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function do_mutation() {
+            var sequence = document.getElementById("sequence").value
+            var res_num = document.getElementById("res_num").value
+            var mutate_to = document.getElementById("res_num").value
+
+        }
+
+    </script>
+
+{% endblock %}

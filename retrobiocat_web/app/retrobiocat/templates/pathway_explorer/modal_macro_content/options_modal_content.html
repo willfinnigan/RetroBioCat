@@ -5,6 +5,8 @@
 
     {{ checkbox('Graph physics', 'physics_switch') }}
 
+    <button class="btn btn-outline-info btn-sm mb-4 mt-2" onclick="remove_node_labels()">Remove node labels</button>
+
     {{ select('Reaction colours',
               'reaction_colour_select',
                ['Substrate specificity', 'Complexity change', 'Off']) }}
@@ -19,6 +21,16 @@
 </div>
 
 <script>
+    function remove_node_labels() {
+        var update_array = []
+        var all_nodes = data['nodes'].getIds()
+        all_nodes.forEach(function (node, i) {
+        var update_node = {'id': node, 'label': ''}
+            update_array.push(update_node)
+        })
+        data['nodes'].update(update_array)
+    }
+
     document.getElementById("change_options").onclick = function() {
         set_pathway_options(data)
     }

@@ -143,6 +143,7 @@
             }).done(function(data) {
                 response_msg(data.result.msg, data.result.status, data.result.issues, "response_div")
                 response_msg(data.result.msg, data.result.status, data.result.issues, "check_box_response")
+                location.reload();
             })
         }
 
