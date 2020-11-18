@@ -39,13 +39,34 @@
     </div>
 
     <script>
-        function do_mutation() {
-            var sequence = document.getElementById("sequence").value
-            var res_num = document.getElementById("res_num").value
-            var mutate_to = document.getElementById("res_num").value
-
+        document.getElementById("res_num").onchange = function() {
+            updateResidueAt()
         }
 
+        function updateResidueAt() {
+            var sequence = document.getElementById("sequence").value
+            var res_num = document.getElementById("res_num").value-1
+            document.getElementById("residue").innerHTML = sequence[res_num]
+        }
+
+        function setCharAt(str,index,chr) {
+            if(index > str.length-1) return str;
+            return str.substring(0,index) + chr + str.substring(index+1);
+        }
+
+        function do_mutation() {
+            var sequence = document.getElementById("sequence").value
+            var res_num = document.getElementById("res_num").value - 1
+            var mutate_to = document.getElementById("mutate_to").value
+            var current_res = sequence[res_num]
+
+            if (current_res !== mutate_to) {
+                document.getElementById("sequence").value = setCharAt(sequence, res_num, mutate_to)
+                updateResidueAt()
+                var enz_name = document.getElementById("enzyme_name").value
+                document.getElementById("enzyme_name").value = enz_name + '_' + current_res + (res_num+1) + mutate_to
+            }
+        }
     </script>
 
 {% endblock %}

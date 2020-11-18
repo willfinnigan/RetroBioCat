@@ -2,8 +2,14 @@
 <div class="no_margin" id="papers_response"></div>
 <h5 class="text-center">{{title}}</h5>
 {% if row_click_modal == True %}
-    <p class="text-info no_margin"><small>Click on a row for more information and links to related data</small></p>
+    <p class="text-danger no_margin">Click on a row for more information and links to related data</p>
 {% endif %}
+
+<div class="custom-control custom-checkbox">
+    <input class="custom-control-input" type="checkbox" id="filter_cascades" onclick="filter_cascades()">
+    <label class="custom-control-label" for="filter_cascades">Hide cascades</label>
+</div>
+
 <div id="papers_table"></div>
 
 {% include 'tabulator_tables/papers_table/paper_delete_modal.html' %}
@@ -128,6 +134,18 @@
             }
             })
         }
+
+    function customFilter(data){
+        return !data.tags.includes("Cascade");
+    }
+
+    function filter_cascades() {
+        if (document.getElementById("filter_cascades").checked === true){
+            papers_table.setFilter(customFilter);
+        } else {
+            papers_table.clearFilter();
+        }
+    }
 
 
 
