@@ -110,7 +110,7 @@ def papers_with_orhpan_sequences():
                            title=title,
                            row_click_modal=False)
 
-@bp.route('/high_importance_papers', methods=['GET'])
+@bp.route('/priority_papers', methods=['GET'])
 def high_importance_papers():
     hi_papers = Paper.objects(high_importance=True).select_related()
     enzyme_types = EnzymeType.objects()

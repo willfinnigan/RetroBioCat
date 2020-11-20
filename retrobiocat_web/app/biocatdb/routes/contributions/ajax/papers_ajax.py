@@ -297,7 +297,7 @@ def review_paper():
     user = user_datastore.get_user(current_user.id)
     paper = Paper.objects(id=request.form['paper_id'])[0]
     acts = Activity.objects(paper=paper)
-    seqs = Sequence.objects(papers=paper)
+    seqs = Sequence.objects(papers=paper).select_related()
     if check_permission.check_seq_permissions(current_user.id, paper):
         reviewed = bool(strtobool(request.form['reviewed']))
         paper.reviewed = reviewed
@@ -310,9 +310,21 @@ def review_paper():
         for act in acts:
             act.reviewed = reviewed
             act.save()
-        for seq in seqs:
-            seq.reviewed = reviewed
-            seq.save()
+
+        if reviewed == True:
+            for seq in seqs:
+                seq.reviewed = True
+                seq.save()
+        else:
+            for seq in seqs:
+                has_reviewed_paper = False
+                for paper in seq.papers:
+                    if paper.reviewed == True:
+                        has_reviewed_paper = True
+                        break
+                if has_reviewed_paper == False:
+                    seq.reviewed = False
+                    seq.save()
 
         result = {'status': 'success',
                   'msg': 'Review status updated',
