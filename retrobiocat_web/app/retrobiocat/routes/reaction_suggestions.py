@@ -56,7 +56,7 @@ def reaction_suggestion(suggestion_id):
     enable_comments = True
     if current_user.is_authenticated:
         user = user_datastore.get_user(current_user.id)
-        if r_sug.owner == user or user.has_rule('rxn_rules_admin'):
+        if r_sug.owner == user or user.has_role('rxn_rules_admin'):
             can_save = True
             can_delete = True
     else:
