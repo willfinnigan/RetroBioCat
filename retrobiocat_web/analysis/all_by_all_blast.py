@@ -1,5 +1,4 @@
 import os
-from pathlib import Path
 from retrobiocat_web.mongo.models.biocatdb_models import Sequence, EnzymeType, UniRef50
 import mongoengine as db
 import subprocess as sp

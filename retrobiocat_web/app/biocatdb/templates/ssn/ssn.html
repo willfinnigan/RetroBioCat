@@ -19,11 +19,14 @@
 
     {% include 'ssn/modals/network_physics_modal.html' %}
     {% include 'ssn/modals/edit_selected_nodes_modal.html' %}
+    {% include 'ssn/modals/uniref_modal.html' %}
     {% include 'tabulator_tables/sequences_table/seq_row_click_modal.html' %}
 
     <script type="text/javascript">
         // initialize global variables.
         var container = document.getElementById('myssn');
+
+        window.enzyme_type = "{{enzyme_type}}"
 
         var edges_options = {'smooth': false}
 
@@ -111,13 +114,45 @@
                         scale: 0.01})
 
         function load_enzyme_modal() {
-
             if (data['nodes'].get([window.selected_node])[0]['node_type'] === 'biocatdb') {
                 var enzyme_name = window.selected_node
                 load_sequence_data(enzyme_name)
                 load_seq_papers(enzyme_name)
                 document.getElementById('sequence_row_click_model_title').innerHTML = enzyme_name;
                 $('#sequence_row_modal').modal('show');
+            } else if (data['nodes'].get([window.selected_node])[0]['node_type'] === 'uniref') {
+                $('#uniref_modal').modal('show');
+                load_uniref_data(window.selected_node)
+            }
+        }
+
+        function load_uniref_data(name) {
+            $.post($SCRIPT_ROOT + '/_load_uniref_data', {
+                name: name,
+                enzyme_type: window.enzyme_type
+                }).done(function(data) {
+                    document.getElementById('uniref_name').innerHTML = data.result.cluster_id
+                document.getElementById('rep_seq_uniref_cluster_id').innerHTML = data.result.cluster_id
+                document.getElementById('link_to_uniref').href = "https://www.uniprot.org/uniref/" + data.result.cluster_id
+
+                    document.getElementById('rep_seq_name').innerHTML = data.result.rep_seq_name
+                    document.getElementById('rep_seq_organism').innerHTML = data.result.rep_seq_organism
+                    document.getElementById('rep_seq_uniprot_id').innerHTML = data.result.rep_seq_uniprot_id
+                    document.getElementById('link_to_uniprot').href = "https://www.uniprot.org/uniprot/" + data.result.rep_seq_uniprot_id
+                    document.getElementById('rep_seq_name').innerHTML = data.result.rep_seq_name
+                    document.getElementById('uniprot_in_cluster').innerHTML = data.result.num_uniprot
+                    document.getElementById('uni90_in_cluster').innerHTML = data.result.num_uni90
+
+                    parse_pfams(document.getElementById('rep_seq_pfam_domains'), data.result.pfam_object)
+                })
+        }
+
+        function parse_pfams(dom_div, pfam_object) {
+            dom_div.innerHTML = ""
+            for (const [key, value] of Object.entries(pfam_object)) {
+                var new_pfam = document.createElement('p')
+                dom_div.appendChild(new_pfam)
+                new_pfam.innerHTML = "<b>" + value + "</b> - <a href='https://pfam.xfam.org/family/" + key + "' target='_blank'>" + key + "</a>"
             }
         }
 
@@ -151,8 +186,6 @@
             selected_nodes = selected_nodes.concat(new_nodes_array)
             network.selectNodes(selected_nodes)
         }
-
-
     </script>
 
 {% endblock %}

@@ -1,7 +1,7 @@
 from retrobiocat_web.app.biocatdb import bp
 from flask import render_template, flash, redirect, url_for, request, jsonify, session, current_app
 from flask_security import roles_required, current_user
-from retrobiocat_web.mongo.models.biocatdb_models import Paper, Activity, Sequence, Molecule, Tag, EnzymeType, SSN_record
+from retrobiocat_web.mongo.models.biocatdb_models import Paper, Activity, Sequence, Molecule, Tag, EnzymeType, UniRef50, SSN_record
 from retrobiocat_web.analysis import embl_restfull, all_by_all_blast, make_ssn
 from rq.registry import StartedJobRegistry
 import datetime
@@ -10,6 +10,7 @@ from rq.job import Job
 from rq import get_current_job
 from retrobiocat_web.analysis.make_ssn import SSN, SSN_Visualiser
 from retrobiocat_web.app.biocatdb.forms import SSN_Form
+from retrobiocat_web.analysis import retrieve_uniref_info
 import json
 
 @bp.route('/ssn_page/<task_id>/', methods=['GET'])
@@ -23,7 +24,8 @@ def ssn_page(task_id):
                            nodes=result['nodes'],
                            edges=result['edges'],
                            alignment_score=result['alignment_score'],
-                           start_pos=start_pos)
+                           start_pos=start_pos,
+                           enzyme_type=result['enzyme_type'])
 
 def task_get_ssn(enzyme_type, score, include_mutants, only_biocatdb):
     job = get_current_job()
@@ -43,11 +45,10 @@ def task_get_ssn(enzyme_type, score, include_mutants, only_biocatdb):
     vis = SSN_Visualiser(enzyme_type, log_level=1)
     nodes, edges = vis.visualise(ssn, score, precalc_pos=precalc_pos)
 
-
-
     result = {'nodes': nodes,
               'edges': edges,
-              'alignment_score': score}
+              'alignment_score': score,
+              'enzyme_type': enzyme_type}
 
     return result
 
@@ -145,5 +146,40 @@ def ssn_object_status():
               'min_alignment': min_alignment - 5}
     return jsonify(result=result)
 
+@bp.route("/_load_uniref_data", methods=["POST"])
+def load_uniref_data():
+    name = request.form['name']
+    enzyme_type = request.form['enzyme_type']
+    enzyme_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
 
+    et = db.Q(enzyme_type=enzyme_type_obj)
+    nq = db.Q(enzyme_name=name)
 
+    query = UniRef50.objects(et & nq)
+    seq = query[0]
+    protein_name = seq.protein_name
+    organism = seq.tax
+
+    uniprot_id = retrieve_uniref_info.strip_uniref_name(name)
+
+    ref_parser = retrieve_uniref_info.UniRef_Parser()
+    ref_parser.load_xml(name)
+    uni90, uni100, uniprot = ref_parser.get_uniref_members()
+    cluster_id = ref_parser.get_cluster_name()
+    num_uni90 = len(uni90)
+    num_uni100 = len(uni100)
+    num_uniprot = len(list(uniprot.keys()))
+
+    prot_parser = retrieve_uniref_info.UniProt_Parser()
+    prot_parser.load_xml(uniprot_id)
+    pfams = prot_parser.get_pfams()
+
+    result = {'rep_seq_name': protein_name,
+              'rep_seq_organism': organism,
+              'rep_seq_uniprot_id': uniprot_id,
+              'cluster_id': cluster_id,
+              'num_uni90': num_uni90,
+              'num_uni100': num_uni100,
+              'num_uniprot': num_uniprot,
+              'pfam_object': pfams}
+    return jsonify(result=result)
