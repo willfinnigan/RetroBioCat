@@ -52,14 +52,7 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - MONGO_HOST=mongodb://mongo
       - USE_EMAIL_CONFIRMATION=True
+      - SCHEDULER=True
     restart: always
     command: python3 ./retrobiocat/retrobiocat_web/worker.py
 
-  scheduler:
-    image: willfinnigan/rqscheduler
-    links:
-      - redis
-    depends_on:
-      - redis
-    environment:
-      - RQ_REDIS_URL=redis://redis:6379/0

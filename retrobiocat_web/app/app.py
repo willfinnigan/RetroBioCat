@@ -1,7 +1,6 @@
 from flask import Flask
 from redis import Redis
 import rq
-from rq_scheduler import Scheduler
 from retrobiocat_web.config import Config
 from flask_talisman import Talisman
 from flask_wtf.csrf import CSRFProtect
@@ -62,10 +61,6 @@ def create_app(config_class=Config, use_talisman=True):
     app.redis_queues = [app.task_queue, app.network_queue, app.pathway_queue, app.retrorules_queue,
                         app.db_queue, app.blast_queue, app.alignment_queue, app.process_blasts_queue,
                         app.preprocess_queue, app.auto_jobs]
-
-    app.scheduler = Scheduler('auto_jobs', connection=app.redis)
-
-    #app.scheduler = Scheduler(queue=app.auto_jobs)
 
     print("Init addons...")
     if use_talisman == True:
@@ -165,7 +160,7 @@ def create_app(config_class=Config, use_talisman=True):
         app.register_blueprint(other_tools.bp)
         app.register_blueprint(db_analysis.bp)
 
-        queue_auto_jobs.schedual_jobs(repeat_in=30)
+        queue_auto_jobs.schedual_jobs(repeat_in=1)
 
         return app
 

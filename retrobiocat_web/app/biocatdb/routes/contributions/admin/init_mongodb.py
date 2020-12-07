@@ -22,6 +22,7 @@ import datetime
 from pathlib import Path
 from retrobiocat_web.retro.evaluation.starting_material import StartingMaterialEvaluator
 import subprocess as sp
+from rq.registry import ScheduledJobRegistry
 
 from retrobiocat_web.app.biocatdb.routes.contributions.ajax.sequences_ajax import INVALID_NAME_CHARS
 
@@ -320,8 +321,9 @@ def clear_all_redis_jobs():
     for queue in current_app.redis_queues:
         queue.delete()
 
-    for job in current_app.scheduler.get_jobs():
-        current_app.scheduler.cancel(job)
+    registry = ScheduledJobRegistry(queue=current_app.auto_jobs)
+    for job_id in registry.get_job_ids():
+        registry.remove(job_id, delete_job=True)
 
     result = {'status': 'success',
               'msg': 'Cleared all redis jobs',

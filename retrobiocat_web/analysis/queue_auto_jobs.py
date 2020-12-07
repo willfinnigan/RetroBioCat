@@ -4,7 +4,7 @@ from flask import current_app
 from retrobiocat_web.analysis import ssn_tasks
 from redis import Redis
 from rq import Queue
-from rq_scheduler import Scheduler
+from rq.registry import ScheduledJobRegistry
 from datetime import datetime
 from datetime import timedelta
 
@@ -19,14 +19,18 @@ If ssn status is not 'Complete', run ssn
 # 3. Every 30 minutes, check a random uniref sequence for updates, if updated... check all.
 
 def schedual_jobs(repeat_in=30):
-    if len(list(current_app.scheduler.get_jobs())) < 3:
-        for job in current_app.scheduler.get_jobs():
-            current_app.scheduler.cancel(job)
+    registry = ScheduledJobRegistry(queue=current_app.auto_jobs)
+    if registry.count < 3:
+        for job_id in registry.get_job_ids():
+            registry.remove(job_id)
 
         print('Setting repeat jobs..')
-        current_app.scheduler.enqueue_in(timedelta(minutes=repeat_in), task_check_blast_status)
-        current_app.scheduler.enqueue_in(timedelta(minutes=repeat_in), task_check_ssn_status)
-        current_app.scheduler.enqueue_in(timedelta(minutes=repeat_in+1), schedual_jobs)
+        current_app.auto_jobs.enqueue_in(timedelta(minutes=repeat_in), task_check_blast_status)
+        current_app.auto_jobs.enqueue_in(timedelta(minutes=repeat_in), task_check_ssn_status)
+        current_app.auto_jobs.enqueue_in(timedelta(minutes=repeat_in+2), schedual_jobs)
+
+    print(registry.count)
+    print(registry.get_job_ids())
 
 def task_check_blast_status():
     if len(current_app.blast_queue.jobs) + len(current_app.process_blasts_queue.jobs) + len(current_app.alignment_queue.jobs) == 0:
@@ -39,8 +43,6 @@ def task_check_blast_status():
         print(f"Length blast queue = {len(current_app.blast_queue.jobs)}")
         print(f"Length process blast queue = {len(current_app.process_blasts_queue.jobs)}")
         print(f"Length alignment queue = {len(current_app.alignment_queue.jobs)}")
-
-
 
 def task_check_ssn_status():
     if len(current_app.blast_queue.jobs) + len(current_app.process_blasts_queue.jobs) + len(current_app.alignment_queue.jobs) == 0:
