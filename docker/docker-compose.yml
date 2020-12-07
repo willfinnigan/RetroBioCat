@@ -53,3 +53,11 @@ services:
       - USE_EMAIL_CONFIRMATION=True
     command: python3 ./retrobiocat/retrobiocat_web/worker.py tasks network pathway db
 
+  scheduler:
+    image: willfinnigan/rqscheduler
+    links:
+      - redis
+    depends_on:
+      - redis
+    environment:
+      - RQ_REDIS_URL=redis://redis:6379/0
