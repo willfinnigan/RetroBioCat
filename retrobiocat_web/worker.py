@@ -17,4 +17,3 @@ if __name__ == '__main__':
 
         w = Worker(qs, log_job_description=False)
         w.work(with_scheduler=scheduler)
-
