@@ -42,7 +42,7 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
 
         return
 
-    if ssn.db_object.identity_at_alignment_score == {}:
+    if ssn.db_object.identity_at_alignment_score == {} and len(ssn.graph.nodes) != 0:
         ssn.set_status('Precalculating identity at alignment')
         current_app.preprocess_queue.enqueue(new_precalculate_identity_at_alignment_job, enzyme_type)
 
