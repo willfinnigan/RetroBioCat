@@ -17,6 +17,7 @@ services:
       - "5000:5000"
     volumes:
       - ./data/:/retrobiocat/retrobiocat_web/retro/data/
+      - ./mongo/mongo_dump:/retrobiocat/retrobiocat_web/mongo/mongo_dump
     environment:
       - PRODUCTION=False
       - SECRET_KEY=put-production-secret-key-here
