@@ -20,6 +20,7 @@ import time
 import datetime
 from pathlib import Path
 from retrobiocat_web.retro.evaluation.starting_material import StartingMaterialEvaluator
+import subprocess as sp
 
 from retrobiocat_web.app.biocatdb.routes.contributions.ajax.sequences_ajax import INVALID_NAME_CHARS
 
@@ -318,6 +319,9 @@ def clear_all_redis_jobs():
     for queue in current_app.redis_queues:
         queue.delete()
 
+    for job in current_app.scheduler.get_jobs():
+        current_app.scheduler.cancel(job)
+
     result = {'status': 'success',
               'msg': 'Cleared all redis jobs',
               'issues': []}
@@ -362,7 +366,26 @@ def update_reviewed_status():
 
     return jsonify(result=result)
 
+@bp.route('/_mongo_dump', methods=['GET', 'POST'])
+@roles_required('admin')
+def mongo_dump():
+    command = f"mongodump --host='{current_app.config['MONGODB_HOST']}:{current_app.config['MONGODB_PORT']}' &"
+    sp.run(command, shell=True)
+
+    result = {'status': 'success',
+              'msg': f'Mongo dump command initiated',
+              'issues': []}
+
+    return jsonify(result=result)
+
 
 if __name__ == '__main__':
     data_folder = str(Path(__file__).parents[4]) + '/retro/data/buyability'
     print(data_folder)
+
+
+if __name__ == '__main__':
+    data_folder = str(Path(__file__).parents[4]) + '/retro/data/buyability'
+    print(data_folder)
+
+

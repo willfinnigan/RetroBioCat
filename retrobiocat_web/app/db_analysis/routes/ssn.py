@@ -1,15 +1,12 @@
-from retrobiocat_web.app.biocatdb import bp
-from flask import render_template, flash, redirect, url_for, request, jsonify, session, current_app
-from flask_security import roles_required, current_user
-from retrobiocat_web.mongo.models.biocatdb_models import Paper, Activity, Sequence, Molecule, Tag, EnzymeType, UniRef50, SSN_record
-from retrobiocat_web.analysis import embl_restfull, all_by_all_blast, make_ssn
-from rq.registry import StartedJobRegistry
-import datetime
+from retrobiocat_web.app.db_analysis import bp
+from flask import render_template, request, jsonify, session, current_app
+from flask_security import roles_required
+from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType, UniRef50, SSN_record
 import mongoengine as db
 from rq.job import Job
 from rq import get_current_job
 from retrobiocat_web.analysis.make_ssn import SSN, SSN_Visualiser
-from retrobiocat_web.app.biocatdb.forms import SSN_Form
+from retrobiocat_web.app.db_analysis.forms import SSN_Form
 from retrobiocat_web.analysis import retrieve_uniref_info
 import json
 

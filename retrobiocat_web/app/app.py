@@ -1,6 +1,7 @@
 from flask import Flask
 from redis import Redis
 import rq
+from rq_scheduler import Scheduler
 from retrobiocat_web.config import Config
 from flask_talisman import Talisman
 from flask_wtf.csrf import CSRFProtect
@@ -15,6 +16,8 @@ from flask_mongoengine import MongoEngine
 import datetime
 from mongoengine import disconnect
 from mongoengine import Q
+from retrobiocat_web.analysis import queue_auto_jobs
+from datetime import timedelta
 
 csrf = CSRFProtect()
 jsglue = JSGlue()
@@ -36,7 +39,7 @@ from retrobiocat_web.app.admin import MyAdminIndexView, MyModelView
 
 user_datastore = MongoEngineUserDatastore(db, User, Role)
 
-from retrobiocat_web.app import main_site, retrobiocat, biocatdb, other_tools
+from retrobiocat_web.app import main_site, retrobiocat, biocatdb, other_tools, db_analysis
 
 
 def create_app(config_class=Config, use_talisman=True):
@@ -55,12 +58,14 @@ def create_app(config_class=Config, use_talisman=True):
     app.process_blasts_queue = rq.Queue('process_blasts', connection=app.redis, default_timeout=2*60*60, result_ttl=1)
     app.alignment_queue = rq.Queue('alignment', connection=app.redis, default_timeout=12 * 60 * 60, result_ttl=1)
     app.preprocess_queue = rq.Queue('preprocess', connection=app.redis, default_timeout=12 * 60 * 60, result_ttl=1)
-    app.auto_jobs = rq.Queue('auto_jobs', connection=app.redis, default_timeout=600, result_ttl=1)
+    app.auto_jobs = rq.Queue('auto_jobs', connection=app.redis, default_timeout=600, result_ttl=None)
     app.redis_queues = [app.task_queue, app.network_queue, app.pathway_queue, app.retrorules_queue,
                         app.db_queue, app.blast_queue, app.alignment_queue, app.process_blasts_queue,
-                        app.preprocess_queue, app.auto_jobs ]
+                        app.preprocess_queue, app.auto_jobs]
 
-    app.auto_jobs.delete()
+    app.scheduler = Scheduler('auto_jobs', connection=app.redis)
+
+    #app.scheduler = Scheduler(queue=app.auto_jobs)
 
     print("Init addons...")
     if use_talisman == True:
@@ -158,6 +163,9 @@ def create_app(config_class=Config, use_talisman=True):
         app.register_blueprint(retrobiocat.bp)
         app.register_blueprint(biocatdb.bp)
         app.register_blueprint(other_tools.bp)
+        app.register_blueprint(db_analysis.bp)
+
+        queue_auto_jobs.schedual_jobs(repeat_in=30)
 
         return app
 

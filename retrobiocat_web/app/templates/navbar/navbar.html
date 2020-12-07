@@ -30,7 +30,7 @@
                     <a class="dropdown-item" href="{{ url_for('biocatdb.sequence_search') }}">Enzymes</a>
                     <a class="dropdown-item" href="{{ url_for('biocatdb.papers_search') }}">Papers</a>
                     {% if current_user.has_role('experimental') %}
-                        <a class="dropdown-item text-danger" href="{{url_for('biocatdb.ssn_form') }}">Sequence similarity networks</a>
+                        <a class="dropdown-item text-danger" href="{{url_for('db_analysis.ssn_form') }}">Sequence similarity networks</a>
                     {% endif %}
                 </div>
             </li>

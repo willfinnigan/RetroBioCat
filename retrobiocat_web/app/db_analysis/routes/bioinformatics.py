@@ -1,4 +1,4 @@
-from retrobiocat_web.app.biocatdb import bp
+from retrobiocat_web.app.db_analysis import bp
 from flask import render_template, flash, redirect, url_for, request, jsonify, session, current_app
 from flask_security import roles_required, current_user
 from retrobiocat_web.mongo.models.biocatdb_models import Paper, Activity, Sequence, Molecule, Tag, EnzymeType, UniRef90, UniRef50, Alignment, SeqSimNet, SSN_record

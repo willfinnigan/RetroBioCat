@@ -1,0 +1,21 @@
+
+<div role="group" class="btn-group">
+    <div class="dropdown">
+      <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Menu
+      </button>
+      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+          <a class="dropdown-item" data-toggle="modal" data-target="#network_physics_modal" class="btn btn-primary btn-sm">Network physics</a>
+          <a class="dropdown-item" onclick="select_all_connected_nodes()">Select all connected nodes</a>
+      </div>
+    </div>
+
+    <label class="my-auto text-center pl-2 pr-1"><strong>Alignment score: </strong>{{alignment_score}}</label>
+
+    <div role="group" class="btn-group">
+        <button class="btn btn-success" type="button" onclick="select_connected_nodes()">Select connected nodes</button>
+        <button class="btn btn-primary" type="button" data-toggle="modal" data-target="#edit_selected_nodes_modal">Edit selected nodes</button>
+    </div>
+</div>
+
+

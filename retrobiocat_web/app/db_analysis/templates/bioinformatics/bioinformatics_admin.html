@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% set active_page = "experimental_menu" %}
+
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div id="save_response"></div>
+        <div class="row">
+            <div class="col"></div>
+            <div class="col-8">
+                <div class="card card-form my-5">
+                    <div class="card-body">
+                        <h3 class="card-title text-center">Admin for running blast searches</h3>
+                        <div class="row mt-5">
+                            <div class="col"></div>
+                            <div class="col-8">
+                                <div class="container">
+
+                                {% for enz_type in blasted_enz_types %}
+                                    <div class="my-2">
+                                        <h6 class="mt-3">{{ enz_type }}</h6>
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" style="width: {{blasted_enz_types[enz_type]}}%"></div>
+                                        </div>
+                                        <p>BLAST status: <span id="{{enz_type}}_blast_status">{{biostat[enz_type]}}</span></p>
+                                        <p>SSN status: <span id="{{enz_type}}_ssn_status">{{ssn[enz_type]}}</span></p>
+                                        <p>BioCatDB sequences: {{enzyme_numbers[enz_type]['biocatdb']}}</p>
+                                        <p>UniRef50 sequences: {{enzyme_numbers[enz_type]['uniref']}}</p>
+
+                                        <button class="btn btn-sm btn-outline-primary" id="{{enz_type}}_blast" onclick="queue_blast_search('{{enz_type}}')" {{button_disable}}>Queue blasts for {{enz_type}}</button>
+                                        <button class="btn btn-sm btn-outline-info" id="{{enz_type}}_ssn" onclick="expand_ssn('{{enz_type}}')" {{button_disable}}>Expand SSN for {{enz_type}}</button>
+                                        <button class="btn btn-sm btn-outline-danger" id="{{enz_type}}_align" onclick="mark_not_aligned('{{enz_type}}')" {{button_disable}}>Mark DB sequences as not aligned for {{enz_type}}</button>
+                                    </div>
+                                {% endfor %}
+
+
+                                <button class="btn btn-sm btn-danger" onclick="clear_all_bioinformatics_data()">Clear all data</button>
+
+                                </div>
+                            </div>
+                            <div class="col"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col"></div>
+        </div>
+    </div>
+
+    <script>
+        function queue_blast_search(enzyme_type) {
+            $.post('/_find_homologs', {
+                enzyme_type: enzyme_type
+                }).done(function(data) {
+                    document.getElementById(enzyme_type+'_blast').disabled = true
+                    document.getElementById(enzyme_type+'_blast').classList.add('disabled')
+                    document.getElementById(enzyme_type+'_blast_status').innerHTML = 'Started'
+                    response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+                })
+        }
+
+        function expand_ssn(enzyme_type) {
+            $.post('/_expand_ssn', {
+                enzyme_type: enzyme_type
+                }).done(function(data) {
+                    document.getElementById(enzyme_type+'_ssn').disabled = true
+                    document.getElementById(enzyme_type+'_ssn').classList.add('disabled')
+                    document.getElementById(enzyme_type+'_ssn_status').innerHTML = 'Started'
+                    response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+                })
+        }
+
+        function clear_all_bioinformatics_data() {
+            $.post('/_clear_all_bioinformatics_data', {
+                }).done(function(data) {
+                    response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+                })
+        }
+
+        function mark_not_aligned(enzyme_type) {
+            $.post('/_mark_not_aligned', {
+                enzyme_type: enzyme_type
+                }).done(function(data) {
+                    document.getElementById(enzyme_type+'_align').disabled = true
+                    document.getElementById(enzyme_type+'_align').classList.add('disabled')
+                    document.getElementById(enzyme_type+'_ssn_status').innerHTML = 'Queued for update'
+                    response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+                })
+        }
+
+
+
+
+
+
+    </script>
+
+{% endblock %}

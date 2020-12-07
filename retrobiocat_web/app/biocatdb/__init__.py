@@ -13,7 +13,5 @@ from retrobiocat_web.app.biocatdb.routes.contributions.admin import add_or_edit_
 
 from retrobiocat_web.app.biocatdb.routes.query_db import sequence_query, substrate_specificity, substrate_specificity_ajax, paper_query, contributor_attribution
 
-from retrobiocat_web.app.biocatdb.routes.analysis import bioinformatics, ssn
-
 from retrobiocat_web.app.biocatdb.routes import data_issues
 

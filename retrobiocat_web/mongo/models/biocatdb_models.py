@@ -269,9 +269,6 @@ class SSN_record(db.Document):
     meta = {'indexes': ['enzyme_type']}
 
 
-
-
-
 class ActivityIssue(db.Document):
     activity = db.ReferenceField(Activity)
     raised_by = db.ReferenceField(User, reverse_delete_rule=2)
