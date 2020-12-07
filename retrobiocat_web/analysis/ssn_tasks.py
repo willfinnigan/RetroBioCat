@@ -42,6 +42,7 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
 
         return
 
+    """
     if ssn.db_object.identity_at_alignment_score == {} and len(ssn.graph.nodes) != 0:
         ssn.set_status('Precalculating identity at alignment')
         current_app.preprocess_queue.enqueue(new_precalculate_identity_at_alignment_job, enzyme_type)
@@ -49,11 +50,11 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
     elif ssn.db_object.pos_at_alignment_score == {} and len(ssn.graph.nodes) != 0:
         ssn.set_status('Precalculating cluster positions')
         current_app.preprocess_queue.enqueue(new_precalculate_job, enzyme_type)
+    """
 
-    else:
-        ssn.set_status('Complete')
-        print(f'- SSN CONSTRUCTION FOR {enzyme_type} IS COMPLETE -')
-        ssn.save()
+    ssn.set_status('Complete')
+    print(f'- SSN CONSTRUCTION FOR {enzyme_type} IS COMPLETE -')
+    ssn.save()
 
 def new_expand_ssn_job(enzyme_type):
     ssn = SSN(enzyme_type)
