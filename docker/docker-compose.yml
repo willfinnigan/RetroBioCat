@@ -52,7 +52,7 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - MONGO_HOST=mongodb://mongo
       - USE_EMAIL_CONFIRMATION=True
-    command: python3 ./retrobiocat/retrobiocat_web/worker.py tasks network pathway db
+    command: python3 ./retrobiocat/retrobiocat_web/worker.py
 
   scheduler:
     image: willfinnigan/rqscheduler
