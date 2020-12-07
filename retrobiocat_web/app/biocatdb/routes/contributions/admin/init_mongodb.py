@@ -17,6 +17,7 @@ import pandas as pd
 from retrobiocat_web.app.biocatdb.functions.papers import paper_status, papers_functions, papers_crossref
 from retrobiocat_web.app.biocatdb.functions import create_building_block_db
 import time
+from retrobiocat_web.mongo.functions.mongo_dump import execute_mongo_dump
 import datetime
 from pathlib import Path
 from retrobiocat_web.retro.evaluation.starting_material import StartingMaterialEvaluator
@@ -369,8 +370,7 @@ def update_reviewed_status():
 @bp.route('/_mongo_dump', methods=['GET', 'POST'])
 @roles_required('admin')
 def mongo_dump():
-    command = f"mongodump --host='{current_app.config['MONGODB_HOST']}:{current_app.config['MONGODB_PORT']}' &"
-    sp.run(command, shell=True)
+    execute_mongo_dump()
 
     result = {'status': 'success',
               'msg': f'Mongo dump command initiated',
@@ -378,10 +378,6 @@ def mongo_dump():
 
     return jsonify(result=result)
 
-
-if __name__ == '__main__':
-    data_folder = str(Path(__file__).parents[4]) + '/retro/data/buyability'
-    print(data_folder)
 
 
 if __name__ == '__main__':
