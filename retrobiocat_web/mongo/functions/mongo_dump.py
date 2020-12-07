@@ -5,6 +5,6 @@ from flask import current_app
 def execute_mongo_dump():
     print("Executing mongo dump..")
     output_path = str(Path(__file__).parents[1]) + '/mongo_dump'
-    command = f"mongodump --host='{current_app.config['MONGODB_HOST']}:{current_app.config['MONGODB_PORT']}' --out {output_path} --db={current_app.config['MONGODB_DB']} --gzip &"
+    command = f'''mongodump --uri="{current_app.config['MONGODB_HOST']}:{current_app.config['MONGODB_PORT']}" --out {output_path} --db={current_app.config['MONGODB_DB']} --gzip --archive=mongo_dump.gz &'''
     print(f"CMD = {command}")
     sp.run(command, shell=True)
