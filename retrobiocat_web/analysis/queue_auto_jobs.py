@@ -1,4 +1,4 @@
-from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType, SSN_record
+from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType, SSN_record, UniRef50
 from retrobiocat_web.app.db_analysis.routes.bioinformatics import set_blast_jobs
 from flask import current_app
 from retrobiocat_web.analysis import ssn_tasks
@@ -51,10 +51,11 @@ def task_check_ssn_status():
 
         for ssn_r in ssn_records:
             if ssn_r.status != 'Complete':
-                enzyme_type = ssn_r.enzyme_type.enzyme_type
-                job_name = f"{enzyme_type}_expand_ssn"
-                current_app.alignment_queue.enqueue(ssn_tasks.task_expand_ssn, enzyme_type, job_id=job_name)
-                print(f'Queued SSN job for {enzyme_type}')
+                if len(UniRef50.objects(enzyme_type=ssn_r.enzyme_type)) != 0:
+                    enzyme_type = ssn_r.enzyme_type.enzyme_type
+                    job_name = f"{enzyme_type}_expand_ssn"
+                    current_app.alignment_queue.enqueue(ssn_tasks.task_expand_ssn, enzyme_type, job_id=job_name)
+                    print(f'Queued SSN job for {enzyme_type}')
 
         for enz_type_obj in EnzymeType.objects():
             if enz_type_obj.bioinformatics_status == 'Complete':
