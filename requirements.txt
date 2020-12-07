@@ -2,8 +2,8 @@ flask
 gunicorn
 flask_wtf==0.14.3
 wtforms==2.3.3
-redis==3.3.11
-rq==1.1.0
+redis==3.5.3
+rq==1.7.0
 flask_talisman
 flask-session
 Flask-JSGlue
