@@ -13,3 +13,5 @@ def make_default_connection():
                port=MONGODB_PORT,
                username=MONGO_USERNAME,
                password=MONGO_PASSWORD)
+
+    return db

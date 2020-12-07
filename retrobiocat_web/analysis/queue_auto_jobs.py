@@ -26,8 +26,8 @@ def schedual_jobs(repeat_in=30):
 
         print('Setting repeat jobs..')
         current_app.auto_jobs.enqueue_in(timedelta(minutes=repeat_in), task_check_blast_status)
-        current_app.auto_jobs.enqueue_in(timedelta(minutes=repeat_in), task_check_ssn_status)
-        current_app.auto_jobs.enqueue_in(timedelta(minutes=repeat_in+2), schedual_jobs)
+        current_app.auto_jobs.enqueue_in(timedelta(minutes=repeat_in+2), task_check_ssn_status)
+        current_app.auto_jobs.enqueue_in(timedelta(minutes=repeat_in+4), schedual_jobs)
 
     print(registry.count)
     print(registry.get_job_ids())
@@ -69,6 +69,11 @@ def task_check_ssn_status():
         print(f"Length blast queue = {len(current_app.blast_queue.jobs)}")
         print(f"Length process blast queue = {len(current_app.process_blasts_queue.jobs)}")
         print(f"Length alignment queue = {len(current_app.alignment_queue.jobs)}")
+
+def task_check_uniref_has_blast_source():
+    uniref_query = UniRef50.objects(result_of_blasts_for__size=0)
+    for uniref in uniref_query:
+        uniref.delete()
 
 def check_random_uniref():
     pass

@@ -17,7 +17,7 @@ import pandas as pd
 from retrobiocat_web.app.biocatdb.functions.papers import paper_status, papers_functions, papers_crossref
 from retrobiocat_web.app.biocatdb.functions import create_building_block_db
 import time
-from retrobiocat_web.mongo.functions.mongo_dump import execute_mongo_dump
+from retrobiocat_web.mongo.functions.mongo_dump import execute_mongo_dump, execute_mongo_restore
 import datetime
 from pathlib import Path
 from retrobiocat_web.retro.evaluation.starting_material import StartingMaterialEvaluator
@@ -31,6 +31,7 @@ class InitDB(FlaskForm):
     rxns = FileField("Reactions")
     biocatdb = FileField("biocatdb_2")
     sequences = FileField("sequences")
+    mongo_dump = FileField("mongo dump")
     submit = SubmitField('Submit')
 
 
@@ -93,6 +94,20 @@ def init_db():
                 flash(f"Problem loading sequences excel - {e}", "fail")
 
             os.remove(filename)
+
+        if form.mongo_dump.data != None:
+            filename = secure_filename(form.mongo_dump.data.filename)
+            form.mongo_dump.data.save(filename)
+
+            try:
+                if 'mongo_dump.gz' in filename:
+                    execute_mongo_restore(filename)
+                else:
+                    Exception('File must be mongo_dump.gz')
+
+                flash("mongo dump loaded ok", "success")
+            except Exception as e:
+                flash(f"Problem loading mongo dump - {e}", "fail")
 
     return render_template('init_db/init_db.html', form=form)
 

@@ -139,6 +139,7 @@ class Sequence(db.Document):
         self.blast = None
         self.save()
         self.mark_bioinformatics_for_updating()
+
         return True, 'Sequence updated'
 
     def mark_bioinformatics_for_updating(self):
@@ -151,6 +152,11 @@ class Sequence(db.Document):
 
         self.alignments_made = False
         self.blast = None
+
+        uniref_query = UniRef50.objects(result_of_blasts_for=self)
+        for uniref in uniref_query:
+            uniref.result_of_blasts_for.remove(self)
+            uniref.save()
 
     def __unicode__(self):
         return self.enzyme_name

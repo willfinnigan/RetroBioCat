@@ -1,7 +1,7 @@
 import requests
 from Bio.Blast import NCBIXML
 from io import StringIO
-from retrobiocat_web.mongo.models.biocatdb_models import Sequence, UniRef50, EnzymeType
+from retrobiocat_web.mongo.models.biocatdb_models import Sequence, UniRef50, EnzymeType, SSN_record
 import time
 import mongoengine as db
 import datetime
@@ -106,12 +106,20 @@ class BlastParser(object):
             identifier = alignment.hit_id.replace(self.identifier_head, '')
 
             if self._alignment_filters(alignment, query_length):
-                db_query = UniRef50.objects(db.Q(enzyme_name=identifier) & db.Q(enzyme_type=enzyme_type_obj))
+                db_query = UniRef50.objects(db.Q(enzyme_name=identifier) & db.Q(enzyme_type=enzyme_type_obj)).select_related()
                 if len(db_query) == 0:
                     protein_sequence = self._get_sequence(identifier)
                     if self._sequence_filters(protein_sequence, query_length):
                         self.log(f"Adding sequence for {identifier}")
                         self._add_uniref(alignment, identifier, protein_sequence, enzyme_type_obj, seq_obj)
+                else:
+                    uniref_obj = db_query[0]
+                    self._add_result_of_blasts_for(seq_obj, uniref_obj)
+
+    def _add_result_of_blasts_for(self, blasted_seq, uniref_obj):
+        if blasted_seq not in uniref_obj.result_of_blast_for:
+            uniref_obj.result_of_blast_for.append(blasted_seq)
+            uniref_obj.save()
 
     def _add_uniref(self, alignment, identifier, sequence, enzyme_type_obj, seq_seed):
 
@@ -217,6 +225,10 @@ def check_blast_status(enzyme_type):
         enz_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
         enz_type_obj.bioinformatics_status = 'Complete'
         enz_type_obj.save()
+
+        ssn_record = SSN_record.objects(enzyme_type=enz_type_obj)[0]
+        ssn_record.status = 'Queued for update'
+        ssn_record.save()
 
 if __name__ == '__main__':
     from retrobiocat_web.mongo.default_connection import make_default_connection
