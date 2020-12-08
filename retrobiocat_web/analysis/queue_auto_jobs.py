@@ -41,6 +41,8 @@ def task_check_blast_status():
         enzyme_types = EnzymeType.objects()
         for enz_type in enzyme_types:
             embl_restfull.check_blast_status(enz_type.enzyme_type)
+            if enz_type.bioinformatics_status != 'Complete':
+                embl_restfull.set_blast_jobs(enz_type.enzyme_type)
 
     else:
         print(f"Length blast queue = {len(current_app.blast_queue.jobs)}")
