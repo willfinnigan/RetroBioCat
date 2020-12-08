@@ -223,19 +223,19 @@ def check_blast_status(enzyme_type):
     for seq in seqs:
         if seq.blast is None:
             all_complete = False
-
+    
     if all_complete == True:
         enz_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
-        enz_type_obj.bioinformatics_status = 'Complete'
-        enz_type_obj.save()
-
-        ssn_q = SSN_record.objects(enzyme_type=enz_type_obj)
-        if len(ssn_q) == 1:
-            ssn_record = SSN_record.objects(enzyme_type=enz_type_obj)[0]
-            ssn_record.status = 'Queued for update'
-            ssn_record.save()
-        else:
-            print(f'Warning - multiple SSN records for {enz_type_obj.enzyme_type}, extras need deleting')
+        if enz_type_obj.bioinformatics_status != 'Complete':
+            enz_type_obj.bioinformatics_status = 'Complete'
+            enz_type_obj.save()
+            ssn_q = SSN_record.objects(enzyme_type=enz_type_obj)
+            if len(ssn_q) == 1:
+                ssn_record = SSN_record.objects(enzyme_type=enz_type_obj)[0]
+                ssn_record.status = 'Queued for update'
+                ssn_record.save()
+            else:
+                print(f'Warning - multiple SSN records for {enz_type_obj.enzyme_type}, extras need deleting')
 
     else:
         set_blast_jobs(enzyme_type)

@@ -345,6 +345,8 @@ class SSN(object):
 
         self.graph = nx.Graph()
 
+        self.min_score = 40
+
         self.enzyme_type = enzyme_type
         self.enzyme_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
 
@@ -368,8 +370,6 @@ class SSN(object):
     def save(self):
 
         t0 = time.time()
-
-        self.graph = self.get_graph_filtered_edges(40)
 
         df_graph = nx.to_pandas_edgelist(self.graph)
 
@@ -601,7 +601,8 @@ class SSN(object):
 
     def _add_alignment_edge(self, node_name, alignment_node_name, alignment_score, i, c):
         if node_name != alignment_node_name:
-            self.graph.add_edge(node_name, alignment_node_name, weight=alignment_score, i=i)
+            if alignment_score > self.min_score:
+                self.graph.add_edge(node_name, alignment_node_name, weight=alignment_score, i=i)
 
     def log(self, msg, level=10):
         if level >= self.log_level:

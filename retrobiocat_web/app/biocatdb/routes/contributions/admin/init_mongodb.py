@@ -329,17 +329,13 @@ def convert_to_pdb_schema():
 @bp.route('/_clear_all_redis_jobs', methods=['GET', 'POST'])
 @roles_required('admin')
 def clear_all_redis_jobs():
-    enz_types = EnzymeType.objects()
-    for et in enz_types:
-        et.bioinformatics_status = 'Idle'
-        et.save()
-
-    for queue in current_app.redis_queues:
-        queue.delete()
 
     registry = ScheduledJobRegistry(queue=current_app.auto_jobs)
     for job_id in registry.get_job_ids():
         registry.remove(job_id, delete_job=True)
+
+    for queue in current_app.redis_queues:
+        queue.delete()
 
     result = {'status': 'success',
               'msg': 'Cleared all redis jobs',
