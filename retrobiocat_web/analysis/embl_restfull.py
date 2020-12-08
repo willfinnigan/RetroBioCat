@@ -235,7 +235,39 @@ def check_blast_status(enzyme_type):
             ssn_record.status = 'Queued for update'
             ssn_record.save()
         else:
-            print(f'Warning - multiple SSN records for {enz_type_obj.enzyme_type}')
+            print(f'Warning - multiple SSN records for {enz_type_obj.enzyme_type} - deleting extras')
+            for record in ssn_q[1:]:
+                record.delete()
+
+    else:
+        set_blast_jobs(enzyme_type)
+
+def set_bioinformatics_status(enzyme_type, status):
+    enz_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
+    enz_type_obj.bioinformatics_status = status
+    enz_type_obj.save()
+
+def set_blast_jobs(enzyme_type):
+    set_bioinformatics_status(enzyme_type, 'Blasts Queued')
+    current_app.blast_queue.enqueue(set_bioinformatics_status, enzyme_type, 'Running Blasts')
+
+    seqs = Sequence.objects(db.Q(enzyme_type=enzyme_type) & db.Q(bioinformatics_ignore__ne=True) & db.Q(reviewed=True))
+    for seq in seqs:
+        if seq.sequence != '' and seq.sequence is not None and seq.blast is None:
+            if len(seq.sequence) > 50:
+                name = str(seq.enzyme_name)
+                current_app.blast_queue.enqueue(set_up_blast_job, name)
+                print(f'Queued blast for {seq.enzyme_name}')
+            else:
+                print(f'Not blasting {seq.enzyme_name}')
+                seq.blast = datetime.datetime.now()
+        else:
+            seq.blast = datetime.datetime.now()
+        seq.save()
+
+    current_app.task_queue.enqueue(check_blast_status, enzyme_type)
+
+
 
 if __name__ == '__main__':
     from retrobiocat_web.mongo.default_connection import make_default_connection

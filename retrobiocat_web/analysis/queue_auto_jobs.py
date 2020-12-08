@@ -1,5 +1,4 @@
 from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType, SSN_record, UniRef50, Sequence
-from retrobiocat_web.app.db_analysis.routes.bioinformatics import set_blast_jobs
 from retrobiocat_web.analysis import embl_restfull
 from flask import current_app
 from retrobiocat_web.analysis import ssn_tasks
@@ -42,8 +41,7 @@ def task_check_blast_status():
         enzyme_types = EnzymeType.objects()
         for enz_type in enzyme_types:
             embl_restfull.check_blast_status(enz_type.enzyme_type)
-            if enz_type.bioinformatics_status != 'Complete':
-                set_blast_jobs(enz_type.enzyme_type)
+
     else:
         print(f"Length blast queue = {len(current_app.blast_queue.jobs)}")
         print(f"Length process blast queue = {len(current_app.process_blasts_queue.jobs)}")

@@ -11,37 +11,15 @@ import os
 from pathlib import Path
 from rq.job import Job
 import time
+from retrobiocat_web.analysis import embl_restfull
 
-def set_bioinformatics_status(enzyme_type, status):
-    enz_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
-    enz_type_obj.bioinformatics_status = status
-    enz_type_obj.save()
 
-def set_blast_jobs(enzyme_type):
-    set_bioinformatics_status(enzyme_type, 'Blasts Queued')
-    current_app.blast_queue.enqueue(set_bioinformatics_status, enzyme_type, 'Running Blasts')
-
-    seqs = Sequence.objects(db.Q(enzyme_type=enzyme_type) & db.Q(bioinformatics_ignore__ne=True) & db.Q(reviewed=True))
-    for seq in seqs:
-        if seq.sequence != '' and seq.sequence is not None and seq.blast is None:
-            if len(seq.sequence) > 50:
-                name = str(seq.enzyme_name)
-                current_app.blast_queue.enqueue(embl_restfull.set_up_blast_job, name)
-                print(f'Queued blast for {seq.enzyme_name}')
-            else:
-                print(f'Not blasting {seq.enzyme_name}')
-                seq.blast = datetime.datetime.now()
-        else:
-            seq.blast = datetime.datetime.now()
-        seq.save()
-
-    current_app.task_queue.enqueue(embl_restfull.check_blast_status, enzyme_type)
 
 @bp.route('/_find_homologs', methods=['GET', 'POST'])
 @roles_required('admin')
 def find_homologs():
     enzyme_type = request.form['enzyme_type']
-    set_blast_jobs(enzyme_type)
+    embl_restfull.set_blast_jobs(enzyme_type)
 
     result = {'status': 'success',
               'msg': f"Started job to blast all {enzyme_type}'s",
@@ -57,7 +35,7 @@ def find_allhomologs():
     enzyme_types = EnzymeType.objects().distinct('enzyme_type')
 
     for enzyme_type in enzyme_types:
-        set_blast_jobs(enzyme_type)
+        embl_restfull.set_blast_jobs(enzyme_type)
 
     result = {'status': 'success',
               'msg': f"Started job to blast all enzyme_type's",

@@ -101,8 +101,12 @@ class UniRef_Parser(object):
             self.log(f"Failed to retrieve xml for {name}. Status code = {req.status_code}")
             return False
 
-        self.xml_dict = xmltodict.parse(xml)
-        self.log(f"XML dict parsed for {name}")
+        try:
+            self.xml_dict = xmltodict.parse(xml)
+            self.log(f"XML dict parsed for {name}")
+        except Exception as e:
+            print(e)
+            print(name)
 
     def check_id_match(self, original_name):
         retrieved_name = self.get_cluster_name()

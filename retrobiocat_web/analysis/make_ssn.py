@@ -511,8 +511,6 @@ class SSN(object):
         t1 = time.time()
         self.log(f"Identified {count} sequences which were in SSN but not in database, in {round(t1 - t0, 1)} seconds")
 
-
-
     def remove_seqs_marked_with_no_alignments(self):
 
         t0 = time.time()
