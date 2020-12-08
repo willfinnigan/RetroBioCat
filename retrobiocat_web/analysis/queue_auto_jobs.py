@@ -22,7 +22,7 @@ If ssn status is not 'Complete', run ssn
 # 2. Check ssn status, run ssn if queues
 # 3. Every 30 minutes, check a random uniref sequence for updates, if updated... check all.
 
-def schedual_jobs(repeat_in=30):
+def schedual_jobs(repeat_in=30, initial_run=False):
     registry = ScheduledJobRegistry(queue=current_app.auto_jobs)
     if 'schedule_job' not in list(registry.get_job_ids()):
         for job_id in registry.get_job_ids():
@@ -34,6 +34,10 @@ def schedual_jobs(repeat_in=30):
         current_app.auto_jobs.enqueue_in(timedelta(minutes=repeat_in+8), task_check_blast_status)
         current_app.auto_jobs.enqueue_in(timedelta(minutes=repeat_in+12), task_check_ssn_status)
         current_app.auto_jobs.enqueue_in(timedelta(minutes=repeat_in+16), schedual_jobs, job_id='schedule_job')
+
+        if initial_run == True:
+            current_app.auto_jobs.enqueue_in(timedelta(minutes=1), task_check_blast_status)
+            current_app.auto_jobs.enqueue_in(timedelta(minutes=2), task_check_ssn_status)
 
 def task_check_blast_status():
     if len(current_app.blast_queue.jobs) + len(current_app.process_blasts_queue.jobs) + len(current_app.alignment_queue.jobs) == 0:
