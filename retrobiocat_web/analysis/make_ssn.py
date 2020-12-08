@@ -11,6 +11,7 @@ import pandas as pd
 import palettable
 import statistics
 import dask.dataframe
+import gc
 
 class SSN_Cluster_Precalculator(object):
 
@@ -368,6 +369,8 @@ class SSN(object):
 
         t0 = time.time()
 
+        self.graph = self.get_graph_filtered_edges(40)
+
         df_graph = nx.to_pandas_edgelist(self.graph)
 
         att_dict = {}
@@ -394,8 +397,27 @@ class SSN(object):
         #df_graph = pd.read_csv(f"{self.save_path}/graph.csv")
         df_graph = dask.dataframe.read_csv(f"{self.save_path}/graph.csv")
         att_dict = json.load(open(f'{self.save_path}/attributes.json'))
+        t1 = time.time()
+
+        # Apply filtering on df_graph here.
+        # Filter away wrong pfam
+        # Filter away uniref here
+        # Filter if not product of blast for selected sequences
+
+        # multi-thead and then combine?
+
+        #chunk_size = 100000
+        #if df_graph.shape[0] > chunk_size:
+            #graphs = []
+            #for start in range(0, df.shape[0], chunk_size):
+                #df_subset = df_graph.iloc[start:start + chunk_size]
+                #process_data(df_subset)
+
 
         self.graph = nx.from_pandas_edgelist(df_graph, edge_attr=['weight', 'i'])
+
+        t2 = time.time()
+
 
         # Nodes with no edges are not in edge list..
         """
@@ -412,8 +434,11 @@ class SSN(object):
 
         nx.set_node_attributes(self.graph, att_dict)
 
-        t1 = time.time()
-        self.log(f"Loaded SSN for {self.enzyme_type} in {round(t1 - t0, 1)} seconds")
+        t3 = time.time()
+        self.log(f"Loaded SSN for {self.enzyme_type} in {round(t3 - t0, 1)} seconds")
+        self.log(f"- {round(t1 - t0, 1)} seconds to load dataframes")
+        self.log(f"- {round(t2 - t1, 1)} seconds to load actual ssn from edge list")
+        self.log(f"- {round(t3 - t2, 1)} seconds for attributes")
 
     def add_protein(self, seq_obj):
         """ Add the protein to the graph, along with any proteins which have alignments """
@@ -621,11 +646,14 @@ if __name__ == '__main__':
 
     make_default_connection()
 
-    aad_ssn = SSN('CAR', log_level=1)
-    aad_ssn.load()
+    ssn = SSN('IRED', log_level=1)
+    ssn.load()
+    ssn.save()
 
-    aad_vis = SSN_Visualiser('CAR', log_level=1)
-    nodes, edges = aad_vis.visualise(aad_ssn, 75)
+    #for i in range(20,100,10):
+     #   new_graph = ssn.get_graph_filtered_edges(i)
+      #  num_edges = len(new_graph.edges)
+       # print(f"Score = {i}, num edges = {num_edges}")
 
     # 1. Set minimum number of nodes for a cluster
     # 2. Move down alignment score.  For each score where there is a different number of scores, visualise this.

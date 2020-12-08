@@ -235,9 +235,7 @@ def check_blast_status(enzyme_type):
             ssn_record.status = 'Queued for update'
             ssn_record.save()
         else:
-            print(f'Warning - multiple SSN records for {enz_type_obj.enzyme_type} - deleting extras')
-            for record in ssn_q[1:]:
-                record.delete()
+            print(f'Warning - multiple SSN records for {enz_type_obj.enzyme_type}, extras need deleting')
 
     else:
         set_blast_jobs(enzyme_type)

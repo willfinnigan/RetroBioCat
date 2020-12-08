@@ -48,6 +48,14 @@ def task_check_blast_status():
         print(f"Length alignment queue = {len(current_app.alignment_queue.jobs)}")
 
 def task_check_ssn_status():
+    for enzyme_type in EnzymeType.objects():
+        ssn_query = list(SSN_record.objects(enzyme_type=enzyme_type))
+        if len(ssn_query) > 1:
+            print(f'Warning - multiple ssn records for {enzyme_type} - deleting extras')
+            for i in range(1, len(ssn_query)):
+                ssn_query[i].delete()
+
+
     if len(current_app.blast_queue.jobs) + len(current_app.process_blasts_queue.jobs) + len(current_app.alignment_queue.jobs) == 0:
         print('Checking ssn status')
         ssn_records = SSN_record.objects().select_related()
@@ -84,7 +92,7 @@ def task_check_uniref_has_blast_source():
         print(f"Deleting {uniref.enzyme_name}")
         uniref.delete()
 
-def check_random_uniref(num_to_check=5):
+def check_random_uniref(num_to_check=25):
     for enzyme_type in EnzymeType.objects():
 
         unirefs = UniRef50.objects(enzyme_type=enzyme_type)
