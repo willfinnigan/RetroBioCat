@@ -22,6 +22,8 @@
                         <button class="btn btn-success" onclick="ensure_correct_sequence_naming()">Ensure correct sequence naming</button>
                         <button class="btn btn-warning" onclick="update_reviewed()">Update reviewed status</button>
                         <button class="btn btn-info" onclick="mongo_dump()">Mongo dump</button>
+                        <button class="btn btn-danger" onclick="reblast()">Reblast UniRef50</button>
+                        <button class="btn btn-success" onclick="clear_empty_ssns()">Clear empty SSN records</button>
 
                     </div>
                 </div>
@@ -94,6 +96,22 @@
                     response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
                 })
             }
+
+        function reblast() {
+            $.post('/_set_all_seqs_to_reblast', {
+                }).done(function(data) {
+                    response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+                })
+            }
+
+        function clear_empty_ssns() {
+            $.post('/_clear_empty_ssns', {
+                }).done(function(data) {
+                    response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+                })
+            }
+
+
 
 
 

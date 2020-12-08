@@ -117,9 +117,12 @@ class BlastParser(object):
                     self._add_result_of_blasts_for(seq_obj, uniref_obj)
 
     def _add_result_of_blasts_for(self, blasted_seq, uniref_obj):
-        if blasted_seq not in uniref_obj.result_of_blast_for:
-            uniref_obj.result_of_blast_for.append(blasted_seq)
+        if blasted_seq not in uniref_obj.result_of_blasts_for:
+            uniref_obj.result_of_blasts_for.append(blasted_seq)
             uniref_obj.save()
+            self.log(f"Adding {blasted_seq.enzyme_name} as a blast source for for {uniref_obj.enzyme_name}")
+        else:
+            self.log(f"{blasted_seq.enzyme_name} is -already- a blast source for for {uniref_obj.enzyme_name}")
 
     def _add_uniref(self, alignment, identifier, sequence, enzyme_type_obj, seq_seed):
 
@@ -215,7 +218,7 @@ def parse_blast_results(enzyme_name, output):
     current_app.task_queue.enqueue(check_blast_status, seq.enzyme_type)
 
 def check_blast_status(enzyme_type):
-    seqs = Sequence.objects(db.Q(enzyme_type=enzyme_type))
+    seqs = Sequence.objects(db.Q(enzyme_type=enzyme_type) & db.Q(bioinformatics_ignore__ne=True) & db.Q(reviewed=True))
     all_complete = True
     for seq in seqs:
         if seq.blast is None:
@@ -226,9 +229,13 @@ def check_blast_status(enzyme_type):
         enz_type_obj.bioinformatics_status = 'Complete'
         enz_type_obj.save()
 
-        ssn_record = SSN_record.objects(enzyme_type=enz_type_obj)[0]
-        ssn_record.status = 'Queued for update'
-        ssn_record.save()
+        ssn_q = SSN_record.objects(enzyme_type=enz_type_obj)
+        if len(ssn_q) == 1:
+            ssn_record = SSN_record.objects(enzyme_type=enz_type_obj)[0]
+            ssn_record.status = 'Queued for update'
+            ssn_record.save()
+        else:
+            print(f'Warning - multiple SSN records for {enz_type_obj.enzyme_type}')
 
 if __name__ == '__main__':
     from retrobiocat_web.mongo.default_connection import make_default_connection

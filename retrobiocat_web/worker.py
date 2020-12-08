@@ -14,6 +14,7 @@ if __name__ == '__main__':
 
     with Connection(app.redis):
         qs = sys.argv[1:] or ['auto_jobs', 'tasks', 'network', 'pathway', 'db', 'process_blasts', 'alignment', 'blast', 'preprocess']
-
+        if 'auto_jobs' in qs:
+            scheduler = True
         w = Worker(qs, log_job_description=False)
         w.work(with_scheduler=scheduler)

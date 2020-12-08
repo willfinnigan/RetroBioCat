@@ -6,6 +6,9 @@ from retrobiocat_web.analysis import embl_restfull, all_by_all_blast, make_ssn, 
 from rq.registry import StartedJobRegistry
 import datetime
 import mongoengine as db
+import shutil
+import os
+from pathlib import Path
 from rq.job import Job
 import time
 
@@ -18,7 +21,7 @@ def set_blast_jobs(enzyme_type):
     set_bioinformatics_status(enzyme_type, 'Blasts Queued')
     current_app.blast_queue.enqueue(set_bioinformatics_status, enzyme_type, 'Running Blasts')
 
-    seqs = Sequence.objects(db.Q(enzyme_type=enzyme_type) & db.Q(bioinformatics_ignore__ne=True))
+    seqs = Sequence.objects(db.Q(enzyme_type=enzyme_type) & db.Q(bioinformatics_ignore__ne=True) & db.Q(reviewed=True))
     for seq in seqs:
         if seq.sequence != '' and seq.sequence is not None and seq.blast is None:
             if len(seq.sequence) > 50:
@@ -136,9 +139,20 @@ def clear_all_bioinformatics_data():
         seq.save()
 
     UniRef50.drop_collection()
+    SSN_record.drop_collection()
+
     UniRef90.drop_collection()
     Alignment.drop_collection()
     SeqSimNet.drop_collection()
+
+    analysis_data_ssn = str(Path(__file__).parents[3]) + f'/analysis/analysis_data/ssn'
+    analysis_data_aba = str(Path(__file__).parents[3]) + f'/analysis/analysis_data/all_by_all_blast'
+    shutil.rmtree(analysis_data_ssn)
+    shutil.rmtree(analysis_data_aba)
+    os.mkdir(analysis_data_ssn)
+    os.mkdir(analysis_data_aba)
+
+    print('ALL BIOINFORMATICS DATA DELETED')
 
     result = {'status': 'success',
               'msg': f"Done",
@@ -166,6 +180,5 @@ def mark_not_aligned():
               'issues': []}
 
     return jsonify(result=result)
-
 
 

@@ -6,7 +6,7 @@ from retrobiocat_web.mongo.models.user_models import User
 from retrobiocat_web.mongo.init_db import rxn_rules_to_db
 from retrobiocat_web.mongo.init_db import biocatdb_excel_to_db, make_molecule_db
 from retrobiocat_web.mongo.models.reaction_models import Reaction
-from retrobiocat_web.mongo.models.biocatdb_models import Paper, Activity, Sequence, Molecule, Tag, EnzymeType
+from retrobiocat_web.mongo.models.biocatdb_models import Paper, Activity, Sequence, Molecule, Tag, EnzymeType, SSN_record, UniRef50
 import tempfile
 from werkzeug.utils import secure_filename
 import os
@@ -23,6 +23,7 @@ from pathlib import Path
 from retrobiocat_web.retro.evaluation.starting_material import StartingMaterialEvaluator
 import subprocess as sp
 from rq.registry import ScheduledJobRegistry
+import mongoengine as db
 
 from retrobiocat_web.app.biocatdb.routes.contributions.ajax.sequences_ajax import INVALID_NAME_CHARS
 
@@ -393,6 +394,47 @@ def mongo_dump():
               'msg': f'Mongo dump command initiated',
               'issues': []}
 
+    return jsonify(result=result)
+
+@bp.route('/_set_all_seqs_to_reblast', methods=['GET', 'POST'])
+@roles_required('admin')
+def set_all_seqs_to_reblast():
+    seqs = Sequence.objects()
+    for seq in seqs:
+        seq.blast = None
+        seq.save()
+
+    for enz_type_obj in EnzymeType.objects():
+        enz_type_obj.bioinformatics_status = 'Queued for update'
+        enz_type_obj.save()
+
+    result = {'status': 'success',
+              'msg': f'Bioinformatics status reset',
+              'issues': []}
+
+    return jsonify(result=result)
+
+
+@bp.route('/_clear_empty_ssns', methods=['GET', 'POST'])
+@roles_required('admin')
+def clear_empty_ssns():
+    ssn_records = SSN_record.objects().select_related()
+
+    for ssn_r in ssn_records:
+        enzyme_type_obj = ssn_r.enzyme_type
+        unirefs = UniRef50.objects(enzyme_type=enzyme_type_obj)
+        biocat_seqs = Sequence.objects(db.Q(enzyme_type=enzyme_type_obj.enzyme_type) &
+                                     db.Q(sequence__ne="") &
+                                     db.Q(sequence__ne=None) &
+                                     db.Q(sequence_unavailable__ne=True))
+
+
+        if len(unirefs) + len(biocat_seqs) == 0:
+            ssn_r.delete()
+
+    result = {'status': 'success',
+              'msg': f'Empty SSNs removed',
+              'issues': []}
     return jsonify(result=result)
 
 

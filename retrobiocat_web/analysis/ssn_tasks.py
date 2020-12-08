@@ -13,6 +13,7 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
     ssn.set_status('Checking SSN')
     ssn.remove_nonexisting_seqs()
     ssn.remove_seqs_marked_with_no_alignments()
+    ssn.clear_position_information()
 
     biocatdb_seqs = ssn.nodes_not_present(only_biocatdb=True, max_num=max_num)
     if len(biocatdb_seqs) != 0:

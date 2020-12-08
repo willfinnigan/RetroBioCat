@@ -160,7 +160,7 @@ def create_app(config_class=Config, use_talisman=True):
         app.register_blueprint(other_tools.bp)
         app.register_blueprint(db_analysis.bp)
 
-        queue_auto_jobs.schedual_jobs(repeat_in=30)
+        queue_auto_jobs.schedual_jobs(repeat_in=2)
 
         return app
 

@@ -3,7 +3,6 @@ from rdkit import Chem
 from retrobiocat_web.mongo.functions import sequence_functions
 from datetime import datetime
 
-
 class EnzymeType(db.Document):
     enzyme_type = db.StringField(max_length=120, unique=True, required=True)
     full_name = db.StringField(default='')
@@ -268,12 +267,12 @@ class SeqSimNet(db.DynamicDocument):
 class SSN_record(db.Document):
     enzyme_type = db.ReferenceField(EnzymeType)
     status = db.StringField(default='Newly created')
+
     num_at_alignment_score = db.DictField(default={})
     pos_at_alignment_score = db.DictField(default={})
     identity_at_alignment_score = db.DictField(default={})
 
     meta = {'indexes': ['enzyme_type']}
-
 
 class ActivityIssue(db.Document):
     activity = db.ReferenceField(Activity)
