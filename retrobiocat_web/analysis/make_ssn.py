@@ -399,20 +399,6 @@ class SSN(object):
         att_dict = json.load(open(f'{self.save_path}/attributes.json'))
         t1 = time.time()
 
-        # Apply filtering on df_graph here.
-        # Filter away wrong pfam
-        # Filter away uniref here
-        # Filter if not product of blast for selected sequences
-
-        # multi-thead and then combine?
-
-        #chunk_size = 100000
-        #if df_graph.shape[0] > chunk_size:
-            #graphs = []
-            #for start in range(0, df.shape[0], chunk_size):
-                #df_subset = df_graph.iloc[start:start + chunk_size]
-                #process_data(df_subset)
-
 
         self.graph = nx.from_pandas_edgelist(df_graph, edge_attr=['weight', 'i'])
 
@@ -421,8 +407,9 @@ class SSN(object):
 
         # Nodes with no edges are not in edge list..
         if no_edges == True:
-            for node in att_dict:
-                if node not in self.graph.nodes:
+            for node in list(att_dict.keys()):
+                if node not in list(self.graph.nodes):
+                    self.log(f"{node} has no edges, adding manually")
                     self._add_protein_node(node)
 
 
