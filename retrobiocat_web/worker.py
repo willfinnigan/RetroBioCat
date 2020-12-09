@@ -13,7 +13,7 @@ if __name__ == '__main__':
     app.app_context().push()
 
     with Connection(app.redis):
-        qs = sys.argv[1:] or ['auto_jobs', 'tasks', 'network', 'pathway', 'db', 'process_blasts', 'alignment', 'blast', 'preprocess']
+        qs = sys.argv[1:] or ['tasks', 'network', 'pathway', 'db', 'process_blasts', 'alignment', 'blast', 'preprocess']
         if 'auto_jobs' in qs:
             scheduler = True
         w = Worker(qs, log_job_description=False)

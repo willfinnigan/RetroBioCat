@@ -272,7 +272,8 @@ class GraphManipulator():
         list_products, list_reactions = [], []
         for name in rxnsSubstratesDict:
             for precursor_list in rxnsSubstratesDict[name]:
-                if self._check_if_reaction_goes_backwards(graph, precursor_list, target_smi) == False:
+                if self._check_if_reaction_goes_backwards(graph, precursor_list, target_smi) == False \
+                        and self._check_substrate_is_not_product(graph, precursor_list, target_smi) == False:
                     reaction_node = self._add_reaction_node_to_graph(graph, name, target_smi, reaction_type, metadata)
                     if reaction_node not in list_reactions:
                         list_reactions.append(reaction_node)
@@ -314,6 +315,12 @@ class GraphManipulator():
         are_predecessor = node_analysis.check_substrates_nx_predecessor(graph, reactionProducts, targetSmi)
         if (are_predecessor == True) and (self.network.settings['allow_backwards_steps'] == False):
             return True
+        return False
+
+    def _check_substrate_is_not_product(self, graph, reactionProducts, targetSmi):
+        for product in reactionProducts:
+            if product == targetSmi:
+                return True
         return False
 
 class GraphPruner():
