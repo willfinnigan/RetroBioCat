@@ -387,7 +387,7 @@ class SSN(object):
 
         self.log(f"Saved SSN for {self.enzyme_type} in {round(t1 - t0, 1)} seconds")
 
-    def load(self, include_mutants=True, only_biocatdb=False, no_edges=False):
+    def load(self, include_mutants=True, only_biocatdb=False):
 
         t0 = time.time()
         if not os.path.exists(f"{self.save_path}/graph.csv") or not os.path.exists(f"{self.save_path}/attributes.json"):
@@ -399,19 +399,15 @@ class SSN(object):
         att_dict = json.load(open(f'{self.save_path}/attributes.json'))
         t1 = time.time()
 
-
         self.graph = nx.from_pandas_edgelist(df_graph, edge_attr=['weight', 'i'])
 
         t2 = time.time()
 
-
         # Nodes with no edges are not in edge list..
-        if no_edges == True:
-            for node in list(att_dict.keys()):
-                if node not in list(self.graph.nodes):
-                    self.log(f"{node} has no edges, adding manually")
-                    self._add_protein_node(node)
-
+        for node in list(att_dict.keys()):
+            if node not in list(self.graph.nodes):
+                self.log(f"{node} has no edges, adding manually")
+                self._add_protein_node(node)
 
         if include_mutants is False:
             self.filter_out_mutants()

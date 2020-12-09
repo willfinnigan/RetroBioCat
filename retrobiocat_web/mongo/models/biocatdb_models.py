@@ -126,6 +126,8 @@ class Sequence(db.Document):
         self.blast = None
         self.save()
 
+        self.mark_bioinformatics_for_updating()
+
         return True, 'Update successful'
 
     def update_sequence(self, seq_string):
@@ -143,9 +145,11 @@ class Sequence(db.Document):
 
     def mark_bioinformatics_for_updating(self):
         enz_type_obj = EnzymeType.objects(enzyme_type=self.enzyme_type)[0]
-        ssn_record = SSN_record.objects(enzyme_type=enz_type_obj)[0]
-        ssn_record.status = 'Queued for update'
-        ssn_record.save()
+        ssn_q = SSN_record.objects(enzyme_type=enz_type_obj)
+        if len(ssn_q) != 0:
+            ssn_record = ssn_q[0]
+            ssn_record.status = 'Queued for update'
+            ssn_record.save()
         enz_type_obj.bioinformatics_status = 'Queued for update'
         enz_type_obj.save()
 
