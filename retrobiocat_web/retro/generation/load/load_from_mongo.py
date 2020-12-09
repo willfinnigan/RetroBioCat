@@ -7,10 +7,18 @@ from retrobiocat_web.mongo.models.reaction_models import Reaction
 from retrobiocat_web.mongo import default_connection
 
 def get_reactions(include_experimental=False, include_two_step=False):
-    if include_experimental == True and include_two_step == True:
-        return Reaction.objects()
+    if include_experimental == True:
+        q_exp = db.Q()
     else:
-        return Reaction.objects(db.Q(experimental=include_experimental) | db.Q(two_step=include_two_step))
+        q_exp = db.Q(experimental__ne=True)
+
+    if include_two_step == True:
+        q_two = db.Q()
+    else:
+        q_two = db.Q(two_step__ne=True)
+
+    return Reaction.objects(q_exp & q_two)
+
 
 def load_rxns(query_result):
     rxns = {}

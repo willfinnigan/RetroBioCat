@@ -15,6 +15,7 @@ class RetroBioCat_Reactions():
             self.rxns = load_rule_yamls.load_rxns(yaml_dict)
             self.reactions, self.enzymes, self.reaction_enzyme_map = load_rule_yamls.load_reactions_and_enzymes(yaml_dict)
             self.reactionEnzymeCofactorDict = load_rule_yamls.load_cofactors(yaml_dict)
+
         elif mode=='mongo':
             query_result = load_from_mongo.get_reactions(include_experimental=self.include_experimental, include_two_step=include_two_step)
             self.rxns = load_from_mongo.load_rxns(query_result)
