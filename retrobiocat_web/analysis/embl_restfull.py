@@ -219,13 +219,16 @@ def parse_blast_results(enzyme_name, output):
 
 def check_blast_status(enzyme_type):
     seqs = Sequence.objects(db.Q(enzyme_type=enzyme_type) & db.Q(bioinformatics_ignore__ne=True) & db.Q(reviewed=True))
+    enz_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
+
     all_complete = True
     for seq in seqs:
         if seq.blast is None:
             all_complete = False
+            enz_type_obj.bioinformatics_status = 'Queued for update'
+            enz_type_obj.save()
 
     if all_complete == True:
-        enz_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
         if enz_type_obj.bioinformatics_status != 'Complete':
             enz_type_obj.bioinformatics_status = 'Complete'
             enz_type_obj.save()
