@@ -420,12 +420,11 @@ class SSN(object):
 
 
         # Nodes with no edges are not in edge list..
-        """
         if no_edges == True:
             for node in att_dict:
                 if node not in self.graph.nodes:
                     self._add_protein_node(node)
-        """
+
 
         if include_mutants is False:
             self.filter_out_mutants()

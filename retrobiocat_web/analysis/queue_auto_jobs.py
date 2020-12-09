@@ -61,7 +61,6 @@ def task_check_ssn_status():
             for i in range(1, len(ssn_query)):
                 ssn_query[i].delete()
 
-
     if len(current_app.blast_queue.jobs) + len(current_app.process_blasts_queue.jobs) + len(current_app.alignment_queue.jobs) == 0:
         print('Checking ssn status')
         ssn_records = SSN_record.objects().select_related()
