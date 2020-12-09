@@ -406,7 +406,6 @@ class SSN(object):
         # Nodes with no edges are not in edge list..
         for node in list(att_dict.keys()):
             if node not in list(self.graph.nodes):
-                self.log(f"{node} has no edges, adding manually")
                 self._add_protein_node(node)
 
         if include_mutants is False:

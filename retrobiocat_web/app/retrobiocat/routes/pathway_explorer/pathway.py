@@ -115,7 +115,7 @@ def task_get_pathways(form_data):
                              'only_reviewed_activity_data': bool(form_data["only_reviewed"])})
 
     if form_data["specificity_scoring_mode"] == 'Product + substrates (slower)':
-        network.update_settings({'specificity_score_substrates' : True})
+        network.update_settings({'specificity_score_substrates': True})
 
     network.generate(form_data['target_smiles'], form_data['number_steps'], calculate_scores=False)
 
