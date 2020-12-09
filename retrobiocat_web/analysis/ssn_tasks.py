@@ -13,12 +13,10 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
     ssn.set_status('Checking SSN')
     ssn.remove_nonexisting_seqs()
     ssn.remove_seqs_marked_with_no_alignments()
-    ssn.clear_position_information()
 
     biocatdb_seqs = ssn.nodes_not_present(only_biocatdb=True, max_num=max_num)
     if len(biocatdb_seqs) != 0:
         ssn.set_status('Adding and aligning BioCatDB sequences')
-        ssn.clear_position_information()
         ssn.add_multiple_proteins(biocatdb_seqs)
         ssn.save()
         current_app.alignment_queue.enqueue(new_expand_ssn_job, enzyme_type)
@@ -27,7 +25,6 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
     need_alignments = ssn.nodes_need_alignments(max_num=max_num)
     if len(need_alignments) != 0:
         ssn.set_status('Aligning sequences in SSN')
-        ssn.clear_position_information()
         ssn.add_multiple_proteins(need_alignments)
         ssn.save()
         current_app.alignment_queue.enqueue(new_expand_ssn_job, enzyme_type)
@@ -36,7 +33,6 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
     not_present = ssn.nodes_not_present(max_num=max_num)
     if len(not_present) != 0:
         ssn.set_status('Adding UniRef sequences which are not yet present')
-        ssn.clear_position_information()
         ssn.add_multiple_proteins(not_present)
         ssn.save()
         current_app.alignment_queue.enqueue(new_expand_ssn_job, enzyme_type)
