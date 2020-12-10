@@ -5,7 +5,7 @@ from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType, UniRef50, S
 import mongoengine as db
 from rq.job import Job
 from rq import get_current_job
-from retrobiocat_web.analysis.make_ssn import SSN, SSN_Visualiser
+from retrobiocat_web.analysis.make_ssn import SSN, SSN_Visualiser, SSN_quickload
 from retrobiocat_web.app.db_analysis.forms import SSN_Form
 from retrobiocat_web.analysis import retrieve_uniref_info
 import json
@@ -180,4 +180,30 @@ def load_uniref_data():
               'num_uni100': num_uni100,
               'num_uniprot': num_uniprot,
               'pfam_object': pfams}
+    return jsonify(result=result)
+
+@bp.route("/_edge_ajax", methods=["POST"])
+def edge_ajax():
+    enzyme_type = request.form['enzyme_type']
+    alignment_score = int(request.form['alignment_score'])
+    selected_node = request.form['selected_node']
+
+    ql = SSN_quickload(enzyme_type, log_level=0)
+    ql.load_df()
+    edges = ql.get_edges(selected_node, alignment_score)
+
+    result = {'edges': edges}
+    return jsonify(result=result)
+
+@bp.route("/_connected_nodes_ajax", methods=["POST"])
+def connected_nodes_ajax():
+    enzyme_type = request.form['enzyme_type']
+    alignment_score = int(request.form['alignment_score'])
+    selected_nodes = json.loads(request.form['selected_nodes'])
+
+    ql = SSN_quickload(enzyme_type, log_level=1)
+    ql.load_df()
+    nodes = ql.get_connected_nodes(selected_nodes, alignment_score)
+
+    result = {'nodes': nodes}
     return jsonify(result=result)

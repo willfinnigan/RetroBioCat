@@ -167,14 +167,15 @@ class ClusterPositioner(object):
 
 class SSN_Visualiser(object):
 
-    def __init__(self, enzyme_type, log_level=0):
+    def __init__(self, enzyme_type, hidden_edges=True, log_level=0):
         self.enzyme_type = enzyme_type
         self.enzyme_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
         self.node_metadata = self._find_uniref_metadata()
 
 
         self.edge_colour = {'color': 'black'}
-        self.edge_width = 2
+        self.edge_width = 4
+        self.hidden_edges = hidden_edges
         self.uniref_border_width = 1
         self.uniref_border_colour = 'black'
         self.biocatdb_border_width = 3
@@ -248,11 +249,11 @@ class SSN_Visualiser(object):
         if full_graph is None:
             for edge in graph.edges:
                 weight = graph.get_edge_data(edge[0], edge[1], default={'weight': 0})['weight']
-                edges.append(self._get_vis_edge(edge[0], edge[1], weight))
+                edges.append(self.get_vis_edge(edge[0], edge[1], weight))
         else:
             for edge in full_graph.edges:
                 weight = full_graph.get_edge_data(edge[0], edge[1], default={'weight': 0})['weight']
-                edges.append(self._get_vis_edge(edge[0], edge[1], weight))
+                edges.append(self.get_vis_edge(edge[0], edge[1], weight))
 
         nodes = self._sort_biocatdb_nodes_to_front(nodes)
 
@@ -298,12 +299,12 @@ class SSN_Visualiser(object):
 
         return node
 
-    def _get_vis_edge(self, edge_one, edge_two, weight):
+    def get_vis_edge(self, edge_one, edge_two, weight):
         # weight = self.graph.get_edge_data(edge_one, edge_two, default={'weight': 0})['weight']
         edge = {'id': f"from {edge_one} to {edge_two}",
                 'from': edge_one,
                 'to': edge_two,
-                'hidden': True,
+                'hidden': self.hidden_edges,
                 'weight': weight,
                 'width': self.edge_width,
                 'color': self.edge_colour}
@@ -385,7 +386,7 @@ class SSN(object):
 
         self.log(f"Saved SSN for {self.enzyme_type} in {round(t1 - t0, 1)} seconds")
 
-    def load(self, include_mutants=True, only_biocatdb=False):
+    def load(self, include_mutants=True, only_biocatdb=False, mode='pandas'):
 
         t0 = time.time()
         if not os.path.exists(f"{self.save_path}/graph.csv") or not os.path.exists(f"{self.save_path}/attributes.json"):
@@ -393,7 +394,14 @@ class SSN(object):
             return False
 
         #df_graph = pd.read_csv(f"{self.save_path}/graph.csv")
-        df_graph = dask.dataframe.read_csv(f"{self.save_path}/graph.csv")
+
+        if mode == 'dask':
+            df_graph = dask.dataframe.read_csv(f"{self.save_path}/graph.csv")
+        elif mode == 'dask_pandas':
+            df_graph = dask.dataframe.read_csv(f"{self.save_path}/graph.csv")
+            df_graph = df_graph.compute()
+        else:
+            df_graph = pd.read_csv(f"{self.save_path}/graph.csv")
         att_dict = json.load(open(f'{self.save_path}/attributes.json'))
         t1 = time.time()
 
@@ -414,7 +422,7 @@ class SSN(object):
         nx.set_node_attributes(self.graph, att_dict)
 
         t3 = time.time()
-        self.log(f"Loaded SSN for {self.enzyme_type} in {round(t3 - t0, 1)} seconds")
+        self.log(f"Loaded SSN for {self.enzyme_type} in {round(t3 - t0, 1)} seconds (mode = {mode})")
         self.log(f"- {round(t1 - t0, 1)} seconds to load dataframes")
         self.log(f"- {round(t2 - t1, 1)} seconds to load actual ssn from edge list")
         self.log(f"- {round(t3 - t2, 1)} seconds for attributes")
@@ -629,22 +637,93 @@ class SSN(object):
             self.db_object.identity_at_alignment_score = {}
             self.db_object.save()
 
+class SSN_quickload(object):
+
+    def __init__(self, enzyme_type, log_level=0):
+        self.enzyme_type = enzyme_type
+        self.save_path = str(Path(__file__).parents[0]) + f'/analysis_data/ssn/{self.enzyme_type}'
+        #self.ssn = SSN(enzyme_type, log_level=log_level)
+        self.log_level = log_level
+        self.df = None
+        self.vis = SSN_Visualiser(enzyme_type, hidden_edges=False, log_level=log_level)
+
+    def load_df(self):
+        t0 = time.time()
+        if not os.path.exists(f"{self.save_path}/graph.csv") or not os.path.exists(f"{self.save_path}/attributes.json"):
+            self.log(f"No saved SSN found for {self.enzyme_type}, could not load")
+            return False
+
+        #self.df = dask.dataframe.read_csv(f"{self.save_path}/graph.csv")
+        #self.df = self.df.compute()
+        self.df = pd.read_csv(f"{self.save_path}/graph.csv")
+        t1 = time.time()
+
+        self.log(f"Loaded df in {round(t1-t0, 1)} seconds")
+
+    def get_edges(self, selected_node, alignment_score):
+        t0 = time.time()
+        edges = []
+        df = self.df[(self.df['source'] == selected_node) | (self.df['target'] == selected_node)]
+        df = df[df['weight'] >= alignment_score]
+
+        for index, row in df.iterrows():
+            edges.append(self.vis.get_vis_edge(row['target'], row['source'], row['weight']))
+        t1 = time.time()
+
+        self.log(f"Retrieved edges for {self.enzyme_type} node at alignment score {alignment_score} in {round(t1-t0, 1)} seconds")
+
+        return edges
+
+    def get_connected_nodes(self, list_nodes, alignment_score):
+        t0 = time.time()
+        connected_nodes = set()
+
+        df = self.df[((self.df['source'].isin(list_nodes)) | (self.df['target'].isin(list_nodes)))]
+        df = df[df['weight'] >= alignment_score]
+
+        for index, row in df.iterrows():
+            if row['target'] not in list_nodes:
+                connected_nodes.add(row['target'])
+            if row['source'] not in list_nodes:
+                connected_nodes.add(row['source'])
+
+        connected_nodes = list(connected_nodes)
+        t1 = time.time()
+        self.log(f"Retrieved {len(connected_nodes)} connected nodes for {self.enzyme_type} node at alignment score {alignment_score} in {round(t1 - t0, 1)} seconds")
+
+        return connected_nodes
+
+
+
+
+    def log(self, msg, level=1):
+        if self.log_level >= level:
+            print("SSN_quickload: " + msg)
+
 
 
 if __name__ == '__main__':
     from retrobiocat_web.mongo.default_connection import make_default_connection
-
     make_default_connection()
 
-    ssn = SSN('TA', log_level=1)
-    ssn.load()
+    ql = SSN_quickload('IRED', log_level=1)
+    ql.load_df()
+    edges = ql.get_edges('UniRef50_Q2TW47', 45)
+    nodes = ql.get_connected_nodes(['UniRef50_Q2TW47'], 45)
 
+
+    #ssn = SSN('IRED', log_level=1)
+    #ssn.load(mode='pandas')
+    #ssn.load(mode='dask')
+    #ssn.load(mode='dask_pandas')
+    #ssn.delete_edges_below_alignment_score(40)
+    #ssn.save()
+
+    """
     print(f"Num edges default = {len(ssn.graph.edges)}")
 
-    ssn.delete_edges_below_alignment_score(40)
-    print(f"Num edges = {len(ssn.graph.edges)}")
-
-    ssn.save()
+    
+    """
 
     #ssn.delete_edges_below_alignment_score(40, min_ident=0.35)
     #print(f"Num edges = {len(ssn.graph.edges)}")

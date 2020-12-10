@@ -27,6 +27,7 @@
         var container = document.getElementById('myssn');
 
         window.enzyme_type = "{{enzyme_type}}"
+        window.alignment_score = {{alignment_score|safe}}
 
         var edges_options = {'smooth': false}
 
@@ -66,10 +67,6 @@
                        nodes: {shapeProperties: {interpolation: false}}
                       };
 
-        function edgesFilter(edge) {
-            return (edge.weight >= document.getElementById("alignment_score").value);
-        }
-
         const edges = new vis.DataSet({{edges|tojson}})
         const nodes = new vis.DataSet({{nodes|tojson}})
 
@@ -77,27 +74,29 @@
 
         var network = new vis.Network(container, data, options);
 
-        var shown_edges = []
-
-        async function show_hide_edges(array_edges, hidden) {
-            var update_array = []
-            array_edges.forEach(function (edge, i) {
-                var update_edge = {'id': edge, 'hidden': hidden}
-                update_array.push(update_edge)
-                if (hidden === false) {
-                    shown_edges.push(edge)
-                }
-            })
-            data['edges'].update(update_array)
-        }
-
         network.on("selectNode", function(params) {
-            var connected_edges = network.getConnectedEdges(params.nodes[0])
-            show_hide_edges(connected_edges, false)
+            data['edges'].clear()
+            get_edges(params.nodes[0])
         })
 
-        window.selected_node = ''
+        network.on("deselectNode", function(params) {
+            data['edges'].clear()
+        })
 
+        function get_edges(selected_node) {
+            $.post($SCRIPT_ROOT + '/_edge_ajax', {
+                enzyme_type: window.enzyme_type,
+                alignment_score: window.alignment_score,
+                selected_node: selected_node
+                }).done(function(response_data) {
+                    var newEdges = response_data.result.edges
+                    for (let i = 0; i < newEdges.length; i++) {
+                        data['edges'].update(newEdges[i])
+                    }
+                })
+        }
+
+        window.selected_node = ''
         network.on("hold", function(params) {
             if (params['nodes'].length === 1) {
                 window.selected_node = params.nodes[0]
@@ -105,10 +104,19 @@
             }
         })
 
-        network.on("deselectNode", function(params) {
-            show_hide_edges(shown_edges, true)
-            shown_edges = []
-        })
+        function select_connected_nodes() {
+            var currently_selected = network.getSelectedNodes()
+            $.post($SCRIPT_ROOT + '/_connected_nodes_ajax', {
+                enzyme_type: window.enzyme_type,
+                alignment_score: window.alignment_score,
+                selected_nodes: JSON.stringify(currently_selected)
+                }).done(function(response_data) {
+                    var new_nodes = response_data.result.nodes
+                    var to_select = new_nodes.concat(currently_selected)
+                    network.selectNodes(to_select)
+                })
+        }
+
 
         network.moveTo({position: {{start_pos|safe}},
                         scale: 0.01})
@@ -132,8 +140,8 @@
                 enzyme_type: window.enzyme_type
                 }).done(function(data) {
                     document.getElementById('uniref_name').innerHTML = data.result.cluster_id
-                document.getElementById('rep_seq_uniref_cluster_id').innerHTML = data.result.cluster_id
-                document.getElementById('link_to_uniref').href = "https://www.uniprot.org/uniref/" + data.result.cluster_id
+                    document.getElementById('rep_seq_uniref_cluster_id').innerHTML = data.result.cluster_id
+                    document.getElementById('link_to_uniref').href = "https://www.uniprot.org/uniref/" + data.result.cluster_id
 
                     document.getElementById('rep_seq_name').innerHTML = data.result.rep_seq_name
                     document.getElementById('rep_seq_organism').innerHTML = data.result.rep_seq_organism
@@ -156,36 +164,7 @@
             }
         }
 
-        function get_new_connected_nodes(nodes_array, selected_nodes) {
-            var new_connected_nodes = []
-            nodes_array.forEach(function (sel_node, i) {
-                var connected_nodes = network.getConnectedNodes(sel_node)
-                connected_nodes.forEach(function (con_node, j) {
-                    if (selected_nodes.includes(con_node) === false) {
-                        new_connected_nodes.push(con_node)
-                    }
-                })
-            })
-            return new_connected_nodes
-        }
 
-        function select_all_connected_nodes() {
-            var selected_nodes = network.getSelectedNodes()
-            var new_nodes_array = network.getSelectedNodes()
-            while (new_nodes_array.length !== 0) {
-                new_nodes_array = get_new_connected_nodes(new_nodes_array, selected_nodes)
-                selected_nodes = selected_nodes.concat(new_nodes_array)
-            }
-            network.selectNodes(selected_nodes)
-        }
-
-        function select_connected_nodes() {
-            var selected_nodes = network.getSelectedNodes()
-            var new_nodes_array = network.getSelectedNodes()
-            new_nodes_array = get_new_connected_nodes(new_nodes_array, selected_nodes)
-            selected_nodes = selected_nodes.concat(new_nodes_array)
-            network.selectNodes(selected_nodes)
-        }
     </script>
 
 {% endblock %}
