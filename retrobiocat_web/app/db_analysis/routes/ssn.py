@@ -30,20 +30,18 @@ def task_get_ssn(enzyme_type, score, include_mutants, only_biocatdb):
     job.save_meta()
 
     ssn = SSN(enzyme_type)
-    ssn.load(include_mutants=include_mutants, only_biocatdb=only_biocatdb)
 
     job.meta['progress'] = 'ssn loaded'
     job.save_meta()
 
-    if only_biocatdb == True:
-        precalc_pos = None
-    elif str(score) in ssn.db_object.pos_at_alignment_score:
-        precalc_pos = ssn.db_object.pos_at_alignment_score[str(score)]
+    if only_biocatdb == False and include_mutants == False and str(score) in ssn.db_object.precalculated_vis:
+        nodes = ssn.db_object.precalculated_vis[str(score)]
     else:
-        precalc_pos = None
+        ssn.load(include_mutants=include_mutants, only_biocatdb=only_biocatdb)
+        vis = SSN_Visualiser(enzyme_type, log_level=1)
+        nodes, edges, num_clusters = vis.visualise(ssn, score)
 
-    vis = SSN_Visualiser(enzyme_type, log_level=1)
-    nodes, edges = vis.visualise(ssn, score, precalc_pos=precalc_pos)
+    edges = []
 
     result = {'nodes': nodes,
               'edges': edges,

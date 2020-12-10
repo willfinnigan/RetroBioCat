@@ -1,6 +1,6 @@
 from retrobiocat_web.analysis.all_by_all_blast import AllByAllBlaster
 from flask import current_app
-from retrobiocat_web.analysis.make_ssn import SSN, SSN_Cluster_Precalculator
+from retrobiocat_web.analysis.make_ssn import SSN, SSN_Cluster_Precalculator, SSN_Visualiser
 
 def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
     current_app.app_context().push()
@@ -16,6 +16,7 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
 
     biocatdb_seqs = ssn.nodes_not_present(only_biocatdb=True, max_num=max_num)
     if len(biocatdb_seqs) != 0:
+        ssn.clear_position_information()
         ssn.set_status('Adding and aligning BioCatDB sequences')
         ssn.add_multiple_proteins(biocatdb_seqs)
         ssn.save()
@@ -24,6 +25,7 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
 
     need_alignments = ssn.nodes_need_alignments(max_num=max_num)
     if len(need_alignments) != 0:
+        ssn.clear_position_information()
         ssn.set_status('Aligning sequences in SSN')
         ssn.add_multiple_proteins(need_alignments)
         ssn.save()
@@ -32,6 +34,7 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
 
     not_present = ssn.nodes_not_present(max_num=max_num)
     if len(not_present) != 0:
+        ssn.clear_position_information()
         ssn.set_status('Adding UniRef sequences which are not yet present')
         ssn.add_multiple_proteins(not_present)
         ssn.save()
@@ -39,87 +42,58 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
 
         return
 
-    """
-    if ssn.db_object.identity_at_alignment_score == {} and len(ssn.graph.nodes) != 0:
-        ssn.set_status('Precalculating identity at alignment')
-        current_app.preprocess_queue.enqueue(new_precalculate_identity_at_alignment_job, enzyme_type)
-
-    elif ssn.db_object.pos_at_alignment_score == {} and len(ssn.graph.nodes) != 0:
-        ssn.set_status('Precalculating cluster positions')
-        current_app.preprocess_queue.enqueue(new_precalculate_job, enzyme_type)
-    """
-
-    ssn.set_status('Complete')
-    print(f'- SSN CONSTRUCTION FOR {enzyme_type} IS COMPLETE -')
+    ssn.delete_edges_below_alignment_score(40, min_ident=0.0)
     ssn.save()
+
+    if ssn.db_object.precalculated_vis == {} and len(ssn.graph.nodes) != 0:
+        ssn.set_status('Precalculating visualisations')
+        current_app.preprocess_queue.enqueue(precalculate_job, enzyme_type)
+
+    else:
+        ssn.set_status('Complete')
+        print(f'- SSN CONSTRUCTION FOR {enzyme_type} IS COMPLETE -')
+        ssn.db_object.save()
 
 def new_expand_ssn_job(enzyme_type):
     ssn = SSN(enzyme_type)
     if ssn.db_object.status != 'Complete':
         current_app.alignment_queue.enqueue(task_expand_ssn, enzyme_type)
 
-def new_precalculate_job(enzyme_type):
-    ssn = SSN(enzyme_type)
-    ssn.load()
-    ssn_precalc = SSN_Cluster_Precalculator(ssn)
-
-    num_nodes = len(list(ssn.graph.nodes))
-    if num_nodes > 7500:
-        num = 1
-    elif num_nodes > 5000:
-        num = 4
-    else:
-        num = 20
-
-    if len(list(ssn.db_object.num_at_alignment_score.keys())) == 0:
-        ssn_precalc.start = 10
-        current_num_clusters = 0
-    else:
-        start_list = [int(s) for s in list(ssn.db_object.num_at_alignment_score.keys())]
-        current_num_clusters = max(list(ssn.db_object.num_at_alignment_score.values()))
-        ssn_precalc.start = max(start_list) + 5
-
-    num_at_alignment_score, pos_at_alignment_score = ssn_precalc.precalulate(num=num, current_num_clusters=current_num_clusters)
-
-    if num_at_alignment_score == {}:
-        current_app.alignment_queue.enqueue(task_expand_ssn, enzyme_type)
-
-    else:
-        ssn.db_object.pos_at_alignment_score.update(pos_at_alignment_score)
-        ssn.db_object.num_at_alignment_score.update(num_at_alignment_score)
-        ssn.db_object.save()
-        current_app.preprocess_queue.enqueue(new_precalculate_job, enzyme_type)
-
-def new_precalculate_identity_at_alignment_job(enzyme_type):
+def precalculate_job(enzyme_type):
     ssn = SSN(enzyme_type)
     ssn.load()
 
     ssn_precalc = SSN_Cluster_Precalculator(ssn)
 
     num_nodes = len(list(ssn.graph.nodes))
-    if num_nodes > 7500:
+    if num_nodes > 3000:
         num = 1
-    elif num_nodes > 5000:
+    elif num_nodes > 1000:
         num = 5
     else:
         num = 20
 
-    if len(list(ssn.db_object.identity_at_alignment_score.keys())) == 0:
-        print('No existing % identity data, starting at alignment score 10')
-        ssn_precalc.start = 10
+    if len(list(ssn.db_object.precalculated_vis.keys())) == 0:
+        print('No existing % identity data, starting at alignment score 40')
+        ssn_precalc.start = 40
+        current_num_clusters = 0
     else:
         start_list = [int(s) for s in list(ssn.db_object.identity_at_alignment_score.keys())]
+        current_num_clusters = max(list(ssn.db_object.num_at_alignment_score.values()))
         ssn_precalc.start = max(start_list) + 5
 
-    identity_at_alignment_score = ssn_precalc.precalculate_identity_at_alignment(num=num)
+    print(f"Start = {ssn_precalc.start}")
+    precalculated_nodes, cluster_numbers, identity_at_score = ssn_precalc.precalulate(num=num, current_num_clusters=current_num_clusters)
 
-    if identity_at_alignment_score == {}:
+    if len(precalculated_nodes) == 0:
+        print('Precalc complete - checking SSN again')
         current_app.alignment_queue.enqueue(task_expand_ssn, enzyme_type)
     else:
-        ssn.db_object.identity_at_alignment_score.update(identity_at_alignment_score)
+        ssn.db_object.precalculated_vis.update(precalculated_nodes)
+        ssn.db_object.num_at_alignment_score.update(cluster_numbers)
+        ssn.db_object.identity_at_alignment_score.update(identity_at_score)
         ssn.db_object.save()
-        current_app.preprocess_queue.enqueue(new_precalculate_identity_at_alignment_job, enzyme_type)
-
+        current_app.preprocess_queue.enqueue(precalculate_job, enzyme_type)
 
 def remove_sequence(enzyme_type, enzyme_name):
     ssn = SSN(enzyme_type)

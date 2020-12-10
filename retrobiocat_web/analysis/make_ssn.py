@@ -18,16 +18,17 @@ class SSN_Cluster_Precalculator(object):
     def __init__(self, ssn, log_level=1):
         self.ssn = ssn
 
-        self.start = 10
-        self.end = 300
+        self.start = 40
+        self.end = 250
         self.step = 5
         self.min_cluster_size = 6
 
         self.log_level = log_level
 
     def precalulate(self, num=5, current_num_clusters=0):
-        pos_at_alignment_score = {}
+        precalculated_nodes = {}
         num_at_alignment_score = {}
+        identity_at_alignment_score = {}
         count = 0
         for alignment_score in range(self.start, self.end, self.step):
             visualiser = SSN_Visualiser(self.ssn.enzyme_type, log_level=0)
@@ -36,34 +37,34 @@ class SSN_Cluster_Precalculator(object):
             if (num_clusters > current_num_clusters) and (num_clusters != 0):
                 count += 1
                 self.log(f"Adding new set of {num_clusters} clusters at alignment score {alignment_score}")
+
                 current_num_clusters = num_clusters
-                num_at_alignment_score[str(alignment_score)] = num_clusters
+
                 pos_dict = visualiser.get_cluster_positions(graph, clusters)
-                pos_at_alignment_score[str(alignment_score)] = pos_dict
+                nodes, edges = visualiser.get_nodes_and_edges(graph, pos_dict)
+                ident = self._get_ident(graph)
+
+                num_at_alignment_score[str(alignment_score)] = num_clusters
+                precalculated_nodes[str(alignment_score)] = nodes
+                identity_at_alignment_score[str(alignment_score)] = ident
 
             if count == num:
-                return num_at_alignment_score, pos_at_alignment_score
+                return precalculated_nodes, num_at_alignment_score, identity_at_alignment_score
 
-        return num_at_alignment_score, pos_at_alignment_score
+        return precalculated_nodes, num_at_alignment_score, identity_at_alignment_score
 
-    def precalculate_identity_at_alignment(self, num=10):
-        identity_at_alignment_score = {}
-        count = 0
-        for alignment_score in range(self.start, self.end, self.step):
-            count += 1
-            graph = self.ssn.get_graph_filtered_edges(alignment_score)
-            identities = []
-            for edge in list(graph.edges(data=True)):
-                identities.append(edge[2]['i'])
+    def _get_ident(self, graph):
+        identities = []
+        for edge in list(graph.edges(data=True)):
+            identities.append(edge[2]['i'])
 
-            if len(identities) >= 2:
-                identity_at_alignment_score[str(alignment_score)] = [round(statistics.mean(identities), 2),
-                                                                     round(statistics.stdev(identities, statistics.mean(
-                                                                         identities)), 2)]
-            if count >= num:
-                return identity_at_alignment_score
+        if len(identities) >= 2:
+            ident = [round(statistics.mean(identities), 2),
+                     round(statistics.stdev(identities, statistics.mean(identities)), 2)]
+        else:
+            ident = [0, 0]
 
-        return identity_at_alignment_score
+        return ident
 
     def _get_num_clusters(self, clusters):
         num = 0
@@ -171,6 +172,7 @@ class SSN_Visualiser(object):
         self.enzyme_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
         self.node_metadata = self._find_uniref_metadata()
 
+
         self.edge_colour = {'color': 'black'}
         self.edge_width = 2
         self.uniref_border_width = 1
@@ -187,18 +189,13 @@ class SSN_Visualiser(object):
         self.log_level = log_level
         self.cluster_positioner = ClusterPositioner()
 
-    def visualise(self, ssn, alignment_score, precalc_pos=None):
+    def visualise(self, ssn, alignment_score, ):
         clusters, graph = self.get_clusters_and_subgraph(ssn, alignment_score)
-
-        if precalc_pos is None:
-            pos_dict = self.get_cluster_positions(graph, clusters)
-        else:
-            self.log("Using precalculated positions")
-            pos_dict = precalc_pos
-
-        nodes, edges = self._get_nodes_and_edges(graph, pos_dict)
+        pos_dict = self.get_cluster_positions(graph, clusters)
+        nodes, edges = self.get_nodes_and_edges(graph, pos_dict)
 
         return nodes, edges
+
 
     def get_cluster_positions(self, graph, clusters):
 
@@ -208,12 +205,13 @@ class SSN_Visualiser(object):
             sub_graph = graph.subgraph(cluster)
             scale = 750 + (20 * len(cluster))
 
-            # if len(cluster) > 200:
+            #if len(cluster) > 200:
             #    cluster_positions = nx.nx_pydot.pydot_layout(sub_graph, prog="sfdp")
-            # elif len(cluster) > 10:
+            #elif len(cluster) > 10:
             #    cluster_positions = nx.nx_pydot.pydot_layout(sub_graph, prog="neato")
-            # else:
+            #else:
             cluster_positions = nx.spring_layout(sub_graph, k=1, iterations=200, scale=scale, weight=None)
+
             cluster_positions = self.cluster_positioner.position(cluster_positions)
             cluster_positions = self.cluster_positioner.round_positions(cluster_positions, round_to=0)
             pos_dict.update(cluster_positions)
@@ -240,7 +238,7 @@ class SSN_Visualiser(object):
 
         return graph
 
-    def _get_nodes_and_edges(self, graph, pos_dict, full_graph=None):
+    def get_nodes_and_edges(self, graph, pos_dict, full_graph=None):
         nodes = []
         edges = []
         for name in graph.nodes:
@@ -534,13 +532,24 @@ class SSN(object):
         t1 = time.time()
         self.log(f"Identified {count} sequences which were in SSN but not are marked has not having their alignments made, in {round(t1 - t0, 1)} seconds")
 
-    def get_graph_filtered_edges(self, alignment_score):
-        sub_graph = nx.Graph([(u, v, d) for u, v, d in self.graph.edges(data=True) if d['weight'] >= alignment_score])
+    def get_graph_filtered_edges(self, alignment_score, min_ident=0):
+
+        sub_graph = nx.Graph([(u, v, d) for u, v, d in self.graph.edges(data=True) if d['weight'] >= alignment_score and d['i'] >= min_ident])
         for node in self.graph.nodes:
             if node not in sub_graph.nodes:
                 sub_graph.add_node(node)
 
         return sub_graph
+
+    def delete_edges_below_alignment_score(self, alignment_score, min_ident=0.0):
+        self.log(f"Removing edges below alignment score: {alignment_score}, min identity: {min_ident}")
+        edge_list_to_remove = []
+        for edge in self.graph.edges(data=True):
+            if edge[2]['weight'] < alignment_score or edge[2]['weight'] < min_ident:
+                edge_list_to_remove.append(edge)
+
+        for edge in edge_list_to_remove:
+            self.graph.remove_edge(edge[0], edge[1])
 
     def filter_out_mutants(self):
         t0 = time.time()
@@ -616,10 +625,9 @@ class SSN(object):
         if self.db_object.num_at_alignment_score != {}:
             self.db_object.num_at_alignment_score = {}
             self.db_object.pos_at_alignment_score = {}
+            self.db_object.precalcuated_vis = {}
             self.db_object.identity_at_alignment_score = {}
             self.db_object.save()
-
-
 
 
 
@@ -628,9 +636,36 @@ if __name__ == '__main__':
 
     make_default_connection()
 
-    ssn = SSN('IRED', log_level=1)
+    ssn = SSN('TA', log_level=1)
     ssn.load()
+
+    print(f"Num edges default = {len(ssn.graph.edges)}")
+
+    ssn.delete_edges_below_alignment_score(40)
+    print(f"Num edges = {len(ssn.graph.edges)}")
+
     ssn.save()
+
+    #ssn.delete_edges_below_alignment_score(40, min_ident=0.35)
+    #print(f"Num edges = {len(ssn.graph.edges)}")
+
+    #ssn.delete_edges_below_alignment_score(45)
+    #print(f"Num edges = {len(ssn.graph.edges)}")
+
+    """
+    filtered_graph = ssn.get_graph_filtered_edges(40)
+    print(f"Num edges alignment 40 = {len(filtered_graph.edges)}")
+
+    filtered_graph = ssn.get_graph_filtered_edges(45)
+    print(f"Num edges alignment 45 = {len(filtered_graph.edges)}")
+
+    filtered_graph = ssn.get_graph_filtered_edges(50)
+    print(f"Num edges alignment 50 = {len(filtered_graph.edges)}")
+
+    filtered_graph = ssn.get_graph_filtered_edges(55)
+    print(f"Num edges alignment 55 = {len(filtered_graph.edges)}")
+    
+    """
 
     #for i in range(20,100,10):
      #   new_graph = ssn.get_graph_filtered_edges(i)

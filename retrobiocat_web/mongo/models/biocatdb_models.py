@@ -272,9 +272,11 @@ class SSN_record(db.Document):
     enzyme_type = db.ReferenceField(EnzymeType)
     status = db.StringField(default='Newly created')
 
+    precalculated_vis = db.DictField(default={})
     num_at_alignment_score = db.DictField(default={})
-    pos_at_alignment_score = db.DictField(default={})
     identity_at_alignment_score = db.DictField(default={})
+
+    pos_at_alignment_score = db.DictField(default={})
 
     meta = {'indexes': ['enzyme_type']}
 
