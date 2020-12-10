@@ -42,10 +42,7 @@ def task_expand_ssn(enzyme_type, log_level=1, max_num=200):
 
         return
 
-    ssn.delete_edges_below_alignment_score(40, min_ident=0.0)
-    ssn.save()
-
-    if ssn.db_object.precalculated_vis == {} and len(ssn.graph.nodes) != 0:
+    if ssn.db_object.precalculated_vis == {} and len(ssn.graph.nodes) >= 20:
         ssn.set_status('Precalculating visualisations')
         current_app.preprocess_queue.enqueue(precalculate_job, enzyme_type)
 
