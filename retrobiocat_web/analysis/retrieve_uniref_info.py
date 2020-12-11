@@ -1,5 +1,6 @@
 import requests
 import xmltodict
+import collections
 
 def strip_uniref_name(name):
     name = name.replace('UniRef50_', '')
@@ -65,7 +66,7 @@ class UniRef_Parser(object):
         list_to_process.append(self.xml_dict['UniRef']['entry']['representativeMember']['dbReference']['property'])
         if 'member' in self.xml_dict['UniRef']['entry']:
             for member in self.xml_dict['UniRef']['entry']['member']:
-                if type(member) == dict:
+                if type(member) == collections.OrderedDict:
                     list_to_process.append(member['dbReference']['property'])
 
         for member_list in list_to_process:
@@ -125,7 +126,7 @@ if __name__ == "__main__":
     ref_parser.load_xml(test_name)
     uni90, uni100, uniprot = ref_parser.get_uniref_members()
     ref_parser.get_cluster_name()
-    print(uni90)
+    print(uni100)
 
     rep_seq = list(uniprot.keys())[0]
     prot_parser = UniProt_Parser()

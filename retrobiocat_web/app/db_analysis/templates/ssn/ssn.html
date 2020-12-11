@@ -126,9 +126,25 @@
                 document.getElementById('sequence_row_click_model_title').innerHTML = enzyme_name;
                 $('#sequence_row_modal').modal('show');
             } else if (data['nodes'].get([window.selected_node])[0]['node_type'] === 'uniref') {
+                clear_uniref_modal()
                 $('#uniref_modal').modal('show');
                 load_uniref_data(window.selected_node)
             }
+        }
+
+        function clear_uniref_modal() {
+            document.getElementById('uniref_name').innerHTML = 'Loading please wait...'
+            document.getElementById('rep_seq_uniref_cluster_id').innerHTML = ''
+            document.getElementById('link_to_uniref').href = ''
+
+            document.getElementById('rep_seq_name').innerHTML = 'Loading please wait...'
+            document.getElementById('rep_seq_organism').innerHTML = ''
+            document.getElementById('rep_seq_uniprot_id').innerHTML = ''
+            document.getElementById('link_to_uniprot').href = ''
+            document.getElementById('rep_seq_name').innerHTML = ''
+            document.getElementById('uniprot_in_cluster').innerHTML = 'Loading please wait...'
+            document.getElementById('uni90_in_cluster').innerHTML = 'Loading please wait...'
+
         }
 
         function load_uniref_data(name) {
