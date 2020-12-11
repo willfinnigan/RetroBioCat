@@ -8,43 +8,65 @@
             <div class="col"></div>
             <div class="col">
                 <div id='card_div' class="card card-form my-5" style="width: 32rem;">
-                    <div class="card-body" align="center">
-                        <h3 class="card-title">Sequence similarity networks</h3>
+                    <div class="card-body">
+                        <h3 class="card-title text-center">Sequence similarity networks</h3>
 
                         <form id="main_form" method="POST" action="" novalidate>
                             {{ form.hidden_tag() }}
 
+                            <hr/>
+                            <p><b>Step 1 - Select enzyme type</b></p>
+
                             <div class="form-group">
                                 <label for="enzyme_type">Enzyme type</label>
-                                {{ form.enzyme_type(type='select', id='enzyme_type', class="form-control custom-select w-50") }}
+                                {{ form.enzyme_type(type='select', id='enzyme_type', class="form-control custom-select") }}
                                 <br/><small><strong>SSN status: </strong><span id="ssn_object_status"></span></small>
                                 {% for error in form.enzyme_type.errors %}
                                     <span style="color: red;">[{{ error }}]</span>
                                 {% endfor %}
                             </div>
 
-                            <p><small>These alignment scores are precalculated so will load more quickly.
-                                Number of clusters with > 6 nodes shown at each alignment score</small></p>
+                            <hr/>
+                            <p><b>Step 2 - Select alignment score</b></p>
+                            <div class="container-fluid">
+                                <div class="row my-auto">
+                                    <div class="col-4 my-auto">
+                                        <input type="radio" id="pre" name="alignment_radio" onchange="set_active_score()" checked>
+                                        <label for="pre"><small>Pre-calculated</small></label>
+                                    </div>
 
-                            <div id="alignment_scores_vs_cluster_num_viz_tool" class="no_margin" style="height: 20px"></div>
-                            <div id="alignment_scores_vs_cluster_num_viz" class="no_margin"></div>
-                            <div id="alignment_scores_vs_identity_tool" class="no_margin" style="height: 20px"></div>
-                            <div id="alignment_scores_vs_identity" class="no_margin"></div>
+                                    <div class="col-8 my-auto">
+                                        <div class="form-group">
+                                            <select id="precalculated_select" class="form-control custom-select">
 
-                            <div id="charts_div"></div>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
 
+                                <div class="row my-auto">
+                                    <div class="col-4 my-auto">
+                                        <input type="radio" id="custom" name="alignment_radio" onchange="set_active_score()">
+                                        <label for="custom"><small>Custom (slow)</small></label>
+                                    </div>
 
-                            <div class="form-group">
-                                {{ form.alignment_score.label(class="mx-2 my-1") }}
-                                {{ form.alignment_score(type='number', form="main_form", class="form-control form-control-sm w-25 my-1") }}
-                                {% for error in form.alignment_score.errors %}
-                                    <span style="color: red;">[{{ error }}]</span>
-                                {% endfor %}
+                                    <div class="col-8 mt-4">
+                                        <div class="form-group">
+                                            {{ form.alignment_score(type='number', form="main_form", class="form-control form-control-sm w-50 text-center") }}
+                                            {% for error in form.alignment_score.errors %}
+                                                <span style="color: red;">[{{ error }}]</span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
+                            <hr/>
+                            <p><b>Step 3 - Additional options</b></p>
+
                             <div class="custom-control custom-checkbox mt-4">
-                                {{ form.include_mutants(type='checkbox', form="main_form", class="custom-control-input") }}
-                                {{ form.include_mutants.label(class="custom-control-label") }}
+                                {{ form.hide_mutants(type='checkbox', form="main_form", class="custom-control-input") }}
+                                {{ form.hide_mutants.label(class="custom-control-label") }}
                             </div>
 
                             <div class="custom-control custom-checkbox">
@@ -68,9 +90,67 @@
         </div>
     </div>
 
-    {% include 'ssn/ssn_form_graphs.html' %}
 
     <script>
+        function set_active_score() {
+            if (document.getElementById('pre').checked) {
+                document.getElementById('alignment_score').disabled = true
+                document.getElementById('precalculated_select').disabled = false
+                set_score_from_select()
+            } else if (document.getElementById('custom').checked) {
+                document.getElementById('alignment_score').disabled = false
+                document.getElementById('precalculated_select').disabled = true
+            }
+        }
+
+        function set_select(select_id, arraySeq) {
+            var select = document.getElementById(select_id);
+            select.options.length = 0;
+            for (index in arraySeq) {
+                select.options[select.options.length] = new Option(arraySeq[index], index);
+            }
+            var num = select.options.length
+            $('#'+select_id).prop('selectedIndex', num-1)
+        }
+
+        function get_ssn_object() {
+            $.post('/_ssn_object', {
+                enzyme_type: document.getElementById("enzyme_type").value
+                }).done(function(data) {
+                    document.getElementById("ssn_object_status").innerHTML = data.result.status
+                    if (data.result.status === 'Complete') {
+                        document.getElementById("ssn_object_status").className = "text-success"
+                    } else {
+                        document.getElementById("ssn_object_status").className = "text-danger"
+                    }
+
+                    
+                    set_select("precalculated_select", data.result.precalculated)
+                    set_score_from_select()
+                })
+        }
+
+        function set_score_from_select() {
+            var select_obj = document.getElementById("precalculated_select")
+            if (select_obj.options.length === 0) {
+                document.getElementById("alignment_score").value = 100
+            } else {
+                document.getElementById("alignment_score").value = select_obj.value
+            }
+        }
+
+        get_ssn_object()
+        set_active_score()
+        set_score_from_select()
+
+        document.getElementById("enzyme_type").onchange = function(){
+            get_ssn_object()
+        }
+
+        document.getElementById("precalculated_select").onchange = function(){
+            set_score_from_select()
+        }
+
         function getStatus(taskID) {
             $.get('ssn_status/' + taskID, {
             }).done(function(response) {
@@ -108,28 +188,7 @@
             document.getElementById("progressbar").innerText = "Queuing"
         }
 
-        document.getElementById("enzyme_type").onchange = function(){
-            get_ssn_object_status()
-        }
 
-        function get_ssn_object_status() {
-            $.post('/_ssn_object_status', {
-                enzyme_type: document.getElementById("enzyme_type").value
-                }).done(function(data) {
-                    document.getElementById("ssn_object_status").innerHTML = data.result.status
-                    var alignment_cluster_data = data.result.alignment_cluster_data
-                    var alignment_identity_data = data.result.alignment_identity_data
-                    var max_clusters = data.result.max_clusters
-                    var max_alignment = data.result.max_alignment
-                    var min_alignment = data.result.min_alignment
-                    d3.select("svg").remove()
-                    d3.select("svg").remove()
-                    draw_alignment_cluster_graph(alignment_cluster_data, max_alignment, min_alignment, max_clusters)
-                    draw_alignment_identity_graph(alignment_identity_data, max_alignment, min_alignment)
-                })
-        }
-
-        get_ssn_object_status()
     </script>
 
 

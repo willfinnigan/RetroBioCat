@@ -58,7 +58,7 @@ def new_expand_ssn_job(enzyme_type):
 
 def precalculate_job(enzyme_type):
     ssn = SSN(enzyme_type)
-    ssn.load()
+    ssn.load(include_mutants=False, only_biocatdb=False)
 
     ssn_precalc = SSN_Cluster_Precalculator(ssn)
 

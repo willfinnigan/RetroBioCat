@@ -59,7 +59,6 @@
                                     return false;},
                                     container: document.getElementById("ssn_network_config")}
 
-
         var options = {edges: edges_options,
                        physics: false,
                        interaction: interaction_options,
@@ -83,16 +82,14 @@
             data['edges'].clear()
         })
 
-        function get_edges(selected_node) {
+        async function get_edges(selected_node) {
             $.post($SCRIPT_ROOT + '/_edge_ajax', {
                 enzyme_type: window.enzyme_type,
                 alignment_score: window.alignment_score,
                 selected_node: selected_node
                 }).done(function(response_data) {
                     var newEdges = response_data.result.edges
-                    for (let i = 0; i < newEdges.length; i++) {
-                        data['edges'].update(newEdges[i])
-                    }
+                    data['edges'].update(newEdges)
                 })
         }
 
@@ -104,7 +101,7 @@
             }
         })
 
-        function select_connected_nodes() {
+        async function select_connected_nodes() {
             var currently_selected = network.getSelectedNodes()
             $.post($SCRIPT_ROOT + '/_connected_nodes_ajax', {
                 enzyme_type: window.enzyme_type,

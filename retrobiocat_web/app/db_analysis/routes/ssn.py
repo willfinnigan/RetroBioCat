@@ -24,7 +24,7 @@ def ssn_page(task_id):
                            start_pos=start_pos,
                            enzyme_type=result['enzyme_type'])
 
-def task_get_ssn(enzyme_type, score, include_mutants, only_biocatdb):
+def task_get_ssn(enzyme_type, score, hide_mutants, only_biocatdb):
     job = get_current_job()
     job.meta['progress'] = 'started'
     job.save_meta()
@@ -34,12 +34,13 @@ def task_get_ssn(enzyme_type, score, include_mutants, only_biocatdb):
     job.meta['progress'] = 'ssn loaded'
     job.save_meta()
 
-    if only_biocatdb == False and include_mutants == False and str(score) in ssn.db_object.precalculated_vis:
+    if only_biocatdb is False and str(score) in ssn.db_object.precalculated_vis:
         nodes = ssn.db_object.precalculated_vis[str(score)]
+        # Need to filter mutants here
     else:
-        ssn.load(include_mutants=include_mutants, only_biocatdb=only_biocatdb)
+        ssn.load(include_mutants=not hide_mutants, only_biocatdb=only_biocatdb)
         vis = SSN_Visualiser(enzyme_type, log_level=1)
-        nodes, edges, num_clusters = vis.visualise(ssn, score)
+        nodes, edges = vis.visualise(ssn, score)
 
     edges = []
 
@@ -87,9 +88,9 @@ def ssn_form():
     if form.validate_on_submit() == True:
         enzyme_type = form.data['enzyme_type']
         min_score = form.data['alignment_score']
-        include_mutants = form.data['include_mutants']
+        hide_mutants = form.data['hide_mutants']
         only_biocatdb = form.data['only_biocatdb']
-        task = current_app.network_queue.enqueue(task_get_ssn, enzyme_type, min_score, include_mutants, only_biocatdb)
+        task = current_app.network_queue.enqueue(task_get_ssn, enzyme_type, min_score, hide_mutants, only_biocatdb)
 
         if old_task_id != None:
             try:
@@ -103,46 +104,24 @@ def ssn_form():
 
     return render_template('ssn/ssn_form.html', form=form, task_id=task_id)
 
-@bp.route("/_ssn_object_status", methods=["POST"])
-def ssn_object_status():
+@bp.route("/_ssn_object", methods=["POST"])
+def ssn_object():
     enzyme_type = request.form['enzyme_type']
     enzyme_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
     ssn_obj = SSN_record.objects(enzyme_type=enzyme_type_obj)[0]
 
-    alignment_cluster_data = []
-    max_clusters = 0
-    max_alignment = 100
-    min_alignment = 10
-    if ssn_obj.num_at_alignment_score is not None:
-        for score_string, num_clusters in ssn_obj.num_at_alignment_score.items():
-            score = int(score_string)
-            data = {'alignment_score': score, 'num_clusters': int(num_clusters)}
-            alignment_cluster_data.append(data)
-            if score > max_alignment:
-                max_alignment = score
-            if score < min_alignment:
-                min_alignment = score
-            if num_clusters > max_clusters:
-                max_clusters = num_clusters
+    precalc_choices = {}
+    for score in ssn_obj.num_at_alignment_score:
+        clusters = ssn_obj.num_at_alignment_score[score]
+        idt = ssn_obj.identity_at_alignment_score[score]
 
-    alignment_identity_data = []
-    if ssn_obj.identity_at_alignment_score is not None:
-        for score_string, identity_data in ssn_obj.identity_at_alignment_score.items():
-            score = int(score_string)
-            if score > max_alignment:
-                max_alignment = score
-            data = {'alignment_score': score,
-                    'i_avg': identity_data[0],
-                    'i_stdev': identity_data[1]}
-            alignment_identity_data.append(data)
+        choice_text = f"{score}, {clusters} clusters, avg identity {idt[0]} ± {idt[1]}"
+        precalc_choices[score] = choice_text
 
     result = {'status': ssn_obj.status,
-              'alignment_cluster_data': alignment_cluster_data,
-              'alignment_identity_data': alignment_identity_data,
-              'max_clusters': max_clusters + 1,
-              'max_alignment': max_alignment + 5,
-              'min_alignment': min_alignment - 5}
+              'precalculated': precalc_choices}
     return jsonify(result=result)
+
 
 @bp.route("/_load_uniref_data", methods=["POST"])
 def load_uniref_data():

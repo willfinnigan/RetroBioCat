@@ -165,13 +165,20 @@ class ClusterPositioner(object):
                                      round(pos_dict[key][1], round_to)]
         return rounded_pos_dict
 
+    def rescale(self, pos_dict, scale=1000):
+        new_pos_dict = {}
+        for key, value in pos_dict.items():
+            x = value[0] * scale
+            y = value[1] * scale
+            new_pos_dict[key] = [x, y]
+        return new_pos_dict
+
 class SSN_Visualiser(object):
 
     def __init__(self, enzyme_type, hidden_edges=True, log_level=0):
         self.enzyme_type = enzyme_type
         self.enzyme_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
         self.node_metadata = self._find_uniref_metadata()
-
 
         self.edge_colour = {'color': 'black'}
         self.edge_width = 4
@@ -205,9 +212,10 @@ class SSN_Visualiser(object):
             self.log(f"Getting layout for cluster {i + 1} of {len(clusters)}")
             sub_graph = graph.subgraph(cluster)
             scale = 750 + (20 * len(cluster))
+            #scale = None
 
             #if len(cluster) > 200:
-            #    cluster_positions = nx.nx_pydot.pydot_layout(sub_graph, prog="sfdp")
+            #cluster_positions = nx.nx_pydot.pydot_layout(sub_graph, prog="sfdp")
             #elif len(cluster) > 10:
             #    cluster_positions = nx.nx_pydot.pydot_layout(sub_graph, prog="neato")
             #else:
