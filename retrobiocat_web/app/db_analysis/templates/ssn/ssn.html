@@ -145,6 +145,8 @@
             document.getElementById('uniprot_in_cluster').innerHTML = 'Loading please wait...'
             document.getElementById('uni90_in_cluster').innerHTML = 'Loading please wait...'
 
+
+
         }
 
         function load_uniref_data(name) {
@@ -163,6 +165,9 @@
                     document.getElementById('rep_seq_name').innerHTML = data.result.rep_seq_name
                     document.getElementById('uniprot_in_cluster').innerHTML = data.result.num_uniprot
                     document.getElementById('uni90_in_cluster').innerHTML = data.result.num_uni90
+
+                    document.getElementById('interpro_link').href = "https://www.ebi.ac.uk/interpro/protein/UniProt/" + data.result.rep_seq_uniprot_id
+                    document.getElementById('pfam_link').href = "https://pfam.xfam.org/protein/" + data.result.rep_seq_uniprot_id
 
                     parse_pfams(document.getElementById('rep_seq_pfam_domains'), data.result.pfam_object)
                 })

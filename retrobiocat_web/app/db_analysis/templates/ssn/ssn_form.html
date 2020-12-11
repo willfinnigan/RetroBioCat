@@ -96,6 +96,7 @@
 
 
     <script>
+
         function set_active_score() {
             if (document.getElementById('pre').checked) {
                 document.getElementById('alignment_score').disabled = false
@@ -132,7 +133,6 @@
 
                     document.getElementById('num_biocatdb').innerHTML = data.result.num_biocatdb
                     document.getElementById('num_uniref').innerHTML = data.result.num_uniref
-
 
                     set_select("precalculated_select", data.result.precalculated)
                     set_score_from_select()
