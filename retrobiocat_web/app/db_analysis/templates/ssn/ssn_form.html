@@ -21,6 +21,8 @@
                                 <label for="enzyme_type">Enzyme type</label>
                                 {{ form.enzyme_type(type='select', id='enzyme_type', class="form-control custom-select") }}
                                 <br/><small><strong>SSN status: </strong><span id="ssn_object_status"></span></small>
+                                <br/><small><strong>Num database seqs: </strong><span id='num_biocatdb'></span></small>
+                                <br/><small><strong>Num uniref50 seqs: </strong><span id='num_uniref'></span></small>
                                 {% for error in form.enzyme_type.errors %}
                                     <span style="color: red;">[{{ error }}]</span>
                                 {% endfor %}
@@ -64,10 +66,12 @@
                             <hr class="mt-4"/>
                             <p><b>Step 3 - Additional options</b></p>
 
+                            <!--
                             <div class="custom-control custom-checkbox mt-4">
-                                {{ form.hide_mutants(type='checkbox', form="main_form", class="custom-control-input") }}
+                                {{ form.hide_mutants(type='checkbox', form="main_form", class="custom-control-input", hidden='true') }}
                                 {{ form.hide_mutants.label(class="custom-control-label") }}
                             </div>
+                            //-->
 
                             <div class="custom-control custom-checkbox">
                                 {{ form.only_biocatdb(type='checkbox', form="main_form", class="custom-control-input") }}
@@ -125,6 +129,9 @@
                     } else {
                         document.getElementById("ssn_object_status").className = "text-danger"
                     }
+
+                    document.getElementById('num_biocatdb').innerHTML = data.result.num_biocatdb
+                    document.getElementById('num_uniref').innerHTML = data.result.num_uniref
 
 
                     set_select("precalculated_select", data.result.precalculated)

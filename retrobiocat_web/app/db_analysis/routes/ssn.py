@@ -1,7 +1,7 @@
 from retrobiocat_web.app.db_analysis import bp
 from flask import render_template, request, jsonify, session, current_app
 from flask_security import roles_required
-from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType, UniRef50, SSN_record
+from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType, UniRef50, SSN_record, Sequence
 import mongoengine as db
 from rq.job import Job
 from rq import get_current_job
@@ -109,6 +109,9 @@ def ssn_object():
     enzyme_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
     ssn_obj = SSN_record.objects(enzyme_type=enzyme_type_obj)[0]
 
+    num_biocatdb = Sequence.objects(enzyme_type=enzyme_type).count()
+    num_uniref = UniRef50.objects(enzyme_type=enzyme_type_obj).count()
+
     precalc_choices = {}
     for score in ssn_obj.num_at_alignment_score:
         clusters = ssn_obj.num_at_alignment_score[score]
@@ -118,6 +121,8 @@ def ssn_object():
         precalc_choices[score] = choice_text
 
     result = {'status': ssn_obj.status,
+              'num_biocatdb': num_biocatdb,
+              'num_uniref': num_uniref,
               'precalculated': precalc_choices}
     return jsonify(result=result)
 

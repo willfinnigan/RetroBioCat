@@ -15,26 +15,14 @@ class SSN_Form(FlaskForm):
         enzyme_types = EnzymeType.objects()
 
         list_enzyme_types = []
+        enzyme_descriptions = {}
         for enz_type in enzyme_types:
             if enz_type in ssn_records:
+                enzyme_descriptions[enz_type.enzyme_type] = f"{enz_type.enzyme_type} - {enz_type.full_name}"
                 list_enzyme_types.append(enz_type.enzyme_type)
 
         list_enzyme_types = sorted(list_enzyme_types)
-        self.enzyme_type.choices = [(c, c) for c in list_enzyme_types]
 
-
-if __name__ == "__main__":
-    from retrobiocat_web.mongo.default_connection import make_default_connection
-    make_default_connection()
-
-    ssn_records = SSN_record.objects().distinct('enzyme_type')
-    print(ssn_records)
-    enzyme_types = EnzymeType.objects()
-
-    list_enzyme_types = []
-    for enz_type in enzyme_types:
-        if enz_type in ssn_records:
-            list_enzyme_types.append(enz_type.enzyme_type)
-
-    list_enzyme_types = sorted(list_enzyme_types)
-    print(list_enzyme_types)
+        self.enzyme_type.choices = []
+        for key in list_enzyme_types:
+            self.enzyme_type.choices.append((key, enzyme_descriptions[key]))
