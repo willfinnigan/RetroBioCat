@@ -73,7 +73,6 @@ def ssn_status(task_id):
     return jsonify(response_object), 202
 
 @bp.route('/ssn_form', methods=['GET', 'POST'])
-@roles_required('experimental')
 def ssn_form():
     form = SSN_Form()
     form.set_choices()
