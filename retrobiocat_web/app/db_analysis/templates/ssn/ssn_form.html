@@ -44,15 +44,15 @@
                                     </div>
                                 </div>
 
-                                <div class="row my-auto">
-                                    <div class="col-4 my-auto">
+                                <div class="row my-auto ">
+                                    <div class="col-4 mt-4">
                                         <input type="radio" id="custom" name="alignment_radio" onchange="set_active_score()">
                                         <label for="custom"><small>Custom (slow)</small></label>
                                     </div>
 
                                     <div class="col-8 mt-4">
                                         <div class="form-group">
-                                            {{ form.alignment_score(type='number', form="main_form", class="form-control form-control-sm w-50 text-center") }}
+                                            {{ form.alignment_score(type='number', id='alignment_score', form="main_form", class="form-control form-control-sm w-50 text-center") }}
                                             {% for error in form.alignment_score.errors %}
                                                 <span style="color: red;">[{{ error }}]</span>
                                             {% endfor %}
@@ -61,7 +61,7 @@
                                 </div>
                             </div>
 
-                            <hr/>
+                            <hr class="mt-4"/>
                             <p><b>Step 3 - Additional options</b></p>
 
                             <div class="custom-control custom-checkbox mt-4">
@@ -94,11 +94,13 @@
     <script>
         function set_active_score() {
             if (document.getElementById('pre').checked) {
-                document.getElementById('alignment_score').disabled = true
+                document.getElementById('alignment_score').disabled = false
+                document.getElementById('alignment_score').hidden = true
                 document.getElementById('precalculated_select').disabled = false
                 set_score_from_select()
             } else if (document.getElementById('custom').checked) {
                 document.getElementById('alignment_score').disabled = false
+                document.getElementById('alignment_score').hidden = false
                 document.getElementById('precalculated_select').disabled = true
             }
         }

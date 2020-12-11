@@ -5,7 +5,7 @@ from retrobiocat_web.mongo.models.biocatdb_models import SSN_record, EnzymeType
 
 class SSN_Form(FlaskForm):
     enzyme_type = SelectField('Enzyme name')
-    alignment_score = IntegerField('Score', default=100, validators=[NumberRange(min=40, max=300)])
+    alignment_score = IntegerField('Score', validators=[NumberRange(min=40, max=300)])
     hide_mutants = BooleanField('Hide mutants', default=False)
     only_biocatdb = BooleanField('Only RetroBioCat database sequences', default=False)
     submit = SubmitField('Submit')
