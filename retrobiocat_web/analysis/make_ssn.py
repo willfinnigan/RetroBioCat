@@ -204,7 +204,6 @@ class SSN_Visualiser(object):
 
         return nodes, edges
 
-
     def get_cluster_positions(self, graph, clusters):
 
         pos_dict = {}
@@ -636,6 +635,31 @@ class SSN(object):
         self.db_object.status = status
         self.db_object.save()
 
+    def get_clusters(self, alignment_score):
+        t0 = time.time()
+        graph = self.get_graph_filtered_edges(alignment_score)
+        clusters = list(nx.connected_components(graph))
+        with_uniref = []
+        without_uniref = []
+
+        for cluster in clusters:
+            new_cluster_with = []
+            new_cluster_without = []
+            for node in cluster:
+                new_cluster_with.append(node)
+                if 'UniRef50_' not in node:
+                    new_cluster_without.append(node)
+
+            if len(new_cluster_with) != 0:
+                with_uniref.append(new_cluster_with)
+            if len(new_cluster_without) != 0:
+                without_uniref.append(new_cluster_without)
+
+        t1 = time.time()
+        self.log(f"Retrieved clusters for {self.enzyme_type} at alignment score {alignment_score} in {round(t1 - t0, 1)} seconds")
+
+        return without_uniref, with_uniref
+
     def clear_position_information(self):
         self.log(f"Clearing old node position information", level=1)
         if self.db_object.num_at_alignment_score != {}:
@@ -650,7 +674,7 @@ class SSN_quickload(object):
     def __init__(self, enzyme_type, log_level=0):
         self.enzyme_type = enzyme_type
         self.save_path = str(Path(__file__).parents[0]) + f'/analysis_data/ssn/{self.enzyme_type}'
-        #self.ssn = SSN(enzyme_type, log_level=log_level)
+        self.ssn = None
         self.log_level = log_level
         self.df = None
         self.vis = SSN_Visualiser(enzyme_type, hidden_edges=False, log_level=log_level)
@@ -664,6 +688,7 @@ class SSN_quickload(object):
         #self.df = dask.dataframe.read_csv(f"{self.save_path}/graph.csv")
         #self.df = self.df.compute()
         self.df = pd.read_csv(f"{self.save_path}/graph.csv")
+
         t1 = time.time()
 
         self.log(f"Loaded df in {round(t1-t0, 1)} seconds")
@@ -701,6 +726,29 @@ class SSN_quickload(object):
 
         return connected_nodes
 
+    def get_all_connected_nodes(self, node, alignment_score, log=True):
+        t0 = time.time()
+
+        connected_nodes = [node]
+        new_nodes = [node]
+        while len(new_nodes) != 0:
+            df = self.df[((self.df['source'].isin(new_nodes)) | (self.df['target'].isin(new_nodes)))]
+            df = df[df['weight'] >= alignment_score]
+
+            new_nodes = []
+            for index, row in df.iterrows():
+                if row['target'] not in connected_nodes:
+                    connected_nodes.append(row['target'])
+                    new_nodes.append(row['target'])
+                if row['source'] not in connected_nodes:
+                    connected_nodes.append(row['source'])
+                    new_nodes.append(row['source'])
+
+        t1 = time.time()
+        if log:
+            self.log(f"Retrieved all connected nodes to {node} for {self.enzyme_type} node at alignment score {alignment_score} in {round(t1 - t0, 1)} seconds")
+
+        return connected_nodes
 
 
 
@@ -715,10 +763,11 @@ if __name__ == '__main__':
     make_default_connection()
 
     ql = SSN_quickload('IRED', log_level=1)
-    ql.load_df()
-    edges = ql.get_edges('UniRef50_Q2TW47', 45)
-    nodes = ql.get_connected_nodes(['UniRef50_Q2TW47'], 45)
-
+    #ql.load_df()
+    #edges = ql.get_edges('UniRef50_Q2TW47', 45)
+    #nodes = ql.get_all_connected_nodes('UniRef50_Q2TW47', 45)
+    without_uniref, clusters = ql.get_clusters(45)
+    print(without_uniref)
 
     #ssn = SSN('IRED', log_level=1)
     #ssn.load(mode='pandas')

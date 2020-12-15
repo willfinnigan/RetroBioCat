@@ -102,7 +102,8 @@ def task_get_pathways(form_data):
 
     network = Network(print_log=not current_app.config['PRODUCTION'],
                       include_experimental=form_data['include_experimental'],
-                      include_two_step=form_data['include_two_step'])
+                      include_two_step=form_data['include_two_step'],
+                      include_requires_absence_of_water=bool(form_data['include_requires_absence_of_water']))
 
     network.update_settings({"remove_simple": bool(form_data['remove_small']),
                              "combine_enantiomers": bool(form_data['combine_enantiomers']),

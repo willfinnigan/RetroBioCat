@@ -18,6 +18,7 @@
     </div>
 
     {% include 'ssn/modals/network_physics_modal.html' %}
+    {% include 'ssn/modals/clusters_modal.html' %}
     {% include 'ssn/modals/edit_selected_nodes_modal.html' %}
     {% include 'ssn/modals/uniref_modal.html' %}
     {% include 'tabulator_tables/sequences_table/seq_row_click_modal.html' %}
@@ -28,6 +29,8 @@
 
         window.enzyme_type = "{{enzyme_type}}"
         window.alignment_score = {{alignment_score|safe}}
+        window.only_biocatdb = "{{only_biocatdb|safe}}"
+        window.hide_mutants = "{{hide_mutants|safe}}"
 
         var edges_options = {'smooth': false}
 

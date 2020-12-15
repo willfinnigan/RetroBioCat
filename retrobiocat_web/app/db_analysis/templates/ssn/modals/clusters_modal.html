@@ -1,0 +1,81 @@
+<!-- Main modal -->
+<div class="modal fade" id="clusters_modal" tabindex="-1" role="dialog" aria-labelledby="clusters_modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Clusters</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div id="cluster_div">Loading, please wait..</div>
+            </div>
+
+            <button class="btn btn-success w-50 mx-2 my-2 text-center" id="get_csv_btn" onclick="get_csv(clusters_without)" hidden>Get CSV</button>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    var clusters_loaded = false
+    var clusters_without = []
+    var clusters_with = []
+
+    $('#clusters_modal').on('show.bs.modal', function () {
+        if (clusters_loaded === false) {
+            clusters_loaded = true
+            $.post($SCRIPT_ROOT + '/_get_clusters', {
+                enzyme_type: window.enzyme_type,
+                alignment_score: window.alignment_score,
+                hide_mutants: window.hide_mutants,
+                only_biocatdb: window.only_biocatdb
+            }).done(function (data) {
+                clusters_without = data.result.without_uniref
+                clusters_with = data.result.with_uniref
+                write_clusters(clusters_without)
+                document.getElementById('get_csv_btn').hidden = false
+            })
+        }
+    })
+
+    function write_clusters(clusters) {
+        var main_div = document.getElementById('cluster_div')
+        main_div.innerHTML = ""
+
+        var num = 1
+        for (const cluster of clusters) {
+            main_div.innerHTML += "<p><b>Cluster " + num + "</b></p>"
+            for (const node of cluster) {
+                main_div.innerHTML += "<p>" + node + "</p>"
+            }
+            main_div.innerHTML += "<br/>"
+            num += 1
+        }
+    }
+
+    function get_csv(clusters) {
+        var new_clusters = []
+        var num = 1
+        for (const cluster of clusters) {
+            for (const node of cluster) {
+                var pair = [node, num]
+                new_clusters.push(pair)
+            }
+            num += 1
+        }
+
+        let csvContent = "data:text/csv;charset=utf-8," + new_clusters.map(e => e.join(",")).join("\n");
+
+        var encodedUri = encodeURI(csvContent);
+        window.open(encodedUri);
+    }
+
+
+</script>

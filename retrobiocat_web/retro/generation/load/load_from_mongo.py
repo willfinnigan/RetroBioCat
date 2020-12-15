@@ -6,7 +6,7 @@ from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType
 from retrobiocat_web.mongo.models.reaction_models import Reaction
 from retrobiocat_web.mongo import default_connection
 
-def get_reactions(include_experimental=False, include_two_step=False):
+def get_reactions(include_experimental=False, include_two_step=False, include_requires_absence_of_water=False):
     if include_experimental == True:
         q_exp = db.Q()
     else:
@@ -17,7 +17,12 @@ def get_reactions(include_experimental=False, include_two_step=False):
     else:
         q_two = db.Q(two_step__ne=True)
 
-    return Reaction.objects(q_exp & q_two)
+    if include_requires_absence_of_water == True:
+        q_water = db.Q()
+    else:
+        q_water = db.Q(requires_absence_of_water__ne=True)
+
+    return Reaction.objects(q_exp & q_two & q_water)
 
 
 def load_rxns(query_result):

@@ -4,11 +4,13 @@ from pathlib import Path
 yaml_path = str(Path(__file__).parents[3]) + '/data/rxn_yaml/reaction_rules.yaml'
 
 class RetroBioCat_Reactions():
-    def __init__(self, mode='mongo', yaml_path=yaml_path, include_experimental=False, include_two_step=False):
+    def __init__(self, mode='mongo', yaml_path=yaml_path, include_experimental=False, include_two_step=False, include_requires_absence_of_water=False):
         self.rxns_strings = None
         self.rules_by_type = None
         self.mode = mode
-        self.include_experimental=include_experimental
+        self.include_experimental = include_experimental
+        self.include_requires_absence_of_water = include_requires_absence_of_water
+        self.include_two_step = include_two_step
 
         if mode=='yaml':
             yaml_dict = load_rule_yamls.load_yamls(yaml_path)
@@ -17,7 +19,9 @@ class RetroBioCat_Reactions():
             self.reactionEnzymeCofactorDict = load_rule_yamls.load_cofactors(yaml_dict)
 
         elif mode=='mongo':
-            query_result = load_from_mongo.get_reactions(include_experimental=self.include_experimental, include_two_step=include_two_step)
+            query_result = load_from_mongo.get_reactions(include_experimental=self.include_experimental,
+                                                         include_two_step=self.include_two_step,
+                                                         include_requires_absence_of_water=self.include_requires_absence_of_water)
             self.rxns = load_from_mongo.load_rxns(query_result)
             self.reactions, self.enzymes, self.reaction_enzyme_map = load_from_mongo.load_reactions_and_enzymes(query_result)
             self.reactionEnzymeCofactorDict = load_from_mongo.load_cofactors(query_result)

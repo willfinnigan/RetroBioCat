@@ -10,12 +10,18 @@ from retrobiocat_web.retro.generation.node_analysis import rdkit_smile
 
 class Network(object):
 
-    def __init__(self, graph=nx.DiGraph(), target_smiles='', number_steps=0, max_nodes=False, include_two_step=False, include_experimental=False, print_log=False):
+    def __init__(self, graph=nx.DiGraph(), target_smiles='', number_steps=0, max_nodes=False,
+                 include_two_step=False,
+                 include_experimental=False,
+                 include_requires_absence_of_water=False,
+                 print_log=False):
+
         self.graph = graph
         self.number_steps = number_steps
         self.target_smiles = rdkit_smile(target_smiles, warning=True)
         self.rxn_obj = RetroBioCat_Reactions(include_experimental=include_experimental,
-                                             include_two_step=include_two_step)
+                                             include_two_step=include_two_step,
+                                             include_requires_absence_of_water=include_requires_absence_of_water)
         self.rxns = self.rxn_obj.rxns
 
         self.substrate_nodes = []
@@ -55,6 +61,7 @@ class Network(object):
                          'specificity_score_substrates' : False,
                          'include_experimental' : include_experimental,
                          'include_two_step': include_two_step,
+                         'include_requires_absence_of_water': include_requires_absence_of_water,
                          'rr_min_diameter': 2,
                          'rr_min_products': 10,
                          'rr_max_reactions': 1,

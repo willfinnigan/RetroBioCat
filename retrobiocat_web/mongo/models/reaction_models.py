@@ -15,6 +15,7 @@ class Reaction(db.Document):
     type = db.StringField()
     experimental = db.BooleanField(default=False)
     two_step = db.BooleanField(default=False)
+    requires_absence_of_water = db.BooleanField(default=False)
 
 class Issue(db.Document):
     reaction = db.ReferenceField(Reaction)

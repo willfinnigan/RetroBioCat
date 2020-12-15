@@ -5,7 +5,6 @@ from retrobiocat_web.mongo.models.biocatdb_models import Molecule
 from rdkit import DataStructs
 
 
-
 fingerprint_options = {'mfp_default': ['morgan', {}],
                        'rdfp_default': ['rdkit', {}]}
 

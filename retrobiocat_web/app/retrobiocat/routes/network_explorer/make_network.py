@@ -40,6 +40,7 @@ def task_make_network(form_data):
 
     network = Network(include_experimental=bool(form_data['include_experimental']),
                       include_two_step=bool(form_data['include_two_step']),
+                      include_requires_absence_of_water=bool(form_data['include_requires_absence_of_water']),
                       print_log=not current_app.config['PRODUCTION'])
 
     network.update_settings({"allow_backwards_steps": bool(form_data['allow_backwards']),

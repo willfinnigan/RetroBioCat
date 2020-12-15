@@ -66,6 +66,7 @@ def load_rule():
         reaction_type = ""
         experimental = True
         two_step = False
+        requires_absence_of_water = False
     else:
         yaml_dict = get_reaction_yaml_dict(reaction_name)
         rxn_name = reaction_name
@@ -77,6 +78,7 @@ def load_rule():
         rxn = Reaction.objects(name=reaction_name)[0]
         experimental = rxn.experimental
         two_step = rxn.two_step
+        requires_absence_of_water = rxn.requires_absence_of_water
 
     result = {"rxn_name": rxn_name,
               "rxn_smarts": rxn_smarts,
@@ -85,7 +87,8 @@ def load_rule():
               "negative_tests": negative_tests,
               "reaction_type": reaction_type,
               "experimental": experimental,
-              "two_step": two_step}
+              "two_step": two_step,
+              "requires_absence_of_water": requires_absence_of_water}
 
     return jsonify(result=result)
 
@@ -128,6 +131,7 @@ def save_reaction():
     rxn_type = request.form['rxn_type']
     experimental = request.form['experimental']
     two_step = request.form['two_step']
+    requires_absence_of_water = request.form['requires_absence_of_water']
 
     if experimental == 'false':
         experimental = False
@@ -136,8 +140,13 @@ def save_reaction():
 
     if two_step == 'false':
         two_step = False
-    if two_step == 'true':
+    elif two_step == 'true':
         two_step = True
+
+    if requires_absence_of_water == 'false':
+        requires_absence_of_water = False
+    elif requires_absence_of_water == 'true':
+        requires_absence_of_water = True
 
     if rxn_selection == 'Empty template':
         if len(Reaction.objects(name=rxn_name)) == 0 and rxn_name != '':
@@ -161,6 +170,7 @@ def save_reaction():
     reaction.type = rxn_type
     reaction.experimental = experimental
     reaction.two_step = two_step
+    reaction.requires_absence_of_water = requires_absence_of_water
 
     reaction.save()
 
@@ -191,10 +201,11 @@ def test_reaction():
     rxn_type = request.form['rxn_type']
     experimental = request.form['experimental']
     two_step = request.form['experimental']
+    requires_absence_of_water = request.form['requires_absence_of_water']
 
     tester = ReactionTester()
     tester.run(rxn_selection, rxn_name, smarts_yaml, cofactors,
-               positive_tests, negative_tests, rxn_type, experimental, two_step)
+               positive_tests, negative_tests, rxn_type, experimental, two_step, requires_absence_of_water)
 
     result = {'status': tester.state,
               'msg': tester.get_msg(),

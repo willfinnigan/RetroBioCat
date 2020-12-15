@@ -103,6 +103,14 @@
                             </small>
                         </div>
 
+                        <div class="custom-control custom-checkbox my-4">
+                            <input class="custom-control-input" type="checkbox" id="requires_absence_of_water">
+                            <label class="custom-control-label" for="requires_absence_of_water">Reaction requires absence of water</label>
+                            <small class="form-text text-muted">
+                                Select for reactions which require an absence of water (eg esterification in solvent)
+                            </small>
+                        </div>
+
                         <button type="button" class="btn btn-primary" id="run_tests">Run tests</button>
                         <button type="button" class="btn btn-success" id="save" disabled>Save</button>
                         <small class="form-text text-muted">Do NOT overwrite an existing reaction with a new one</small>
@@ -136,6 +144,7 @@
                         document.getElementById(data.result.reaction_type).checked = true;
                         document.getElementById("experimental").checked = data.result.experimental;
                         document.getElementById("two_step").checked = data.result.two_step;
+                        document.getElementById("requires_absence_of_water").checked = data.result.requires_absence_of_water
 
                     })
             }
@@ -173,7 +182,9 @@
                 negative_tests: document.getElementById("negative_tests").value,
                 rxn_type: document.querySelector('input[name="radio_enzyme_type"]:checked').value,
                 experimental: document.getElementById("experimental").checked,
-                two_step: document.getElementById("two_step").checked
+                two_step: document.getElementById("two_step").checked,
+                requires_absence_of_water: document.getElementById("requires_absence_of_water").checked
+
                 }).done(function(data) {
                     save_or_test_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
                     if (data.result.status === 'success') {
@@ -193,7 +204,8 @@
                 negative_tests: document.getElementById("negative_tests").value,
                 rxn_type: document.querySelector('input[name="radio_enzyme_type"]:checked').value,
                 experimental: document.getElementById("experimental").checked,
-                two_step: document.getElementById("two_step").checked
+                two_step: document.getElementById("two_step").checked,
+                requires_absence_of_water: document.getElementById("requires_absence_of_water").checked
                 }).done(function(data) {
                     document.getElementById("save_response").innerHTML = ''
                     save_or_test_msg(data.result.msg, data.result.status, data.result.issues, "save_response")

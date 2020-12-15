@@ -9,6 +9,7 @@ from retrobiocat_web.analysis.make_ssn import SSN, SSN_Visualiser, SSN_quickload
 from retrobiocat_web.app.db_analysis.forms import SSN_Form
 from retrobiocat_web.analysis import retrieve_uniref_info
 import json
+from distutils.util import strtobool
 
 @bp.route('/ssn_page/<task_id>/', methods=['GET'])
 def ssn_page(task_id):
@@ -22,7 +23,9 @@ def ssn_page(task_id):
                            edges=result['edges'],
                            alignment_score=result['alignment_score'],
                            start_pos=start_pos,
-                           enzyme_type=result['enzyme_type'])
+                           enzyme_type=result['enzyme_type'],
+                           hide_mutants=result['hide_mutants'],
+                           only_biocatdb=result['only_biocatdb'])
 
 def task_get_ssn(enzyme_type, score, hide_mutants, only_biocatdb):
     job = get_current_job()
@@ -47,7 +50,9 @@ def task_get_ssn(enzyme_type, score, hide_mutants, only_biocatdb):
     result = {'nodes': nodes,
               'edges': edges,
               'alignment_score': score,
-              'enzyme_type': enzyme_type}
+              'enzyme_type': enzyme_type,
+              'hide_mutants': hide_mutants,
+              'only_biocatdb': only_biocatdb}
 
     return result
 
@@ -190,3 +195,19 @@ def connected_nodes_ajax():
 
     result = {'nodes': nodes}
     return jsonify(result=result)
+
+@bp.route("/_get_clusters", methods=["POST"])
+def get_clusters():
+    enzyme_type = request.form['enzyme_type']
+    alignment_score = int(request.form['alignment_score'])
+    only_biocatdb = bool(strtobool(request.form['only_biocatdb']))
+    hide_mutants = bool(strtobool(request.form['hide_mutants']))
+
+    ssn = SSN(enzyme_type)
+    ssn.load(include_mutants=not hide_mutants, only_biocatdb=only_biocatdb)
+    without_uniref, with_uniref = ssn.get_clusters(alignment_score)
+
+    result = {'with_uniref': with_uniref,
+              'without_uniref': without_uniref}
+    return jsonify(result=result)
+

@@ -19,7 +19,7 @@ class ReactionTester(object):
         return self.msgs[self.state]
 
     def run(self, selection, name, smarts, cofactors, positive_tests, negative_tests,
-            type, experimental, two_step):
+            type, experimental, two_step, requires_absence_of_water):
         self.state = 'success'
 
         self._test_name(name, selection)
