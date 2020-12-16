@@ -37,7 +37,7 @@
             getStatus(response.data.task_id, data)
             document.getElementById("weights_go").disabled = true;
             document.getElementById("progressbar").style = "width: 25%"
-            document.getElementById("progressbar").innerText = "Que"
+            document.getElementById("progressbar").innerText = "Queue"
         })
     }
 
@@ -48,8 +48,6 @@
 
     function set_button_to_available() {
         document.getElementById("weights_go").disabled = false;
-        document.getElementById("progressbar").style = "width: 0%"
-        document.getElementById("progressbar").innerText = ""
     }
 
     function getStatus(taskID, data) {
@@ -60,6 +58,7 @@
             if (taskProgress == 'started') {
                 document.getElementById("progressbar").style = "width: 50%"
                 document.getElementById("progressbar").innerText = "Reordering"
+                document.getElementById("progressbar").className = "progress-bar"
             } else if (taskProgress == 'complete') {
                 document.getElementById("progressbar").style = "width: 100%"
             }
@@ -71,6 +70,10 @@
                 set_button_to_available()
                 $('#reorder_macro').modal('hide');
             } else if (taskStatus === 'failed') {
+                document.getElementById("progressbar").style = "width: 50%"
+                document.getElementById("progressbar").innerText = "Failed"
+                document.getElementById("progressbar").className = "progress-bar bg-danger"
+                set_button_to_available()
                 return false;
             } else {
                 setTimeout(function() {

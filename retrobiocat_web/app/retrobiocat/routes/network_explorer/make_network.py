@@ -7,6 +7,7 @@ import json
 from flask import current_app
 import uuid
 from retrobiocat_web.retro.generation.network_generation.network import Network
+import datetime
 
 @bp.route('/network_explorer_form', methods=['GET', 'POST'])
 def network_explorer_form():
@@ -101,6 +102,14 @@ def task_make_network(form_data):
 @bp.route("/network_explorer_status/<task_id>", methods=["GET"])
 def network_explorer_status(task_id):
     task = current_app.network_queue.fetch_job(task_id)
+    task_id = task.get_id()
+    task_status = task.get_status()
+    seconds_since_active = (datetime.datetime.now() - task.last_heartbeat).total_seconds()
+    print(seconds_since_active)
+    if seconds_since_active > 180:
+        print('Job no longer active')
+        task_status = 'failed'
+
     progress = 'queuing'
     if 'progress' in task.meta:
         progress = task.meta['progress']
@@ -109,8 +118,8 @@ def network_explorer_status(task_id):
         response_object = {
             "status": "success",
             "data": {
-                "task_id": task.get_id(),
-                "task_status": task.get_status(),
+                "task_id": task_id,
+                "task_status": task_status,
                 "task_progress" : progress
             },
         }

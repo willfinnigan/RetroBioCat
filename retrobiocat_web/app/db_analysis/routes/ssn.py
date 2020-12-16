@@ -10,6 +10,7 @@ from retrobiocat_web.app.db_analysis.forms import SSN_Form
 from retrobiocat_web.analysis import retrieve_uniref_info
 import json
 from distutils.util import strtobool
+import datetime
 
 @bp.route('/ssn_page/<task_id>/', methods=['GET'])
 def ssn_page(task_id):
@@ -59,6 +60,14 @@ def task_get_ssn(enzyme_type, score, hide_mutants, only_biocatdb):
 @bp.route("/ssn_status/<task_id>", methods=["GET"])
 def ssn_status(task_id):
     task = current_app.network_queue.fetch_job(task_id)
+    task_id = task.get_id()
+    task_status = task.get_status()
+    seconds_since_active = (datetime.datetime.now() - task.last_heartbeat).total_seconds()
+    print(seconds_since_active)
+    if seconds_since_active > 600:
+        print('Job no longer active')
+        task_status = 'failed'
+
     progress = 'queuing'
     if 'progress' in task.meta:
         progress = task.meta['progress']
@@ -67,8 +76,8 @@ def ssn_status(task_id):
         response_object = {
             "status": "success",
             "data": {
-                "task_id": task.get_id(),
-                "task_status": task.get_status(),
+                "task_id": task_id,
+                "task_status": task_status,
                 "task_progress": progress
             },
         }

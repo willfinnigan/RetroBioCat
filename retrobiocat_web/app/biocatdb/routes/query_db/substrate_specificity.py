@@ -12,6 +12,7 @@ import numpy as np
 from retrobiocat_web.app.biocatdb.functions.substrate_specificity import process_activity_data
 import mongoengine as db
 from retrobiocat_web.app.biocatdb.forms import SubstrateScopeForm
+import datetime
 
 @bp.route('/substrate_specificity_form',  methods=['GET', 'POST'])
 def substrate_specificity_form():
@@ -49,12 +50,20 @@ def substrate_specificity_status(task_id):
     if 'progress' in task.meta:
         progress = task.meta['progress']
 
+    task_id = task.get_id()
+    task_status = task.get_status()
+    seconds_since_active = (datetime.datetime.now() - task.last_heartbeat).total_seconds()
+    print(seconds_since_active)
+    if seconds_since_active > 180:
+        print('Job no longer active')
+        task_status = 'failed'
+
     if task:
         response_object = {
             "status": "success",
             "data": {
-                "task_id": task.get_id(),
-                "task_status": task.get_status(),
+                "task_id": task_id,
+                "task_status": task_status,
                 "task_progress" : progress
             },
         }

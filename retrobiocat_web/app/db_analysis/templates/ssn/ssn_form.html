@@ -168,6 +168,7 @@
                 if (taskProgress === 'started') {
                     document.getElementById("progressbar").style = "width: 50%"
                     document.getElementById("progressbar").innerText = "Loading SSN"
+                    document.getElementById("progressbar").className = "progress-bar"
                 } else if (taskProgress === 'visualising') {
                     document.getElementById("progressbar").style = "width: 90%"
                     document.getElementById("progressbar").innerText = "Visualising Network"
@@ -180,6 +181,9 @@
                     location.assign(url);
                     return false;
                 } else if (taskStatus === 'failed') {
+                    document.getElementById("progressbar").style = "width: 50%"
+                    document.getElementById("progressbar").innerText = "Failed"
+                    document.getElementById("progressbar").className = "progress-bar bg-danger"
                     return false;
                 } else {
                     setTimeout(function() {

@@ -10,6 +10,7 @@ from retrobiocat_web.retro.generation.pathway_generation.pathway import Pathway
 from retrobiocat_web.retro.generation.pathway_generation.best_first_search import BFS
 from retrobiocat_web.retro.generation.pathway_generation.pathway_scoring import PathwayEvaluator
 from retrobiocat_web.retro.generation.pathway_generation.group_pathways import group_pathways
+import datetime
 
 
 @bp.route('/pathway_explorer_form', methods=['GET', 'POST'])
@@ -40,6 +41,14 @@ def pathway_explorer_form():
 @bp.route("/pathway_explorer_status/<task_id>", methods=["GET"])
 def pathway_explorer_status(task_id):
     task = current_app.pathway_queue.fetch_job(task_id)
+    task_id = task.get_id()
+    task_status = task.get_status()
+    seconds_since_active = (datetime.datetime.now() - task.last_heartbeat).total_seconds()
+    print(seconds_since_active)
+    if seconds_since_active > 180:
+        print('Job no longer active')
+        task_status = 'failed'
+
     progress = 'queuing'
     if 'progress' in task.meta:
         progress = task.meta['progress']
@@ -48,9 +57,9 @@ def pathway_explorer_status(task_id):
         response_object = {
             "status": "success",
             "data": {
-                "task_id": task.get_id(),
-                "task_status": task.get_status(),
-                "task_progress" : progress
+                "task_id": task_id,
+                "task_status": task_status,
+                "task_progress": progress
             }
         }
     else:

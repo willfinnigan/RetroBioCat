@@ -10,6 +10,7 @@ from retrobiocat_web.retro.generation.pathway_generation.pathway import Pathway
 from retrobiocat_web.retro.generation.pathway_generation.pathway_scoring import PathwayEvaluator
 from retrobiocat_web.retro.generation.pathway_generation.group_pathways import group_pathways
 from retrobiocat_web.app.retrobiocat.routes.pathway_explorer.pathway import evaluate_pathways, package_evaluated_pathways, package_visjs_pathways
+import datetime
 
 def load_pathways(all_pathways_nodes, all_pathway_scores, network):
     pathways = []
@@ -60,6 +61,13 @@ def task_reorder_pathways(weights, pathways_id):
 @bp.route("/_reorder_pathways_status/<task_id>", methods=["GET"])
 def reorder_pathways_status(task_id):
     task = current_app.pathway_queue.fetch_job(task_id)
+    task_id = task.get_id()
+    task_status = task.get_status()
+    seconds_since_active = (datetime.datetime.now() - task.last_heartbeat).total_seconds()
+    print(seconds_since_active)
+    if seconds_since_active > 180:
+        print('Job no longer active')
+        task_status = 'failed'
 
     progress = 'queuing'
     if 'progress' in task.meta:
@@ -71,8 +79,8 @@ def reorder_pathways_status(task_id):
             response_object = {
                 "status": "success",
                 "data": {
-                    "task_id": task.get_id(),
-                    "task_status": task.get_status(),
+                    "task_id": task_id,
+                    "task_status": task_status,
                     "task_progress": progress
                 }
             }
@@ -80,8 +88,8 @@ def reorder_pathways_status(task_id):
             response_object = {
                 "status": "success",
                 "data": {
-                    "task_id": task.get_id(),
-                    "task_status": task.get_status(),
+                    "task_id": task_id,
+                    "task_status": task_status,
                     "task_progress": progress
                 }
             }

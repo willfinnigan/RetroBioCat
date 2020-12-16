@@ -94,6 +94,7 @@
                 if (taskProgress === 'started') {
                     document.getElementById("progressbar").style = "width: 50%"
                     document.getElementById("progressbar").innerText = "Generating Network"
+                    document.getElementById("progressbar").className = "progress-bar"
                 } else if (taskProgress === 'network_generated') {
                     document.getElementById("progressbar").style = "width: 75%"
                     document.getElementById("progressbar").innerText = "Scoring Network"
@@ -108,6 +109,9 @@
                     location.assign(url);
                     return false;
                 } else if (taskStatus === 'failed') {
+                    document.getElementById("progressbar").style = "width: 50%"
+                    document.getElementById("progressbar").innerText = "Failed"
+                    document.getElementById("progressbar").className = "progress-bar bg-danger"
                     return false;
                 } else {
                     setTimeout(function() {
