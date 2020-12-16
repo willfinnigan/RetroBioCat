@@ -4,6 +4,10 @@
 {% block content %}
     {% from 'global/macros/form_macros.html' import number_field with context %}
     {% from 'global/macros/form_macros.html' import target_smiles with context %}
+    {% from 'global/macros/form_macros.html' import checkbox with context %}
+    {% from 'global/macros/form_macros.html' import select with context %}
+    {% from 'global/macros/form_macros.html' import number_inline with context %}
+
 
     <div class="container-fluid">
         <div class="row">
@@ -52,7 +56,9 @@
                                     {{ form.submit(class="btn-lg btn-block btn-success") }}
                                 </div>
 
-                            <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#formOptions">
+                            {{ checkbox(form.include_requires_absence_of_water) }}
+
+                            <button type="button" class="btn btn-outline-primary mt-2" data-toggle="modal" data-target="#formOptions">
                                 Other options
                             </button>
 

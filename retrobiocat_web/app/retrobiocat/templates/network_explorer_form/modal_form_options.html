@@ -1,8 +1,3 @@
-{% from 'global/macros/form_macros.html' import number_field with context %}
-{% from 'global/macros/form_macros.html' import target_smiles with context %}
-{% from 'global/macros/form_macros.html' import checkbox with context %}
-{% from 'global/macros/form_macros.html' import select with context %}
-{% from 'global/macros/form_macros.html' import number_inline with context %}
 
 <!-- Modal -->
 <div class="modal fade" id="formOptions" tabindex="-1" role="dialog" aria-labelledby="formOptionsLabel" aria-hidden="true">
@@ -22,7 +17,6 @@
                     {{ checkbox(form.combine_enantiomers) }}
                     {{ checkbox(form.include_experimental) }}
                     {{ checkbox(form.include_two_step) }}
-                    {{ checkbox(form.include_requires_absence_of_water) }}
                     {{ checkbox(form.show_neg_enz) }}
                     {{ checkbox(form.only_reviewed) }}
                     {{ checkbox(form.calc_complexity) }}
