@@ -147,12 +147,13 @@
             document.getElementById('rep_seq_name').innerHTML = ''
             document.getElementById('uniprot_in_cluster').innerHTML = 'Loading please wait...'
             document.getElementById('uni90_in_cluster').innerHTML = 'Loading please wait...'
+            document.getElementById('uni90_in_cluster').innerHTML = 'Loading please wait...'
 
-
-
+            document.getElementById('rep_seq_pfam_domains').innerHTML = ""
         }
 
         function load_uniref_data(name) {
+            document.getElementById('uniref_name').innerHTML = name
             $.post($SCRIPT_ROOT + '/_load_uniref_data', {
                 name: name,
                 enzyme_type: window.enzyme_type

@@ -120,17 +120,19 @@ class UniRef_Parser(object):
             print(f"Uniref_Parser: {msg}")
 
 if __name__ == "__main__":
-    test_name = "UniRef50_Q7YR71"
+    #test_name = "UniRef50_Q7YR71"
+    test_name = 'UniRef50_UPI0010300BD7'  #gives error
     print('start')
     ref_parser = UniRef_Parser()
     ref_parser.load_xml(test_name)
     uni90, uni100, uniprot = ref_parser.get_uniref_members()
     ref_parser.get_cluster_name()
     print(uni100)
+    print(uniprot)
 
-    rep_seq = list(uniprot.keys())[0]
-    prot_parser = UniProt_Parser()
-    prot_parser.load_xml(rep_seq)
-    pfams = prot_parser.get_pfams()
+    #rep_seq = list(uniprot.keys())[0]
+    #prot_parser = UniProt_Parser()
+    #prot_parser.load_xml(rep_seq)
+    #pfams = prot_parser.get_pfams()
 
-    print(pfams)
+    #print(pfams)

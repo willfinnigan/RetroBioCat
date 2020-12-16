@@ -147,6 +147,8 @@ def load_uniref_data():
     organism = seq.tax
 
     uniprot_id = retrieve_uniref_info.strip_uniref_name(name)
+    if uniprot_id[0:2] == 'UP':
+        uniprot_id = ""
 
     ref_parser = retrieve_uniref_info.UniRef_Parser()
     ref_parser.load_xml(name)
@@ -156,9 +158,12 @@ def load_uniref_data():
     num_uni100 = len(uni100)
     num_uniprot = len(list(uniprot.keys()))
 
-    prot_parser = retrieve_uniref_info.UniProt_Parser()
-    prot_parser.load_xml(uniprot_id)
-    pfams = prot_parser.get_pfams()
+    if uniprot_id != "":
+        prot_parser = retrieve_uniref_info.UniProt_Parser()
+        prot_parser.load_xml(uniprot_id)
+        pfams = prot_parser.get_pfams()
+    else:
+        pfams = []
 
     result = {'rep_seq_name': protein_name,
               'rep_seq_organism': organism,
