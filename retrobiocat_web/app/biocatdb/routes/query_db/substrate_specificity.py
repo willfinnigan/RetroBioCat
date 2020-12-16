@@ -131,7 +131,6 @@ def paper_substrate_specificity(paper_id):
     if 'reviewed' in args:
         revQ = db.Q(reviewed=True)
     else:
-        title += " (including not reviewed)"
         revQ = db.Q()
 
     paper_Q = db.Q(paper=paper)
