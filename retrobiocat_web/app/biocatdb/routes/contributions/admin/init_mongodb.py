@@ -434,6 +434,20 @@ def clear_empty_ssns():
     return jsonify(result=result)
 
 
+@bp.route('/_clear_autoprocessed_activity_data', methods=['GET', 'POST'])
+@roles_required('admin')
+def clear_autoprocessed_activity_data():
+    activity_data = Activity.objects(auto_generated=True)
+
+    for act in activity_data:
+        act.delete()
+
+    result = {'status': 'success',
+              'msg': f'Autoprocessed data deleted',
+              'issues': []}
+
+    return jsonify(result=result)
+
 
 if __name__ == '__main__':
     data_folder = str(Path(__file__).parents[4]) + '/retro/data/buyability'

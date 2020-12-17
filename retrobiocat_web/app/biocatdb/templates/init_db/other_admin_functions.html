@@ -24,6 +24,7 @@
                         <button class="btn btn-info" onclick="mongo_dump()">Mongo dump</button>
                         <button class="btn btn-danger" onclick="reblast()">Reblast UniRef50</button>
                         <button class="btn btn-success" onclick="clear_empty_ssns()">Clear empty SSN records</button>
+                        <button class="btn btn-danger" onclick="clear_autoprocessed_activity_data()">Clear autoprocessed activity data</button>
 
                     </div>
                 </div>
@@ -110,6 +111,14 @@
                     response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
                 })
             }
+
+        function clear_autoprocessed_activity_data() {
+            $.post('/_clear_autoprocessed_activity_data', {
+                }).done(function(data) {
+                    response_msg(data.result.msg, data.result.status, data.result.issues, "save_response")
+                })
+            }
+
 
 
 
