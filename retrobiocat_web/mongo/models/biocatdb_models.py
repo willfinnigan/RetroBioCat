@@ -286,3 +286,6 @@ class ActivityIssue(db.Document):
     status = db.StringField(default='Open')
     comments = db.ListField(db.ReferenceField(Comment, reverse_delete_rule=4))
     date = db.DateTimeField(default=datetime.utcnow)
+
+
+

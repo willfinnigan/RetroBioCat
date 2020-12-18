@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% set active_page = "contributions_menu" %}
+
+{% macro radio(name, checked='') %}
+    <div class="form-check">
+        <input class="form-check-input" type="radio" name="radio_enzyme_type" id="{{ name }}"
+               value="{{ name }}" {{ checked }}>
+        <label class="form-check-label" for="{{ name }}">{{ name }}</label>
+    </div>
+{% endmacro %}
+
+{% block content %}
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col"></div>
+            <div class="col">
+                <div class="card card-form my-5" style="width: 64rem;">
+                    <div class="card-body" align="center">
+                        <h3 class="card-title">Autoprocessing</h3>
+                        <button class="btn btn-success" id='new_rule' onclick="create_new_rule()">Create new rule</button>
+                        <div id="main_response_div"></div>
+                    </div>
+                </div>
+
+                {% for rule in rules %}
+                    <div class="card card-form my-5" style="width: 64rem;">
+                        <div class="card-body" align="center">
+
+
+                            <p><b>{{rule['multi_step_reaction']}} >> {{rule['reactions']}}</b></p>
+                            <a class="btn btn-sm w-25 btn-primary mb-4" id="{{rule['_id']}}_button" data-toggle="collapse"
+                            href="#coll_{{rule['_id']}}" role="button" aria-expanded="false" aria-controls="{{rule['_id']}}_collapse">
+                                Collapse/Expand
+                            </a>
+
+                            <div id="coll_{{rule['_id']}}" class="collapse">
+                                <div class="form-group">
+                                    <label for='{{rule['_id']}}_rxn_name'>Reaction name for conversion</label>
+                                    <input type="text" class="form-control w-75" id='{{rule['_id']}}_rxn_name' value="{{rule['multi_step_reaction']}}">
+                                    <small class="form-text text-muted">The name of the reaction for conversion, eg 'Reductive amination'</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for='{{rule['_id']}}_convert_to_rxns'>Enzymes and cofactor usage</label>
+                                    <div class="input-group">
+                                        <textarea class="form-control w-75" id="{{rule['_id']}}_convert_to_rxns"
+                                                  rows="3">{{rule['reactions']}}</textarea>
+                                    </div>
+                                    <small class="form-text text-muted">
+                                        New data for single step reactions which will be generated from the reaction named above.
+                                    </small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for='{{rule['_id']}}_min_steps'>Min steps</label>
+                                    <input type="text" class="form-control w-75" id="{{rule['_id']}}_min_steps" value="{{rule['min_steps']}}">
+                                    <small class="form-text text-muted">Minimum steps when auto generating new activity data</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for='{{rule['_id']}}_max_steps'>Max steps</label>
+                                    <input type="text" class="form-control w-75" id="{{rule['_id']}}_max_steps" value="{{rule['max_steps']}}">
+                                    <small class="form-text text-muted">Maximum number of steps when auto generating new activity data</small>
+                                </div>
+
+                                {% if rule['ignore_substrate_two'] == "True" %}
+                                    {% set checked = 'checked' %}
+                                {% else %}
+                                    {% set checked = "" %}
+                                {% endif %}
+
+                                <div class="custom-control custom-checkbox my-4">
+                                    <input class="custom-control-input" type="checkbox" id='{{rule['_id']}}_ignore_substrate_two'{{ checked }}>
+                                    <label class="custom-control-label" for="{{rule['_id']}}_ignore_substrate_two">Ignore substrate two</label>
+                                </div>
+
+                                <div id="response_{{rule['_id']}}"></div>
+                                <button class="btn btn-success" onclick="update_rule('{{rule['_id']}}')">Update</button>
+                                <button class="btn btn-danger" onclick="delete_rule('{{rule['_id']}}')">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+
+                {% endfor %}
+
+
+                <div class="card card-form my-5" style="width: 64rem;">
+                    <div class="card-body" align="center">
+                        <div id="go_response"></div>
+                        <button class="btn btn-success" id='autoprocess_btn' onclick="run_auto_processing()">Run Autoprocessing</button>
+                    </div>
+                </div>
+
+
+            </div>
+            <div class="col"></div>
+        </div>
+    </div>
+
+
+    <script>
+
+    function run_auto_processing() {
+        document.getElementById("autoprocess_btn").disabled = true;
+        $.post('/_run_autoprocessing', {
+            }).done(function(data) {
+                response_msg(data.result.msg, data.result.status, data.result.issues, "go_response")
+            })
+        }
+
+    function update_rule(rule_id) {
+            $.post('/_update_autoprocessing_rule', {
+                rule_id: rule_id,
+                multi_step_reaction: document.getElementById(rule_id+"_rxn_name").value,
+                reactions: document.getElementById(rule_id+"_convert_to_rxns").value,
+                min_steps: document.getElementById(rule_id+"_min_steps").value,
+                max_steps: document.getElementById(rule_id+"_max_steps").value,
+                ignore_substrate_two: document.getElementById(rule_id+"_ignore_substrate_two").checked,
+
+            }).done(function (data) {
+                var response_id = "response_"+rule_id
+                response_msg(data.result.msg, data.result.status, data.result.issues, response_id)
+                response_msg(data.result.msg, data.result.status, data.result.issues, 'main_response_div')
+            })
+        }
+
+    function delete_rule(rule_id) {
+            $.post('/_delete_autoprocessing_rule', {
+                rule_id: rule_id,
+            }).done(function (data) {
+                location.reload()
+            })
+        }
+
+    function create_new_rule() {
+        $.post('/_create_new_autoprocessing_rule', {
+            }).done(function (data) {
+                location.reload()
+            })
+    }
+
+    </script>
+
+
+{% endblock %}

@@ -41,6 +41,9 @@
         {% if current_user.has_role('rxn_rules_admin') %}
             <strong>Reaction rules admin</strong>
             <a class="dropdown-item" href="{{url_for('biocatdb.rule_editor')}}">Rule Editor</a>
+            {% if current_user.has_role('admin') %}
+                <a class="dropdown-item" href="{{url_for('biocatdb.autoprocessing_page')}}">Autoprocessing of activity data</a>
+            {% endif %}
         {% endif %}
         {% if current_user.has_role('admin') %}
             <strong>Admin</strong>
