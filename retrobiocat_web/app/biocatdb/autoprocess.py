@@ -285,25 +285,36 @@ class Converter(object):
 
 def task_autoprocess():
     ap = AutoProcessor()
-    for paper in Paper.objects(status='Complete'):
-        ap.auto_process(paper)
+    paper_ids = list(Paper.objects(status='Complete').distinct('_id'))
+    for id in paper_ids:
+        paper = Paper.objects(id=id)[0]
+        try:
+            ap.auto_process(paper)
+        except Exception as e:
+            print()
+            print(f'WARNING - ERROR PROCESSING PAPER - {paper.short_citation}')
+            print()
+            print(e)
+            print()
+
 
 
 if __name__ == "__main__":
     from retrobiocat_web.mongo.default_connection import make_default_connection
     make_default_connection()
-    AutoProcessingRule.drop_collection()
 
-    new_rule = AutoProcessingRule(multi_step_reaction='Reductive amination',
-                                  reactions=['Aldehyde amination', 'Ketone amination'],
-                                  min_steps=1, max_steps=1,
-                                  ignore_substrate_two=True)
-    new_rule.save()
+    task_autoprocess()
 
-    #paper = Paper.objects(doi='10.1002/cctc.201901999')[0]
+    #AutoProcessingRule.drop_collection()
+    #new_rule = AutoProcessingRule(multi_step_reaction='Reductive amination', reactions=['Aldehyde amination', 'Ketone amination'], min_steps=1, max_steps=1, ignore_substrate_two=True)
+    #new_rule.save()
+
+    #paper = Paper.objects(short_citation='Montgomery et al, 2017, Angew. Chem. Int. Ed.')[0]
     #print(paper)
 
     #ap = AutoProcessor()
+    #ap.auto_process(paper)
+
     #for paper in Paper.objects():
     #    ap.auto_process(paper)
 
