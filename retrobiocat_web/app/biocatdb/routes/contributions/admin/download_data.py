@@ -1,16 +1,16 @@
 from retrobiocat_web.app.biocatdb import bp
-from flask import render_template, flash, redirect, url_for, make_response
+from flask import render_template, flash, redirect, url_for, make_response, send_file
 from flask_security import roles_required, current_user
 from retrobiocat_web.mongo.models.user_models import User
 from retrobiocat_web.mongo.models.reaction_models import Reaction
 from retrobiocat_web.mongo.models.biocatdb_models import Sequence
 from retrobiocat_web.retro.enzyme_identification import query_mongodb
 from retrobiocat_web.app.biocatdb.functions.reaction_rules import yaml_conversion
+from retrobiocat_web.mongo.functions.mongo_dump import execute_mongo_dump, execute_mongo_restore
 import yaml
 import collections
 import json
 import pandas as pd
-
 
 @bp.route('/download_rxn_yaml', methods=['GET'])
 @roles_required('admin')
@@ -45,3 +45,8 @@ def download_sequences():
     resp.headers["Content-Disposition"] = "attachment; filename=sequences.csv"
     return resp
 
+@bp.route('/download_mongo_dump', methods=['GET'])
+@roles_required('admin')
+def download_mongo_dump():
+    output_path = execute_mongo_dump()
+    return send_file(output_path, attachment_filename='mongo_dump.gz')

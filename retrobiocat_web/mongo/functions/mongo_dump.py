@@ -12,6 +12,7 @@ def execute_mongo_dump():
         command = f'''mongodump --uri="{current_app.config['MONGODB_HOST']}:{current_app.config['MONGODB_PORT']}" --gzip --archive={output_path} --verbose'''
     print(f"CMD = {command}")
     sp.run(command, shell=True)
+    return output_path
 
 def execute_mongo_restore(filename):
     db.connection.drop_database(current_app.config['MONGODB_DB'])

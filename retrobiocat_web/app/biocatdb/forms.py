@@ -6,6 +6,8 @@ from retrobiocat_web.retro.enzyme_identification import query_mongodb
 from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType, Sequence, Activity, SSN_record
 from retrobiocat_web.mongo.models.reaction_models import Reaction
 
+
+
 def is_accepted_by_rdkit(form, field):
     if node_analysis.rdkit_smile(field.data) == None:
         if field.data != '':
