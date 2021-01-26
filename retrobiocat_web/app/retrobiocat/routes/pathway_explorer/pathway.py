@@ -45,8 +45,13 @@ def pathway_explorer_status(task_id):
     task_status = task.get_status()
     seconds_since_active = (datetime.datetime.now() - task.last_heartbeat).total_seconds()
     print(seconds_since_active)
-    if seconds_since_active > 180:
+    if seconds_since_active > 180 and task_status != 'finished':
         print('Job no longer active')
+        print(task_status)
+        task_status = 'failed'
+    if seconds_since_active > 600:
+        print('Job no longer active')
+        print(task_status)
         task_status = 'failed'
 
     progress = 'queuing'
