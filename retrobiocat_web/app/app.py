@@ -30,7 +30,7 @@ session = Session()
 from retrobiocat_web.mongo.models.user_models import User, Role
 from retrobiocat_web.app.user_model_forms import ExtendedConfirmRegisterForm, ExtendedRegisterForm
 
-from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType, Sequence, Paper, Molecule, Activity, Tag, ActivityIssue
+from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType, Sequence, Paper, Molecule, Activity, Tag, ActivityIssue, ActivityMol
 from retrobiocat_web.mongo.models import biocatdb_models
 from retrobiocat_web.mongo.models.reaction_models import Reaction, Issue, ReactionSuggestion
 from retrobiocat_web.mongo.models.comments import Comment
@@ -40,7 +40,6 @@ user_datastore = MongoEngineUserDatastore(db, User, Role)
 
 from retrobiocat_web.app import main_site, retrobiocat, biocatdb, other_tools, db_analysis
 
-
 def create_app(config_class=Config, use_talisman=True):
     print("Create app...")
     app = Flask(__name__)
@@ -48,6 +47,7 @@ def create_app(config_class=Config, use_talisman=True):
 
     print("Init task queues...")
     app.redis = Redis.from_url(app.config['REDIS_URL'])
+    app.osra_queue = rq.Queue('osra', connection=app.redis, default_timeout=600)
     app.task_queue = rq.Queue('tasks', connection=app.redis, default_timeout=600)
     app.network_queue = rq.Queue('network', connection=app.redis, default_timeout=600)
     app.pathway_queue = rq.Queue('pathway', connection=app.redis, default_timeout=600)
@@ -60,7 +60,7 @@ def create_app(config_class=Config, use_talisman=True):
     app.auto_jobs = rq.Queue('auto_jobs', connection=app.redis, default_timeout=600, result_ttl=None)
     app.redis_queues = [app.task_queue, app.network_queue, app.pathway_queue, app.retrorules_queue,
                         app.db_queue, app.blast_queue, app.alignment_queue, app.process_blasts_queue,
-                        app.preprocess_queue, app.auto_jobs]
+                        app.preprocess_queue, app.auto_jobs, app.osra_queue]
 
     print("Init addons...")
     if use_talisman == True:
@@ -92,6 +92,7 @@ def create_app(config_class=Config, use_talisman=True):
     admin_ext.add_view(MyModelView(Comment))
     admin_ext.add_view(MyModelView(ReactionSuggestion))
     admin_ext.add_view(MyModelView(ActivityIssue))
+    admin_ext.add_view(MyModelView(ActivityMol))
 
     # Create a user to test with
     @app.before_first_request
