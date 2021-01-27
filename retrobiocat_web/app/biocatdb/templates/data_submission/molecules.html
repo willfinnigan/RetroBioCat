@@ -1,0 +1,231 @@
+<style>
+    .row{
+      display:flex;
+      align-items:center;
+    }
+
+</style>
+
+<p>This is a work-in-progress experimental feature.
+    You have access to this because you have the 'experimental' role associated with your account</p>
+
+<p>The plan is to offer image recognition and molecule management here,
+    as the first step in adding activity data.
+    Users should be able to rapidly add a set of products or substrates, using OSRA.
+   The next step will then be build reactions by applying the retrobiocat transformations (on an additional tab).
+   It will be combined with a MarvinJS molecule editor to make minor adjustments where OSRA is wrong,
+  or drawing molecules from scratch if theres no image / OSRA can't detect it at all</p>
+
+<p> 1. Upload images of molecules.  For best results use 1 image per molecule, but entire panels are accepted</p>
+<p> 2. Process results of OSRA.  Make corrections where needed using MarvinJS</p>
+<p> 3. (optional?) Give names to molecules as referenced in the paper (eg 1, 2, 3.  1A, 2B ect..)</p>
+<p> 4. Molecules will then be available for create new activity data entries.</p>
+<hr class="mt-5"/>
+
+<h2>Add molecules from the paper</h2>
+<p>These can be either a set of substrates or a set of products.</p>
+
+<h5>Optical structure recognition</h5>
+<div id="mol_upload_response"></div>
+<form id='mol_upload_form' method='post' action='' enctype="multipart/form-data">
+    <input id="mol_paper_id_field" name="mol_paper_id_field" type="hidden" value="{{paper['id']}}">
+    <input type="file" id='mol_image_files' name="files[]" form="mol_upload_form" multiple><br>
+    <div class="row">
+        <div class="col-2">
+            <input type="button" id="mol_upload_submit" form="mol_upload_form" class="btn btn-success my-2"
+               value="Upload and Process">
+        </div>
+
+        <div class="col-10 my-auto">
+            <div class="progress">
+                <div class="progress-bar" id='progressbar'></div>
+            </div>
+        </div>
+
+    </div>
+</form>
+
+<h5 class="mt-4">Molecules</h5>
+<button class="btn btn-sm btn-primary" id="edit_mode_button" onclick="button_mode_change('edit')">Edit mode</button>
+<button class="btn btn-sm btn-outline-danger" id="delete_mode_button" onclick="button_mode_change('delete')">Delete mode</button>
+<button class="btn btn-sm btn-outline-info" id="duplicate_mode_button" onclick="button_mode_change('duplicate')">Duplicate mode</button>
+<button class="btn btn-sm btn-outline-success" id="copy_mode_button" onclick="button_mode_change('copy_smiles')">Copy SMILES mode</button>
+<button class="btn btn-sm btn-warning mx-3 float-right" onclick="reorder_molecules()">Reorder molecules</button>
+<div id="mols_div" class="mt-2"></div>
+
+<script>
+    var MODE = 'edit'
+    function button_mode_change(new_mode) {
+        if (new_mode === 'edit') {
+            MODE = 'edit'
+            document.getElementById("edit_mode_button").className = "btn btn-sm btn-primary"
+            document.getElementById("delete_mode_button").className = "btn btn-sm btn-outline-danger"
+            document.getElementById("duplicate_mode_button").className = "btn btn-sm btn-outline-info"
+            document.getElementById("copy_mode_button").className = "btn btn-sm btn-outline-success"
+        } else if (new_mode === 'delete') {
+            MODE = 'delete'
+            document.getElementById("edit_mode_button").className = "btn btn-sm btn-outline-primary"
+            document.getElementById("delete_mode_button").className = "btn btn-sm btn-danger"
+            document.getElementById("duplicate_mode_button").className = "btn btn-sm btn-outline-info"
+            document.getElementById("copy_mode_button").className = "btn btn-sm btn-outline-success"
+        } else if (new_mode === 'duplicate') {
+            MODE = 'duplicate'
+            document.getElementById("edit_mode_button").className = "btn btn-sm btn-outline-primary"
+            document.getElementById("delete_mode_button").className = "btn btn-sm btn-outline-danger"
+            document.getElementById("duplicate_mode_button").className = "btn btn-sm btn-info"
+            document.getElementById("copy_mode_button").className = "btn btn-sm btn-outline-success"
+        } else if (new_mode === 'copy_smiles') {
+            MODE = 'copy_smiles'
+            document.getElementById("edit_mode_button").className = "btn btn-sm btn-outline-primary"
+            document.getElementById("delete_mode_button").className = "btn btn-sm btn-outline-danger"
+            document.getElementById("duplicate_mode_button").className = "btn btn-sm btn-outline-info"
+            document.getElementById("copy_mode_button").className = "btn btn-sm btn-success"
+        }
+    }
+
+    function reorder_molecules() {
+        $.post('/_reorder_paper_molecules', {
+            paper_id: "{{paper['id']}}"
+        }).done(function (data) {
+            if (data.result.status === 'success') {
+                location.reload()
+            }
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+
+
+    $(function() {
+        $('#mol_upload_submit').click(function() {
+            document.getElementById("mol_upload_submit").disabled = true
+            var form_data = new FormData();
+
+            // Read selected files
+            var totalfiles = document.getElementById('mol_image_files').files.length;
+            for (var index = 0; index < totalfiles; index++) {
+                form_data.append("file_" + index, document.getElementById('mol_image_files').files[index]);
+            }
+
+            form_data.append("mol_paper_id_field", "{{paper['id']}}")
+            form_data.append("current_num_mols", paper_molecules.length)
+
+            $.ajax({
+                type: 'POST',
+                url: '/_upload_molecule_images',
+                data: form_data,
+                dataType: 'json',
+                contentType: false,
+                cache: false,
+                processData: false,
+            }).always(function(data) {
+                response_msg(data.result.msg, data.result.status, data.result.issues, "mol_upload_response")
+                if (data.result.status === 'success') {
+                    getProcessingStatus(data.result.task_id);
+                }
+                });
+        });
+    });
+
+    function getProcessingStatus(taskID) {
+        $.get('process_images_status/' + taskID, {
+            }).done(function(response) {
+                const taskStatus = response.data.task_status;
+                const taskProgress = response.data.task_progress;
+                if (taskProgress === 'queuing') {
+                    document.getElementById("progressbar").style = "width: 33%"
+                    document.getElementById("progressbar").innerText = "Queuing"
+                    document.getElementById("progressbar").className = "progress-bar"
+                } else if (taskProgress === 'started') {
+                    document.getElementById("progressbar").style = "width: 50%"
+                    document.getElementById("progressbar").innerText = "Started"
+                    document.getElementById("progressbar").className = "progress-bar"
+                }
+                if (taskStatus === 'finished') {
+                    document.getElementById("progressbar").style = "width: 100%"
+                    document.getElementById("progressbar").innerText = "Done"
+                    setTimeout(function() {
+                        location.reload()
+                        }, 2000);
+                    return false;
+                } else if (taskStatus === 'failed') {
+                    document.getElementById("progressbar").style = "width: 50%"
+                    document.getElementById("progressbar").innerText = "Failed"
+                    document.getElementById("progressbar").className = "progress-bar bg-danger"
+                    return false;
+                } else {
+                    setTimeout(function() {
+                        getProcessingStatus(response.data.task_id);
+                        }, 2000);
+                    }
+            })
+        }
+
+    var paper_molecules = {{paper_molecules|tojson}}
+
+    make_buttons(paper_molecules)
+
+    function make_buttons(mol_list) {
+        var btn_div = document.getElementById('mols_div')
+
+        mol_list.forEach(function (item, index) {
+            var btn = document.createElement("BUTTON");
+            btn.style = "width: 175px; height: 175px"
+            btn.id = "button_" + item[3]
+            btn.onclick = function () {
+                molecule_clicked(item[3], item[2], item[1])
+            }
+            btn.className = 'btn btn-outline-secondary'
+            btn.innerHTML += "<p class='no_margin'><small>" + item[0] + "</small></p>"
+            if (item[2] !== "") {
+                btn.innerHTML += item[2]
+            } else {
+                btn.innerHTML += "<p class='no_margin'><small>" + item[1] + "</small></p>"
+            }
+            btn_div.appendChild(btn);
+        });
+
+    }
+
+    function delete_mol(id) {
+        $.post('/_delete_paper_molecule', {
+            id: id,
+            paper_id: "{{paper['id']}}"
+        }).done(function (data) {
+            if (data.result.status === 'success') {
+                document.getElementById("button_" + id).remove();
+            }
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+
+    function duplicate_mol(id) {
+        $.post('/_duplicate_paper_molecule', {
+            id: id,
+            paper_id: "{{paper['id']}}"
+        }).done(function (data) {
+            if (data.result.status === 'success') {
+                make_buttons(data.result.mol_list)
+            }
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+
+    function molecule_clicked(id, svg, smi) {
+        if (MODE === 'delete') {
+            delete_mol(id)
+        } else if (MODE === 'edit') {
+
+        } else if (MODE === 'duplicate') {
+            duplicate_mol(id)
+        } else if (MODE === 'copy_smiles') {
+            navigator.clipboard.writeText(smi).then(() => {
+                response_msg('' + svg + ' copied', 'success', [], "mol_upload_response")
+            })
+
+        }
+    }
+
+</script>

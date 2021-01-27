@@ -2,7 +2,7 @@ from retrobiocat_web.app.biocatdb import bp
 from flask import render_template, flash, redirect, url_for, request, jsonify, session
 from flask_security import roles_required, current_user
 from retrobiocat_web.mongo.models.user_models import User, Role
-from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType, Sequence, Activity, Paper
+from retrobiocat_web.mongo.models.biocatdb_models import EnzymeType, Sequence, Activity, Paper, ActivityMol
 from retrobiocat_web.mongo.models.reaction_models import Reaction
 from retrobiocat_web.app.app import user_datastore
 import json
@@ -14,6 +14,18 @@ from retrobiocat_web.app.biocatdb.functions.papers import paper_status
 from retrobiocat_web.app.biocatdb.functions import check_permission
 from retrobiocat_web.app.biocatdb.functions import sequence_table
 from retrobiocat_web.app.biocatdb.functions.substrate_specificity import process_activity_data
+from natsort import natsorted, ns
+
+def get_paper_molecules(paper):
+    mols = ActivityMol.objects(db.Q(paper=paper)).order_by('name')
+
+    mol_list = []
+    for mol in mols:
+        mol_list.append((mol.name, mol.smi, mol.svg, str(mol.id)))
+
+    mol_list = natsorted(mol_list, key=lambda x: x[0])
+
+    return mol_list
 
 def get_activity_data(paper):
     include = ['id', "reaction", "enzyme_name", "substrate_1_smiles", "substrate_2_smiles",
@@ -168,6 +180,7 @@ def submission_main_page(paper_id):
     enzyme_data = sequence_table.get_enzyme_data(db.Q(papers=paper))
     status_dict = get_status(paper, user)
     comments = get_comments(paper, user)
+    paper_molecules = get_paper_molecules(paper)
     admin_panel = False
     admin_dict = {}
     if current_user.has_role('admin'):
@@ -183,6 +196,7 @@ def submission_main_page(paper_id):
                            reactions=reactions, enzyme_names=enzyme_names+['Chemical'],
                            doi=paper.doi,
                            comments=comments,
+                           paper_molecules=paper_molecules,
                            admin_panel=admin_panel,
                            admin_dict=admin_dict)
 

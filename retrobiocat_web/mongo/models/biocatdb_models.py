@@ -287,5 +287,11 @@ class ActivityIssue(db.Document):
     comments = db.ListField(db.ReferenceField(Comment, reverse_delete_rule=4))
     date = db.DateTimeField(default=datetime.utcnow)
 
+class ActivityMol(db.Document):
+    paper = db.ReferenceField(Paper)
+    name = db.StringField(default="")
+    smi = db.StringField()
+    svg = db.StringField()
+
 
 

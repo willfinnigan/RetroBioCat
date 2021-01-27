@@ -46,5 +46,5 @@ class Config(object):
     SESSION_REDIS = redis.from_url(REDIS_URL)
     SESSION_USE_SIGNER = True
 
-
+    OSRA_API_HOST = os.environ.get('OSRA_API_HOST') or 'http://localhost:8080'
 

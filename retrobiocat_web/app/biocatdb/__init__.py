@@ -15,3 +15,5 @@ from retrobiocat_web.app.biocatdb.routes.query_db import sequence_query, substra
 
 from retrobiocat_web.app.biocatdb.routes import data_issues, autoprocessing
 
+from retrobiocat_web.app.biocatdb.routes.contributions import activity_data_wizard
+
