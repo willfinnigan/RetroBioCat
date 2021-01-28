@@ -21,6 +21,8 @@ from rq.job import Job
 import string
 from flask_security import roles_required, current_user, auth_required
 from natsort import natsorted, ns
+from rdkit import Chem
+from retrobiocat_web.app.retrobiocat.functions.get_images import moltosvg
 
 from retrobiocat_web.curation import structure_recognition
 from retrobiocat_web.retro.generation.node_analysis import rdkit_smile
@@ -301,4 +303,42 @@ def reorder_paper_molecules():
               'msg': 'Could not delete molecule',
               'issues': []}
     return jsonify(result=result)
+
+@bp.route('/_update_paper_molecule', methods=['GET', 'POST'])
+@roles_required('contributor')
+def update_paper_molecule():
+    paper_id = request.form['paper_id']
+    id = request.form['id']
+    smi = request.form['smi']
+    name = request.form['name']
+    paper_query = Paper.objects(id=paper_id).select_related()
+    if len(paper_query) != 0:
+        paper = paper_query[0]
+        if check_permission.check_paper_permission(current_user.id, paper):
+            act_mol = ActivityMol.objects(id=id)[0]
+
+            if smi != act_mol.smi:
+                try:
+                    mol = Chem.MolFromSmiles(smi)
+                    svg = moltosvg(mol)
+                except:
+                    svg = ""
+
+                act_mol.svg = svg
+                act_mol.smi = smi
+
+            act_mol.name = name
+            act_mol.save()
+
+            result = {'status': 'success',
+                      'msg': 'Molecule saved',
+                      'issues': []}
+            return jsonify(result=result)
+
+    result = {'status': 'danger',
+              'msg': 'Could not delete molecule',
+              'issues': []}
+    return jsonify(result=result)
+
+
 

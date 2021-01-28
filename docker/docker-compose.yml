@@ -9,6 +9,11 @@ services:
     volumes:
       - ./mongo/mongo-volume:/data/db
 
+  osra_api:
+    image: willfinnigan/osra_api
+    volumes:
+      - ./mongo/mongo-volume:/data/db
+
   rbc_app:
     build:
         dockerfile: dockerfile_retrobiocat
@@ -25,6 +30,7 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - MONGO_HOST=mongodb://mongo
       - USE_EMAIL_CONFIRMATION=True
+      - OSRA_API_HOST=osra_api://osra_api:8080/0
     links:
       - redis
       - mongo
@@ -53,6 +59,7 @@ services:
       - MONGO_HOST=mongodb://mongo
       - USE_EMAIL_CONFIRMATION=True
       - SCHEDULER=True
+      - OSRA_API_HOST=osra_api://osra_api:8080/0
     restart: always
     command: python3 ./retrobiocat/retrobiocat_web/worker.py
 

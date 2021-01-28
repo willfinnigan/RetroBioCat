@@ -53,6 +53,8 @@
 <button class="btn btn-sm btn-warning mx-3 float-right" onclick="reorder_molecules()">Reorder molecules</button>
 <div id="mols_div" class="mt-2"></div>
 
+{% include '/data_submission/molecule_edit_modal.html' %}
+
 <script>
     var MODE = 'edit'
     function button_mode_change(new_mode) {
@@ -173,7 +175,7 @@
             btn.style = "width: 175px; height: 175px"
             btn.id = "button_" + item[3]
             btn.onclick = function () {
-                molecule_clicked(item[3], item[2], item[1])
+                molecule_clicked(item[3], item[2], item[1], item[0])
             }
             btn.className = 'btn btn-outline-secondary'
             btn.innerHTML += "<p class='no_margin'><small>" + item[0] + "</small></p>"
@@ -213,11 +215,12 @@
         });
     }
 
-    function molecule_clicked(id, svg, smi) {
+    function molecule_clicked(id, svg, smi, name) {
         if (MODE === 'delete') {
             delete_mol(id)
         } else if (MODE === 'edit') {
-
+            load_mol(id, smi, name, svg)
+            $('#molecule_edit_modal').modal('show');
         } else if (MODE === 'duplicate') {
             duplicate_mol(id)
         } else if (MODE === 'copy_smiles') {

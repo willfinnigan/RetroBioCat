@@ -1,0 +1,64 @@
+<div class="modal fade" id="molecule_edit_modal" tabindex="-1" role="dialog" aria-labelledby="molecule_edit_modalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            </div>
+            <div class="modal-body" align="center">
+                <div id="mol_svg"></div>
+
+                <div class="form-group">
+                    <label for='mol_name'>Name</label>
+                    <input type="text" class="form-control w-75" id="mol_name" placeholder="">
+                </div>
+
+                <div class="form-group">
+                    <label for='mol_smi'>SMILES</label>
+                    <input type="text" class="form-control w-75" id="mol_smi" placeholder="">
+                    <small class="form-text text-muted">
+                        Copy-Paste SMILES into
+                        <a href="https://marvinjs-demo.chemaxon.com/latest/" target="_blank">Marvin JS </a>
+                        to make changes. Then copy back here and save.
+                    </small>
+                </div>
+            </div>
+
+            <div id="mol_model_response_div"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" onclick="save_updated_mol()">Save changes</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    var current_mol_id = ""
+
+    function load_mol(id, smi, name, svg) {
+        current_mol_id = id
+        document.getElementById("mol_smi").value = smi
+        document.getElementById("mol_name").value = name
+        document.getElementById("mol_svg").innerHTML = svg
+    }
+
+    function save_updated_mol() {
+        $.post('/_update_paper_molecule', {
+            id: current_mol_id,
+            smi: document.getElementById("mol_smi").value,
+            name: document.getElementById("mol_name").value,
+            paper_id: "{{paper['id']}}"
+        }).done(function (data) {
+            if (data.result.status === 'success') {
+                response_msg(data.result.msg, data.result.status, data.result.issues, "mol_model_response_div")
+                location.reload()
+            }
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+
+</script>
