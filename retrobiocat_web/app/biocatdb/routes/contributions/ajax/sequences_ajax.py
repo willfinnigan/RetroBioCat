@@ -521,14 +521,18 @@ def get_sequence_from_uniprot():
 
     seq = lookup_uniprot(accession)
 
-    if seq == "":
+    if seq != "":
+        loaded_from = 'Uniprot'
+    else:
         seq = lookup_ncbi(accession)
 
     if seq != "":
+        loaded_from = 'NCBI'
         result = {'status': 'success',
-                  'msg': 'Sequence loaded',
+                  'msg': f'Sequence loaded from {loaded_from}',
                   'issues': [],
                   'seq': seq}
+
     else:
         result = {'status': 'danger',
                   'msg': 'Sequence not found',
@@ -544,7 +548,6 @@ def get_sequence_from_uniprot():
 
 if __name__ == "__main__":
     accession = 'WP_008741284.1'
-    accession = 'test'
     lookup_ncbi(accession)
 
 
