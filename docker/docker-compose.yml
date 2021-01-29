@@ -23,6 +23,7 @@ services:
     volumes:
       - ./data/:/retrobiocat/retrobiocat_web/retro/data/
       - ./mongo/mongo_dump:/retrobiocat/retrobiocat_web/mongo/mongo_dump
+      - ./images:/retrobiocat/retrobiocat_web/curation/uploaded_molecule_images/
     environment:
       - PRODUCTION=False
       - SECRET_KEY=put-production-secret-key-here
@@ -30,7 +31,7 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - MONGO_HOST=mongodb://mongo
       - USE_EMAIL_CONFIRMATION=True
-      - OSRA_API_HOST=osra_api://osra_api:8080/0
+      - OSRA_API_HOST=http://osra_api:8080
     links:
       - redis
       - mongo
@@ -45,6 +46,7 @@ services:
         context: .
     volumes:
       - ./data/:/retrobiocat/retrobiocat_web/retro/data/
+      - ./images:/retrobiocat/retrobiocat_web/curation/uploaded_molecule_images/
     depends_on:
       - redis
       - mongo
@@ -59,7 +61,7 @@ services:
       - MONGO_HOST=mongodb://mongo
       - USE_EMAIL_CONFIRMATION=True
       - SCHEDULER=True
-      - OSRA_API_HOST=osra_api://osra_api:8080/0
+      - OSRA_API_HOST=http://osra_api:8080
     restart: always
     command: python3 ./retrobiocat/retrobiocat_web/worker.py
 

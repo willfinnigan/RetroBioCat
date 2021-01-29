@@ -3,27 +3,12 @@
       display:flex;
       align-items:center;
     }
-
 </style>
 
-<p>This is a work-in-progress experimental feature.
-    You have access to this because you have the 'experimental' role associated with your account</p>
-
-<p>The plan is to offer image recognition and molecule management here,
-    as the first step in adding activity data.
-    Users should be able to rapidly add a set of products or substrates, using OSRA.
-   The next step will then be build reactions by applying the retrobiocat transformations (on an additional tab).
-   It will be combined with a MarvinJS molecule editor to make minor adjustments where OSRA is wrong,
-  or drawing molecules from scratch if theres no image / OSRA can't detect it at all</p>
-
-<p> 1. Upload images of molecules.  For best results use 1 image per molecule, but entire panels are accepted</p>
-<p> 2. Process results of OSRA.  Make corrections where needed using MarvinJS</p>
-<p> 3. (optional?) Give names to molecules as referenced in the paper (eg 1, 2, 3.  1A, 2B ect..)</p>
-<p> 4. Molecules will then be available for create new activity data entries.</p>
-<hr class="mt-5"/>
-
-<h2>Add molecules from the paper</h2>
-<p>These can be either a set of substrates or a set of products.</p>
+<h2 class="mt-4">Add molecules from the paper</h2>
+<p>These can be either a set of substrates or a set of products.
+    These molecules can then be used to make reactions in the next tabs to curate the activity data
+    or simply as a source of SMILES strings for doing this in excel.</p>
 
 <h5>Optical structure recognition</h5>
 <div id="mol_upload_response"></div>
