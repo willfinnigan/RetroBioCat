@@ -11,8 +11,6 @@ services:
 
   osra_api:
     image: willfinnigan/osra_api
-    volumes:
-      - ./mongo/mongo-volume:/data/db
 
   rbc_app:
     build:

@@ -12,6 +12,9 @@ import numpy as np
 from distutils.util import strtobool
 from retrobiocat_web.app.biocatdb.functions import check_permission
 from retrobiocat_web.mongo.functions.sequence_functions import sequence_check
+import requests
+from Bio import Entrez, SeqIO
+Entrez.email = 'william.finnigan@manchester.ac.uk'
 
 INVALID_NAME_CHARS = [".", "(", ")", "'", "/"]
 
@@ -342,7 +345,7 @@ def update_seq_papers_status(enzyme_name):
         paper.save()
 
 
-@bp.route('/_upload_sequence_excel',methods=['GET', 'POST'])
+@bp.route('/_upload_sequence_excel', methods=['GET', 'POST'])
 @roles_required('contributor')
 def upload_sequence_excel():
     issues = []
@@ -485,8 +488,64 @@ def save_or_add_seqs(data_list, paper):
     return issues
 
 
+def lookup_uniprot(accession):
+    url = f"https://www.uniprot.org/uniprot/{accession}.fasta"
+    req = requests.get(url)
+
+    if req.status_code in [200]:
+        fasta = req.text
+        seq = fasta[fasta.find('\n'):]
+        seq = seq.replace('\n', '')
+    else:
+        seq = ''
+
+    return seq
 
 
+def lookup_ncbi(accession):
+    try:
+        handle = Entrez.efetch(db="protein", id=accession, rettype="fasta", retmode="text")
+        record = SeqIO.read(handle, 'fasta')
+        seq = str(record.seq)
+    except:
+        seq = ''
+
+    return seq
+
+
+
+
+@bp.route('/_get_sequence_from_uniprot',methods=['GET', 'POST'])
+def get_sequence_from_uniprot():
+    accession = request.form['accession']
+
+    seq = lookup_uniprot(accession)
+
+    if seq == "":
+        seq = lookup_ncbi(accession)
+
+    if seq != "":
+        result = {'status': 'success',
+                  'msg': 'Sequence loaded',
+                  'issues': [],
+                  'seq': seq}
+    else:
+        result = {'status': 'danger',
+                  'msg': 'Sequence not found',
+                  'issues': [],
+                  'seq': seq}
+
+    print(seq)
+
+    return jsonify(result=result)
+
+
+
+
+if __name__ == "__main__":
+    accession = 'WP_008741284.1'
+    accession = 'test'
+    lookup_ncbi(accession)
 
 
 

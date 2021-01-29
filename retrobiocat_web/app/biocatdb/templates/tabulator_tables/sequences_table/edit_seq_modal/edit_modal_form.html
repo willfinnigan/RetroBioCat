@@ -50,8 +50,10 @@
 </div>
 
 <div class="form-group mt-3">
+    <div id="seq_lookup_response"></div>
     <label for='accession'>Accession number</label>
     <input type="text" class="form-control" id="accession" placeholder="">
+    <button class="btn btn-sm btn-outline-primary" onclick="get_sequence_from_uniprot()">Lookup Sequence</button>
 </div>
 
 <div class="form-group mt-3">
@@ -94,7 +96,18 @@
 </div>
 
 <script>
-
+    function get_sequence_from_uniprot() {
+        $.post('_get_sequence_from_uniprot', {
+            accession:  document.getElementById("accession").value
+        }).done(function (data) {
+            response_msg(data.result.msg, data.result.status, data.result.issues, "seq_lookup_response")
+            if (data.result.status === 'success') {
+                document.getElementById("sequence").value = data.result.seq
+            }
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
 
 </script>
 

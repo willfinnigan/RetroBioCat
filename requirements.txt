@@ -38,3 +38,4 @@ palettable
 unidecode
 xmltodict
 rq-scheduler
+biopython
