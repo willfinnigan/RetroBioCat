@@ -5,6 +5,10 @@
 <button class="btn btn-outline-primary" id="upload_excel" data-toggle='modal' data-target='#upload_excel_modal'>Upload Excel</button>
 <button class="btn btn-warning" id="add_row">Add row</button>
 <button class="btn btn-info" id="duplicate_rows">Duplicate rows</button>
+{% if current_user.has_role('experimental') %}
+    <button class="btn btn-primary" id="new_reaction" data-toggle='modal' data-target='#new_reaction_modal'>New reaction</button>
+{% endif %}
+
 
 <button class="btn btn-success" onclick="save()" id="test_and_save">Save</button>
 <p id="please_wait" hidden>Saving, please wait..</p>
@@ -142,3 +146,4 @@
 </script>
 
 {% include '/tabulator_tables/activity_table/upload_excel_modal.html' %}
+{% include '/tabulator_tables/activity_table/new_reaction_modal/new_reaction_modal.html' %}

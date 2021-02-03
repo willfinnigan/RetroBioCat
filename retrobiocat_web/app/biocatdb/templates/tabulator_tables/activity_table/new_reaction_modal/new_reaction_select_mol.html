@@ -1,0 +1,39 @@
+<div class="modal-header">
+    <h6 class="modal-title">Select molecule</h6>
+    <button type="button" class="close" onclick=$('a[href="#new_reaction_main"]').tab('show')>
+      <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<div id="new_reaction_mol_buttons">
+    <button class="btn btn-outline-secondary mol_btn" onclick="new_reaction_molecule_clicked('', '')">Clear</button>
+    {% for item in paper_molecules %}
+        <button class="btn btn-outline-secondary mol_btn" onclick="new_reaction_molecule_clicked('{{item[1]}}', `{{item[2]}}`)">{{item[2]|safe}}</button>
+    {% endfor %}
+</div>
+
+<script>
+    function new_reaction_molecule_clicked(smi, svg) {
+        if (NEW_REAC_SELECTED_MOL === 's1') {
+            NEW_REAC_s1 = smi
+            if (smi === "") {
+                svg = 'Choose molecule\n(substrate 1)'
+            }
+            document.getElementById('new_reaction_btn_mol_s1').innerHTML = svg
+        } else if (NEW_REAC_SELECTED_MOL === 's2') {
+            NEW_REAC_s2 = smi
+            if (smi === "") {
+                svg = 'Choose molecule\n(substrate 2)'
+            }
+            document.getElementById('new_reaction_btn_mol_s2').innerHTML = svg
+        } else if (NEW_REAC_SELECTED_MOL === 'p') {
+            NEW_REAC_p = smi
+            if (smi === "") {
+                svg = 'Choose molecule\n(product)'
+            }
+            document.getElementById('new_reaction_btn_mol_p').innerHTML = svg
+        }
+
+        $('a[href="#new_reaction_main"]').tab('show')
+    }
+</script>

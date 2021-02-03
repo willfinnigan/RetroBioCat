@@ -1,0 +1,59 @@
+<div class="modal fade" id="new_reaction_modal" tabindex="-1" role="dialog" aria-labelledby="new_reaction_modalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New reaction</h5>
+            </div>
+
+            <div class="modal-body" align="center">
+                <ul class="nav nav-tabs" id="new_reaction_tab_list" role="tablist" hidden>
+                    <li class="nav-item">
+                        <a class="nav-link active" id="new_reaction_main_link"
+                           data-toggle="tab" href="#new_reaction_main"
+                           role="tab" aria-controls="new_reaction_main"
+                           aria-selected="true">
+                        </a>
+                    </li>
+
+                    <li class="nav-item" hidden>
+                        <a class="nav-link" id="new_reaction_select_mol_link"
+                           data-toggle="tab" href="#new_reaction_select_mol"
+                           role="tab" aria-controls=" new_reaction_select_mol">
+                        </a>
+                    </li>
+
+                    <li class="nav-item" hidden>
+                        <a class="nav-link" id="new_reaction_select_reaction_link"
+                           data-toggle="tab" href="#new_reaction_select_reaction"
+                           role="tab" aria-controls=" new_reaction_select_reaction">
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="tab_content">
+                    <div class="tab-pane fade show active" id="new_reaction_main" role="tabpanel" aria-labelledby="new_reaction_main_tab">
+                        {% include 'tabulator_tables/activity_table/new_reaction_modal/new_reaction_main.html' %}
+                    </div>
+
+                    <div class="tab-pane fade show" id="new_reaction_select_mol" role="tabpanel" aria-labelledby="new_reaction_select_mol_tab">
+                        {% include 'tabulator_tables/activity_table/new_reaction_modal/new_reaction_select_mol.html' %}
+                    </div>
+
+                    <div class="tab-pane fade show" id="new_reaction_select_reaction" role="tabpanel" aria-labelledby="new_reaction_select_reaction_tab">
+                        {% include 'tabulator_tables/activity_table/new_reaction_modal/new_reaction_select_reaction.html' %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-dismiss="modal" onclick="add_new_reaction()">Add reaction</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="reset_new_reaction_modal()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+</script>

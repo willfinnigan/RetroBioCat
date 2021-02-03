@@ -151,10 +151,10 @@
 
     var paper_molecules = {{paper_molecules|tojson}}
 
-    make_buttons(paper_molecules)
+    make_buttons(paper_molecules, 'mols_div')
 
-    function make_buttons(mol_list) {
-        var btn_div = document.getElementById('mols_div')
+    function make_buttons(mol_list, btn_div_id) {
+        var btn_div = document.getElementById(btn_div_id)
 
         mol_list.forEach(function (item, index) {
             var btn = document.createElement("BUTTON");
@@ -172,7 +172,6 @@
             }
             btn_div.appendChild(btn);
         });
-
     }
 
     function delete_mol(id) {
@@ -194,7 +193,7 @@
             paper_id: "{{paper['id']}}"
         }).done(function (data) {
             if (data.result.status === 'success') {
-                make_buttons(data.result.mol_list)
+                make_buttons(data.result.mol_list, 'mols_div')
             }
         }).fail(function(xhr, status, error) {
             console.log(error)

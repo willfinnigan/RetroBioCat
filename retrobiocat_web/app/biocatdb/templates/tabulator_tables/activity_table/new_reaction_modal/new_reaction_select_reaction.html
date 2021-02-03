@@ -1,0 +1,48 @@
+<div class="modal-header">
+    <h6 class="modal-title">Select reaction</h6>
+    <button type="button" class="close" onclick=$('a[href="#new_reaction_main"]').tab('show')>
+      <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<div id="new_reaction_reactions_select_div">
+</div>
+
+
+<script>
+    function make_rxn_buttons(products, svgs, svg_dict, r_direction) {
+        var btn_div = document.getElementById("new_reaction_reactions_select_div")
+        btn_div.innerHTML = ""
+
+        svgs.forEach(function (svg, index) {
+            var btn = document.createElement("BUTTON");
+            btn.style = "width: 550px; height: 225px"
+            btn.id = "rxn_select_button_" + index
+            btn.onclick = function () {
+                selected_reaction_from_options(products, index, svg_dict, r_direction)
+            }
+            btn.className = 'btn btn-outline-secondary'
+            btn.innerHTML =  svg
+            btn_div.appendChild(btn);
+        });
+    }
+
+    function selected_reaction_from_options(products, selected_index, svg_dict, r_direction) {
+        console.log('reaction selected')
+        var selected_products = products[selected_index]
+
+        if (r_direction === 'fwd') {
+            NEW_REAC_p = selected_products[0]
+            document.getElementById('new_reaction_btn_mol_p').innerHTML = svg_dict[selected_products[0]]
+        } else {
+            NEW_REAC_s1 = selected_products[0]
+            document.getElementById('new_reaction_btn_mol_s1').innerHTML = svg_dict[selected_products[0]]
+            if (selected_products.length === 2) {
+                NEW_REAC_s2 = selected_products[1]
+                document.getElementById('new_reaction_btn_mol_s2').innerHTML = svg_dict[selected_products[1]]
+            }
+        }
+        $('a[href="#new_reaction_main"]').tab('show')
+    }
+
+</script>

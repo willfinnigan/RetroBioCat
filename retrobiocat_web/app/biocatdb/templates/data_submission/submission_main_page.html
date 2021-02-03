@@ -3,6 +3,13 @@
 
 {% block content %}
 
+    <style>
+    .mol_btn {
+        width: 175px;
+        height: 175px
+    }
+    </style>
+
     <div class="container-fluid">
         <div class="row">
             <div class="col-12">
@@ -27,14 +34,31 @@
                             </li>
                             {% if current_user.has_role('experimental') %}
                                 <li class="nav-item">
-                                    <a class="nav-link" id="molecules_tab" data-toggle="tab" href="#molecules" role="tab"
+                                    <a class="nav-link" id="molecules_tab" data-toggle="tab" href="#molecules"
+                                       role="tab"
                                        aria-controls="molecules" aria-selected="false">Molecules</a>
                                 </li>
+
                             {% endif %}
+
                             <li class="nav-item">
-                                <a class="nav-link" id="activity_tab" data-toggle="tab" href="#activity" role="tab"
-                                   aria-controls="activity" aria-selected="false">Activity</a>
+                                <a class="nav-link" id="activity_full_tab" data-toggle="tab" href="#activity_full" role="tab"
+                                   aria-controls="activity_full" aria-selected="false">Activity table</a>
                             </li>
+
+                            {% if current_user.has_role('very_experimental') %}
+                                <li class="nav-item">
+                                    <a class="nav-link" id="activity_single_tab" data-toggle="tab" href="#activity_single" role="tab"
+                                       aria-controls="activity_single" aria-selected="false">Single reactions</a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a class="nav-link" id="activity_grouped_tab" data-toggle="tab" href="#activity_grouped" role="tab"
+                                       aria-controls="activity_grouped" aria-selected="false">Groups of reactions</a>
+                                </li>
+                            {% endif %}
+
+
                             {% if admin_panel == True %}
                                 <li class="nav-item">
                                     <a class="nav-link" id="admin_panel_tab" data-toggle="tab" href="#admin_panel"
@@ -62,20 +86,29 @@
                             </div>
 
                             {% if current_user.has_role('experimental') %}
-                                <div class="tab-pane fade" id="molecules" role="tabpanel" aria-labelledby="molecules_tab">
+                                <div class="tab-pane fade" id="molecules" role="tabpanel"
+                                     aria-labelledby="molecules_tab">
                                     {% include '/data_submission/molecules.html' %}
+                                </div>
+
+                            {% endif %}
+
+                            <div class="tab-pane fade" id="activity_full" role="tabpanel"
+                                 aria-labelledby="activity_full_tab">
+                                {% include '/tabulator_tables/activity_table/activity_table.html' %}
+                            </div>
+
+                            {% if current_user.has_role('very_experimental') %}
+                                <div class="tab-pane fade" id="activity_single" role="tabpanel"
+                                     aria-labelledby="activity_single_tab">
+                                    {% include '/data_submission/single_row.html' %}
+                                </div>
+                                <div class="tab-pane fade" id="activity_grouped" role="tabpanel"
+                                     aria-labelledby="activity_grouped_tab">
+                                    {% include '/data_submission/grouped_activity.html' %}
                                 </div>
                             {% endif %}
 
-                            <div class="tab-pane fade" id="activity" role="tabpanel" aria-labelledby="activity_tab">
-                                {% include '/tabulator_tables/activity_table/activity_table.html' %}
-                                {% if current_user.has_role('experimental') %}
-                                    <a href="{{ url_for('biocatdb.activity_wizard_landing', paper_id=paper['id']) }}">
-                                        <button id="launch_activity_wizard" class="btn btn-success">Activity wizard
-                                        </button>
-                                    </a>
-                                {% endif %}
-                            </div>
                             {% if admin_panel == True %}
                                 <div class="tab-pane fade" id="admin_panel" role="tabpanel"
                                      aria-labelledby="admin_panel_tab">

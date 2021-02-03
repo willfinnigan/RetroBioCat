@@ -544,8 +544,6 @@ def get_sequence_from_uniprot():
     return jsonify(result=result)
 
 
-
-
 if __name__ == "__main__":
     accession = 'WP_008741284.1'
     lookup_ncbi(accession)

@@ -1,0 +1,131 @@
+<p>
+    <button class="btn btn-outline-secondary mol_btn"
+            id="new_reaction_btn_mol_s1"
+            onclick="new_reaction_select_mol('s1')" >
+        Choose molecule
+        (substrate 1)
+    </button>
+    +
+    <button class="btn btn-outline-secondary mol_btn"
+            id="new_reaction_btn_mol_s2"
+            onclick="new_reaction_select_mol('s2')">
+        Choose molecule
+        (substrate 2)
+    </button>
+    ------->
+    <button class="btn btn-outline-secondary mol_btn"
+            id="new_reaction_btn_mol_p"
+            onclick="new_reaction_select_mol('p')">
+        Choose molecule
+        (product)
+    </button>
+</p>
+
+<div class="form-group">
+    <label for='reactions_datalist'>Reaction name</label>
+    <input list="reactions_datalist" id="new_reaction_reaction" name="new_reaction_reaction" class="form-control w-75"/>
+    <datalist id="reactions_datalist" class="">
+        {% for reac in reactions %}
+            <option value="{{reac}}">{{reac}}</option>
+        {% endfor %}
+    </datalist>
+    <small class="form-text text-muted">The name of the reaction, eg 'Carboxylic acid
+        reduction'</small>
+</div>
+
+<button class="btn btn-outline-warning float-left" onclick="new_reaction_apply_reaction_fwd()">Apply reaction forwards --></button>
+<button class="btn btn-outline-info float-right" onclick="new_reaction_apply_reaction_rev()"><-- Apply reaction reverse</button>
+
+
+<script>
+    var NEW_REAC_SELECTED_MOL = 's1'
+    var NEW_REAC_s1 = ""
+    var NEW_REAC_s2 = ""
+    var NEW_REAC_p = ""
+    var REACTION_OPTIONS = {{enzyme_reactions|tojson}}
+
+    function new_reaction_select_mol(mol) {
+        NEW_REAC_SELECTED_MOL = mol
+        $('[href="#new_reaction_select_mol"]').tab('show')
+    }
+
+    function reset_new_reaction_modal() {
+        NEW_REAC_s1 = ""
+        NEW_REAC_s2 = ""
+        NEW_REAC_p = ""
+        document.getElementById('new_reaction_btn_mol_s1').innerHTML = 'Choose molecule\n(substrate 1)'
+        document.getElementById('new_reaction_btn_mol_s2').innerHTML = 'Choose molecule\n(substrate 2)'
+        document.getElementById('new_reaction_btn_mol_p').innerHTML = 'Choose molecule\n(product)'
+        document.getElementById('new_reaction_reaction').value = ""
+        $('a[href="#new_reaction_main"]').tab('show')
+    }
+
+    function add_new_reaction() {
+        var reac =  document.getElementById('new_reaction_reaction').value
+        var data = {'substrate_1_smiles': NEW_REAC_s1,
+                    'substrate_2_smiles': NEW_REAC_s2,
+                    'product_1_smiles': NEW_REAC_p,
+                    'reaction': reac}
+        table.addRow(data)
+
+        if (REACTION_OPTIONS.includes(reac) === false) {
+            REACTION_OPTIONS.push(reac)
+            var datalist = document.getElementById('reactions_datalist')
+            datalist.innerHTML = "<option value='" + reac + "'>" + reac + "</option>" + datalist.innerHTML
+        }
+        reset_new_reaction_modal()
+    }
+
+    function new_reaction_apply_reaction_fwd() {
+        $.post('/_apply_reaction_fwd', {
+            s1: NEW_REAC_s1,
+            s2: NEW_REAC_s2,
+            reaction: document.getElementById('new_reaction_reaction').value
+        }).done(function (data) {
+            if (data.result.status === 'success') {
+                new_reaction_fwd_reaction_results(data.result.products, data.result.svg_dict, data.result.reaction_svgs)
+            }
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+
+    function new_reaction_fwd_reaction_results(products, svg_dict, reaction_svgs) {
+        if (products.length === 1) {
+            NEW_REAC_p = products[0][0]
+            document.getElementById('new_reaction_btn_mol_p').innerHTML = svg_dict[products[0][0]]
+        } else {
+            $('[href="#new_reaction_select_reaction"]').tab('show')
+        }
+        make_rxn_buttons(products, reaction_svgs, svg_dict, 'fwd')
+    }
+
+    function new_reaction_apply_reaction_rev() {
+        console.log("Apply reverse rule")
+        $.post('/_apply_reaction_rev', {
+            p: NEW_REAC_p,
+            reaction: document.getElementById('new_reaction_reaction').value
+        }).done(function (data) {
+            if (data.result.status === 'success') {
+                new_reaction_rev_reaction_results(data.result.products, data.result.svg_dict, data.result.reaction_svgs)
+            }
+        }).fail(function(xhr, status, error) {
+            console.log(error)
+        });
+    }
+
+    function new_reaction_rev_reaction_results(products, svg_dict, reaction_svgs) {
+        if (products.length === 1) {
+            NEW_REAC_s1 = products[0][0]
+            document.getElementById('new_reaction_btn_mol_s1').innerHTML = svg_dict[products[0][0]]
+            if (products[0].length === 2) {
+                NEW_REAC_s2 = products[0][1]
+                document.getElementById('new_reaction_btn_mol_s2').innerHTML = svg_dict[products[0][1]]
+            }
+        } else {
+            $('[href="#new_reaction_select_reaction"]').tab('show')
+            make_rxn_buttons(products, reaction_svgs, svg_dict, 'rev')
+        }
+    }
+
+</script>

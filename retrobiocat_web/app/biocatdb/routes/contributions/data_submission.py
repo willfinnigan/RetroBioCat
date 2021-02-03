@@ -178,6 +178,9 @@ def submission_main_page(paper_id):
     enzyme_names = list(Sequence.objects(papers=paper).distinct('enzyme_name'))
     enzyme_types = list(EnzymeType.objects().distinct('enzyme_type'))
     enzyme_data = sequence_table.get_enzyme_data(db.Q(papers=paper))
+    enzyme_types_in_paper = list(Sequence.objects(papers=paper).distinct('enzyme_type'))
+    reactions_in_paper = list(Reaction.objects(enzyme_types__in=enzyme_types_in_paper).distinct('name'))
+    reactions_in_activity = list(Activity.objects(paper=paper).distinct('reaction'))
     status_dict = get_status(paper, user)
     comments = get_comments(paper, user)
     paper_molecules = get_paper_molecules(paper)
@@ -187,18 +190,23 @@ def submission_main_page(paper_id):
         admin_panel = True
         admin_dict = get_admin_dict(paper)
 
+    reactions_ordered = reactions_in_activity + [r for r in reactions_in_paper if r not in reactions_in_activity]
+    reactions_ordered += [r for r in reactions_in_paper if r not in reactions_ordered]
+    reactions_ordered += [r for r in reactions if r not in reactions_ordered]
+
     return render_template('data_submission/submission_main_page.html',
                            paper=paper_data,
                            activity_data=activity_data,
                            seq_data=enzyme_data, seq_button_columns=['edit', 'remove', 'papers'],
                            status=status_dict,
                            seq_table_height='60vh', enzyme_types=enzyme_types, show_header_filters=False, include_owner=True, lock_enz_type='false',
-                           reactions=reactions, enzyme_names=enzyme_names+['Chemical'],
+                           reactions=reactions_ordered, enzyme_names=enzyme_names+['Chemical'],
                            doi=paper.doi,
                            comments=comments,
                            paper_molecules=paper_molecules,
                            admin_panel=admin_panel,
-                           admin_dict=admin_dict)
+                           admin_dict=admin_dict,
+                           enzyme_reactions=reactions_in_paper)
 
 @bp.route('/_check_connection', methods=['GET', 'POST'])
 def check_connection():

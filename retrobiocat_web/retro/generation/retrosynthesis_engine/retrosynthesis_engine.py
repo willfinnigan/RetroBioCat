@@ -164,6 +164,12 @@ class RuleApplicator():
             new_list.append(rdkit_smile(smi))
         return new_list
 
+    def _rdkit_smi_from_mols(self, listMol):
+        new_list = []
+        for mol in listMol:
+            new_list.append(Chem.MolToSmiles(mol))
+        return new_list
+
     def apply_rules(self, smile, rxns):
 
         reactants = rdchiralReactants(smile)
@@ -174,22 +180,53 @@ class RuleApplicator():
             for rxn in rxn_list:
                 try:
                     reaction_products.extend(rdchiralRun(rxn, reactants, combine_enantiomers=False))
+
                 except:
                     reaction_products = []
                     print('Error running reactants for: ' + str(smile) + ' ' + str(rxn_name))
 
-            if self.network.settings["combine_enantiomers"] == True:
+            if self.network == None:
+                reaction_products_combined = list(combine_enantiomers_into_racemic(set(reaction_products)))
+                reaction_products = list(set(reaction_products_combined + reaction_products))
+            elif self.network.settings["combine_enantiomers"] == True:
                 reaction_products = combine_enantiomers_into_racemic(set(reaction_products))
 
             parsed_reaction_products = []
             for smi in reaction_products:
-                if self.network.settings["clean_brackets"] == True:
+                if self.network == None:
+                    smi = self.bracket_cleaner.clean_brackets(smi)
+                elif self.network.settings["clean_brackets"] == True:
                     smi = self.bracket_cleaner.clean_brackets(smi)
 
                 if self._check_valid_smile(smi, rxn_name=rxn_name) == True:
                     products = self._split_products(smi)
                     products = self._rdkit_products(products)
                     parsed_reaction_products.append(products)
+
+            if len(parsed_reaction_products) != 0:
+                rxn_product_dict[rxn_name] = parsed_reaction_products
+
+        return rxn_product_dict
+
+    def apply_rules_rdkit(self, smile, rxns):
+
+        mol = Chem.MolFromSmiles(smile)
+
+        rxn_product_dict = {}
+        for rxn_name, rxn_list in rxns.items():
+            reaction_products = []
+            for rxn in rxn_list:
+                try:
+                    rxn_result = rxn.RunReactants([mol])
+                    reaction_products.extend(rxn_result)
+                except:
+                    reaction_products = []
+                    print('Error running reactants for: ' + str(smile) + ' ' + str(rxn_name))
+
+            parsed_reaction_products = []
+            for product_mols in reaction_products:
+                product_smis = self._rdkit_smi_from_mols(product_mols)
+                parsed_reaction_products.append(product_smis)
 
             if len(parsed_reaction_products) != 0:
                 rxn_product_dict[rxn_name] = parsed_reaction_products

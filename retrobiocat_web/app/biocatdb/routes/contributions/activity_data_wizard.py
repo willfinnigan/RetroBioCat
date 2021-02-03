@@ -28,6 +28,13 @@ from retrobiocat_web.curation import structure_recognition
 from retrobiocat_web.retro.generation.node_analysis import rdkit_smile
 from retrobiocat_web.mongo.models.biocatdb_models import ActivityMol
 
+from rdkit import Chem
+from rdkit.Chem import rdChemReactions
+from retrobiocat_web.retro.generation.retrosynthesis_engine.retrosynthesis_engine import RuleApplicator
+from retrobiocat_web.retro.rdchiral.main import rdchiralReaction
+from retrobiocat_web.app.retrobiocat.functions.get_images import smiles_rxn_to_svg
+
+
 
 def getletterfromindex(num):
     #produces a string from numbers so
@@ -83,52 +90,6 @@ def group_activity_data(activity_data):
         previous_reaction = data['reaction']
 
     return activity_grouped
-
-@bp.route('/activity_wizard_landing/<paper_id>', methods=['GET'])
-@roles_required('contributor')
-def activity_wizard_landing(paper_id):
-    user = user_datastore.get_user(current_user.id)
-    paper_query = Paper.objects(id=paper_id).select_related()
-    if len(paper_query) == 0:
-        flash('Paper has not been added yet, please add to the database first', 'fail')
-        return redirect(url_for("biocatdb.launch_add_paper"))
-
-    paper = paper_query[0]
-
-    if not check_permission.check_paper_permission(current_user.id, paper):
-        flash('No access to edit this entry', 'fail')
-        return redirect(url_for("biocatdb.launch_add_paper"))
-
-    paper_data = get_paper_data(paper, user)
-
-    return render_template('activity_wizard/landing_page.html',
-                           paper=paper_data)
-
-
-
-@bp.route('/activity_wizard/<paper_id>/<group>', methods=['GET'])
-@roles_required('contributor')
-def activity_wizard(paper_id, group):
-    user = user_datastore.get_user(current_user.id)
-    paper_query = Paper.objects(id=paper_id).select_related()
-    if len(paper_query) == 0:
-        flash('Paper has not been added yet, please add to the database first', 'fail')
-        return redirect(url_for("biocatdb.launch_add_paper"))
-
-    paper = paper_query[0]
-
-    if not check_permission.check_paper_permission(current_user.id, paper):
-        flash('No access to edit this entry', 'fail')
-        return redirect(url_for("biocatdb.launch_add_paper"))
-
-    activity_data = get_activity_data(paper)
-    activity_grouped = group_activity_data(activity_data)
-
-    if group > len(activity_grouped):
-        return redirect(url_for("biocatdb.activity_wizard", paper_id=paper_id, group=1))
-
-    current_group = activity_grouped[str(group)]
-
 
 
 @bp.route('/_upload_molecule_images',methods=['GET', 'POST'])
@@ -339,6 +300,185 @@ def update_paper_molecule():
               'msg': 'Could not delete molecule',
               'issues': []}
     return jsonify(result=result)
+
+def reverse_smarts(smarts):
+    m = smarts.find('>>')
+    start = smarts[m+2:]
+    end = smarts[:m]
+    new_smarts = start + '>>' + end
+    return new_smarts
+
+
+def make_svg_dict(products):
+    svg_dict = {}
+    for list_smis in products:
+        for smi in list_smis:
+            if smi not in svg_dict:
+                mol = Chem.MolFromSmiles(smi)
+                svg_dict[smi] = moltosvg(mol)
+    return svg_dict
+
+def get_reaction_svg(s1, s2, p):
+    if s2 == "":
+        smi_rxn = f"{s1}>>{p}"
+    else:
+        smi_rxn = f"{s1}.{s2}>>{p}"
+
+    svg = smiles_rxn_to_svg(smi_rxn, rxnSize=(500,200))
+    return svg
+
+
+@bp.route('/_apply_reaction_fwd', methods=['GET', 'POST'])
+@roles_required('contributor')
+def apply_reaction_fwd():
+    s1 = request.form['s1']
+    s2 = request.form['s2']
+    reaction_q = Reaction.objects(name=request.form['reaction'])
+    if len(reaction_q) == 0:
+        print(f"{request.form['reaction']} was not found in RetroBioCat")
+        result = {'status': 'danger',
+                  'msg': 'No reaction on RetroBioCat with this name',
+                  'issues': [f"{request.form['reaction']} was not found in RetroBioCat"]}
+        return jsonify(result=result)
+
+    rdkit_rxns = {'rdkit_rxns': []}
+    rdchiral_rxns = {'rd_chiral_rxns': []}
+    try:
+        for smarts in reaction_q[0].smarts:
+            reverse = reverse_smarts(smarts)
+            rdkit_rxns['rdkit_rxns'].append(rdChemReactions.ReactionFromSmarts(reverse))
+            try:
+                rdchiral_rxns['rd_chiral_rxns'].append(rdchiralReaction(reverse))
+            except:
+                pass
+    except Exception as e:
+        print('Error parsing reaction SMARTS')
+        print(e)
+        result = {'status': 'danger',
+                  'msg': 'Error parsing reaction SMARTS',
+                  'issues': []}
+        return jsonify(result=result)
+
+    rule_applicator = RuleApplicator(None)
+
+    smi = f"{s1}"
+    if s2 != "":
+        smi += f".{s2}"
+
+
+    try:
+        products = rule_applicator.apply_rules(smi, rdchiral_rxns)['rd_chiral_rxns']
+    except:
+        products = []
+
+    if products == []:
+        try:
+            products = rule_applicator.apply_rules_rdkit(smi, rdkit_rxns)['rdkit_rxns']
+        except:
+            products = []
+
+
+    no_dupl = []
+    for prod in products:
+        if prod not in no_dupl:
+            no_dupl.append(prod)
+    products = no_dupl
+
+    svg_dict = make_svg_dict(products)
+    reaction_svgs = []
+    for smi_list in products:
+        reaction_svgs.append(get_reaction_svg(s1, s2, smi_list[0]))
+
+    if len(products) == 0:
+        result = {'status': 'danger',
+                  'msg': 'No products',
+                  'issues': []}
+        return jsonify(result=result)
+
+    result = {'status': 'success',
+              'msg': '',
+              'products': products,
+              'reaction_svgs': reaction_svgs,
+              'svg_dict': svg_dict,
+              'issues': []}
+    return jsonify(result=result)
+
+@bp.route('/_apply_reaction_rev', methods=['GET', 'POST'])
+@roles_required('contributor')
+def apply_reaction_rev():
+    p = request.form['p']
+    reaction_q = Reaction.objects(name=request.form['reaction'])
+    if len(reaction_q) == 0:
+        print(f"{request.form['reaction']} was not found in RetroBioCat")
+        result = {'status': 'danger',
+                  'msg': 'No reaction on RetroBioCat with this name',
+                  'issues': [f"{request.form['reaction']} was not found in RetroBioCat"]}
+        return jsonify(result=result)
+
+    rdkit_rxns = {'rdkit_rxns': []}
+    rdchiral_rxns = {'rd_chiral_rxns': []}
+    try:
+        for smarts in reaction_q[0].smarts:
+            rdkit_rxns['rdkit_rxns'].append(rdChemReactions.ReactionFromSmarts(smarts))
+            try:
+                rdchiral_rxns['rd_chiral_rxns'].append(rdchiralReaction(smarts))
+            except:
+                pass
+    except Exception as e:
+        print('Error parsing reaction SMARTS')
+        print(e)
+        result = {'status': 'danger',
+                  'msg': 'Error parsing reaction SMARTS',
+                  'issues': []}
+        return jsonify(result=result)
+
+    rule_applicator = RuleApplicator(None)
+
+    smi = p
+
+    try:
+        products = rule_applicator.apply_rules(smi, rdchiral_rxns)['rd_chiral_rxns']
+    except:
+        products = []
+
+    if products == []:
+        try:
+            products = rule_applicator.apply_rules_rdkit(smi, rdkit_rxns)['rdkit_rxns']
+        except:
+            products = []
+
+    no_dupl = []
+    for prod in products:
+        if prod not in no_dupl:
+            no_dupl.append(prod)
+    products = no_dupl
+
+    svg_dict = make_svg_dict(products)
+    reaction_svgs = []
+    for smi_list in products:
+        if len(smi_list) == 1:
+            reaction_svgs.append(get_reaction_svg(smi_list[0], '', p))
+        elif len(smi_list) == 2:
+            reaction_svgs.append(get_reaction_svg(smi_list[0], smi_list[1], p))
+        else:
+            reaction_svgs.append(get_reaction_svg('', '', p))
+
+    if len(products) == 0:
+        result = {'status': 'danger',
+                  'msg': 'No products',
+                  'issues': []}
+        return jsonify(result=result)
+
+    result = {'status': 'success',
+              'msg': '',
+              'products': products,
+              'reaction_svgs': reaction_svgs,
+              'svg_dict': svg_dict,
+              'issues': []}
+
+    return jsonify(result=result)
+
+
 
 
 
