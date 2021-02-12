@@ -6,7 +6,6 @@ import time
 from retrobiocat_web.retro.enzyme_identification.load import make_fingerprints
 from retrobiocat_web.retro.enzyme_identification import query_mongodb
 
-
 def process_activity_data(activity_data):
     for i, record in enumerate(activity_data):
         activity_data[i]['paper'] = str(activity_data[i]['paper'])

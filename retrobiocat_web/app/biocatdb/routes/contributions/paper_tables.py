@@ -112,7 +112,9 @@ def papers_with_orhpan_sequences():
 
 @bp.route('/priority_papers', methods=['GET'])
 def high_importance_papers():
-    hi_papers = Paper.objects(high_importance=True).select_related()
+    hi_q = db.Q(high_importance=True)
+    assigned_q = db.Q(owner=None)
+    hi_papers = Paper.objects(hi_q & assigned_q).select_related()
     enzyme_types = EnzymeType.objects()
 
     tags = []
