@@ -225,3 +225,17 @@ def get_clusters():
               'without_uniref': without_uniref}
     return jsonify(result=result)
 
+@bp.route("/_load_all_edges_ajax", methods=["POST"])
+def load_all_edges_ajax():
+    enzyme_type = request.form['enzyme_type']
+    alignment_score = int(request.form['alignment_score'])
+    nodes = json.loads(request.form['list_nodes'])
+
+    ql = SSN_quickload(enzyme_type, log_level=0)
+    ql.load_df()
+    edges = ql.get_multiple_edges(nodes, alignment_score)
+
+    result = {'edges': edges}
+    return jsonify(result=result)
+
+

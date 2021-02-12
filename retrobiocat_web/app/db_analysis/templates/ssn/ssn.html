@@ -32,9 +32,12 @@
         window.only_biocatdb = "{{only_biocatdb|safe}}"
         window.hide_mutants = "{{hide_mutants|safe}}"
 
+        window.load_edges_on_selection = true
+
         var edges_options = {'smooth': false}
 
-        var physics_options = {'stabilization': {'enabled': false,
+        var physics_options = {'enabled': false,
+                                'stabilization': {'enabled': false,
                                                  'iterations': 50},
                                 "repulsion": {
                                       "centralGravity": 0.1,
@@ -63,7 +66,7 @@
                                     container: document.getElementById("ssn_network_config")}
 
         var options = {edges: edges_options,
-                       physics: false,
+                       physics: physics_options,
                        interaction: interaction_options,
                        configure: configure_options,
                        nodes: {shapeProperties: {interpolation: false}}
@@ -77,12 +80,16 @@
         var network = new vis.Network(container, data, options);
 
         network.on("selectNode", function(params) {
-            data['edges'].clear()
-            get_edges(params.nodes[0])
+            if (window.load_edges_on_selection === true) {
+                data['edges'].clear()
+                get_edges(params.nodes[0])
+            }
         })
 
         network.on("deselectNode", function(params) {
-            data['edges'].clear()
+            if (window.load_edges_on_selection === true) {
+                data['edges'].clear()
+            }
         })
 
         async function get_edges(selected_node) {
@@ -186,6 +193,31 @@
             }
         }
 
+        function load_all_edges() {
+            var list_nodes = data['nodes'].getIds()
+            if (list_nodes.length < 500) {
+                if (window.load_edges_on_selection === true) {
+                    response_msg('Loading all edges, please wait..', 'success', [''], "live_ssn_response_bar")
+                    window.load_edges_on_selection = false
+                    $.post($SCRIPT_ROOT + '/_load_all_edges_ajax', {
+                        enzyme_type: window.enzyme_type,
+                        alignment_score: window.alignment_score,
+                        list_nodes: JSON.stringify(list_nodes)
+                    }).done(function(response_data) {
+                        var newEdges = response_data.result.edges
+                        data['edges'].update(newEdges)
+                        console.log('load_all_edges')
+                    })
+                }
+            } else {
+                response_msg('Cannot load edges, too many nodes', 'danger', ['>500 nodes'], "live_ssn_response_bar")
+            }
+        }
+
+    function stabilise_network() {
+        response_msg('Stabilising please wait...', 'success', [], "live_ssn_response_bar")
+        network.stabilize(500)
+    }
 
     </script>
 

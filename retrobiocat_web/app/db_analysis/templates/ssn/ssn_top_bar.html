@@ -7,6 +7,7 @@
       <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
           <a class="dropdown-item" data-toggle="modal" data-target="#network_physics_modal" class="btn btn-primary btn-sm">Network physics</a>
           <a class="dropdown-item" onclick="select_all_connected_nodes()">Select all connected nodes</a>
+          <a class="dropdown-item" onclick="load_all_edges()">Load edges for displayed nodes</a>
           <a class="dropdown-item" data-toggle="modal" data-target="#clusters_modal" class="btn btn-primary btn-sm">Clusters</a>
       </div>
     </div>
@@ -18,5 +19,7 @@
         <button class="btn btn-primary" type="button" data-toggle="modal" data-target="#edit_selected_nodes_modal">Edit selected nodes</button>
     </div>
 </div>
+
+<div id="live_ssn_response_bar"></div>
 
 

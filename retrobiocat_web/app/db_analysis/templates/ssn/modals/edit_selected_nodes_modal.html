@@ -13,6 +13,7 @@
                 <div id="edit_nodes_response"></div>
                 <p><span id="num_selected_nodes"></span> nodes selected</p>
                 <button class="btn btn-danger" onclick="delete_nodes()">Delete nodes</button>
+                <button class="btn btn-warning" onclick="delete_non_selected_nodes()">Delete all other nodes</button>
 
                 <br/>
 
@@ -67,6 +68,18 @@
         var selected_nodes = network.getSelectedNodes()
         data['nodes'].remove(selected_nodes)
     }
+
+    async function delete_non_selected_nodes() {
+        response_msg("Nodes are being deleted", 'success', [], "edit_nodes_response")
+        var selected_nodes = network.getSelectedNodes()
+        var all_nodes = data['nodes'].getIds()
+        var other_nodes = all_nodes.filter( function( el ) {
+          return !selected_nodes.includes( el );
+        });
+        data['nodes'].remove(other_nodes)
+    }
+
+
 
 
 </script>

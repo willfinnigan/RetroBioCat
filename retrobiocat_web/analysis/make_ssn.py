@@ -180,7 +180,7 @@ class SSN_Visualiser(object):
         self.enzyme_type_obj = EnzymeType.objects(enzyme_type=enzyme_type)[0]
         self.node_metadata = self._find_uniref_metadata()
 
-        self.edge_colour = {'color': 'black'}
+        self.edge_colour = {'color': 'grey'}
         self.edge_width = 4
         self.hidden_edges = hidden_edges
         self.uniref_border_width = 1
@@ -197,7 +197,7 @@ class SSN_Visualiser(object):
         self.log_level = log_level
         self.cluster_positioner = ClusterPositioner()
 
-    def visualise(self, ssn, alignment_score, ):
+    def visualise(self, ssn, alignment_score):
         clusters, graph = self.get_clusters_and_subgraph(ssn, alignment_score)
         pos_dict = self.get_cluster_positions(graph, clusters)
         nodes, edges = self.get_nodes_and_edges(graph, pos_dict)
@@ -707,6 +707,21 @@ class SSN_quickload(object):
 
         return edges
 
+    def get_multiple_edges(self, nodes, alignment_score):
+        t0 = time.time()
+        edges = []
+        df = self.df[(self.df['source'].isin(nodes)) | (self.df['target'].isin(nodes))]
+        df = df[df['weight'] >= alignment_score]
+
+        for index, row in df.iterrows():
+            edges.append(self.vis.get_vis_edge(row['target'], row['source'], row['weight']))
+        t1 = time.time()
+
+        self.log(
+            f"Retrieved multiple edges for {len(nodes)} nodes of {self.enzyme_type} node at alignment score {alignment_score} in {round(t1 - t0, 1)} seconds")
+
+        return edges
+
     def get_connected_nodes(self, list_nodes, alignment_score):
         t0 = time.time()
         connected_nodes = set()
@@ -763,11 +778,11 @@ if __name__ == '__main__':
     make_default_connection()
 
     ql = SSN_quickload('IRED', log_level=1)
-    #ql.load_df()
-    #edges = ql.get_edges('UniRef50_Q2TW47', 45)
+    ql.load_df()
+    edges = ql.get_multiple_edges(['UniRef50_Q2TW47'], 45)
     #nodes = ql.get_all_connected_nodes('UniRef50_Q2TW47', 45)
-    without_uniref, clusters = ql.get_clusters(45)
-    print(without_uniref)
+    #without_uniref, clusters = ql.get_clusters(45)
+    #print(without_uniref)
 
     #ssn = SSN('IRED', log_level=1)
     #ssn.load(mode='pandas')
