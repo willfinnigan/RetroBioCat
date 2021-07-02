@@ -63,3 +63,9 @@ services:
     restart: always
     command: python3 ./retrobiocat/retrobiocat_web/worker.py
 
+  nginx:
+        build: ./nginx
+        container_name: nginx
+        restart: always
+        ports:
+                - "80:80"
