@@ -117,6 +117,8 @@ Navigate to the Initialise Database page in the admin menu.
 
 Initialise the database by uploading the required files.  This can be done one at a time (recommended) or all together.
 
+(A mongo_dump.gz file can be used as an alternative if you have previously created one.. otherwise this input can be ignored.)
+
 Files are available at:   
 https://figshare.com/articles/software/RetroBioCat_database_files/12696482  
 
