@@ -9,15 +9,10 @@ services:
     volumes:
       - ./mongo/mongo-volume:/data/db
 
-  osra_api:
-    image: willfinnigan/osra_api
-
   rbc_app:
-    build:
-        dockerfile: dockerfile_retrobiocat
-        context: .
+    image: willfinnigan/retrobiocat_v1:latest
     ports:
-      - "5000:5000"
+      - "8000:5000"
     volumes:
       - ./data/:/retrobiocat/retrobiocat_web/retro/data/
       - ./mongo/mongo_dump:/retrobiocat/retrobiocat_web/mongo/mongo_dump
@@ -39,9 +34,7 @@ services:
     command: gunicorn -b :5000 --timeout 400 --workers 2 --access-logfile - --error-logfile - retrobiocat_web.main:main_app
 
   worker_1:
-    build:
-        dockerfile: dockerfile_retrobiocat
-        context: .
+    image: willfinnigan/retrobiocat_v1:latest
     volumes:
       - ./data/:/retrobiocat/retrobiocat_web/retro/data/
       - ./images:/retrobiocat/retrobiocat_web/curation/uploaded_molecule_images/
