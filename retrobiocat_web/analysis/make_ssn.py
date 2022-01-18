@@ -10,7 +10,6 @@ import os
 import pandas as pd
 import palettable
 import statistics
-import dask.dataframe
 import gc
 
 class SSN_Cluster_Precalculator(object):
@@ -393,8 +392,7 @@ class SSN(object):
 
         self.log(f"Saved SSN for {self.enzyme_type} in {round(t1 - t0, 1)} seconds")
 
-    def load(self, include_mutants=True, only_biocatdb=False, mode='pandas'):
-
+    def load(self, include_mutants=True, only_biocatdb=False):
         t0 = time.time()
         if not os.path.exists(f"{self.save_path}/graph.csv") or not os.path.exists(f"{self.save_path}/attributes.json"):
             self.log(f"No saved SSN found for {self.enzyme_type}, could not load")
@@ -402,13 +400,7 @@ class SSN(object):
 
         #df_graph = pd.read_csv(f"{self.save_path}/graph.csv")
 
-        if mode == 'dask':
-            df_graph = dask.dataframe.read_csv(f"{self.save_path}/graph.csv")
-        elif mode == 'dask_pandas':
-            df_graph = dask.dataframe.read_csv(f"{self.save_path}/graph.csv")
-            df_graph = df_graph.compute()
-        else:
-            df_graph = pd.read_csv(f"{self.save_path}/graph.csv")
+        df_graph = pd.read_csv(f"{self.save_path}/graph.csv")
         att_dict = json.load(open(f'{self.save_path}/attributes.json'))
         t1 = time.time()
 
@@ -429,7 +421,7 @@ class SSN(object):
         nx.set_node_attributes(self.graph, att_dict)
 
         t3 = time.time()
-        self.log(f"Loaded SSN for {self.enzyme_type} in {round(t3 - t0, 1)} seconds (mode = {mode})")
+        self.log(f"Loaded SSN for {self.enzyme_type} in {round(t3 - t0, 1)} seconds)")
         self.log(f"- {round(t1 - t0, 1)} seconds to load dataframes")
         self.log(f"- {round(t2 - t1, 1)} seconds to load actual ssn from edge list")
         self.log(f"- {round(t3 - t2, 1)} seconds for attributes")
@@ -685,8 +677,6 @@ class SSN_quickload(object):
             self.log(f"No saved SSN found for {self.enzyme_type}, could not load")
             return False
 
-        #self.df = dask.dataframe.read_csv(f"{self.save_path}/graph.csv")
-        #self.df = self.df.compute()
         self.df = pd.read_csv(f"{self.save_path}/graph.csv")
 
         t1 = time.time()
@@ -780,16 +770,7 @@ if __name__ == '__main__':
     ql = SSN_quickload('IRED', log_level=1)
     ql.load_df()
     edges = ql.get_multiple_edges(['UniRef50_Q2TW47'], 45)
-    #nodes = ql.get_all_connected_nodes('UniRef50_Q2TW47', 45)
-    #without_uniref, clusters = ql.get_clusters(45)
-    #print(without_uniref)
 
-    #ssn = SSN('IRED', log_level=1)
-    #ssn.load(mode='pandas')
-    #ssn.load(mode='dask')
-    #ssn.load(mode='dask_pandas')
-    #ssn.delete_edges_below_alignment_score(40)
-    #ssn.save()
 
     """
     print(f"Num edges default = {len(ssn.graph.edges)}")
